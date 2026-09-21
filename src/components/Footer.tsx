@@ -119,17 +119,21 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToMode }) => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-6 border-t border-[#C4E5E8] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 font-medium">
-          <p className="m-0">
+        <div className="pt-6 border-t border-[#C4E5E8] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600 font-medium">
+          <p className="m-0 text-center sm:text-left">
             © {new Date().getFullYear()} Hospital Palmas Medical • Kora Saúde. Todos os direitos reservados.
           </p>
-          <div className="flex items-center gap-4 text-[11px]">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 text-[11px]">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/80 border border-[#C4E5E8] text-slate-700 shadow-2xs">
+              Criação: <strong className="ml-1 text-[#0E7B86] font-extrabold">João Victor Cardoso Costa</strong>
+            </span>
+            <span className="hidden sm:inline text-slate-400">•</span>
             <span className="flex items-center gap-1 text-[#0E7B86] font-bold">
               <ShieldCheck className="w-3.5 h-3.5" />
               POPs & Diretrizes 2026
             </span>
-            <span>•</span>
-            <span>Versão Operacional 2.4</span>
+            <span className="hidden sm:inline text-slate-400">•</span>
+            <span className="text-slate-500">Versão Operacional 2.4</span>
           </div>
         </div>
       </div>

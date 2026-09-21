@@ -9,7 +9,8 @@ import {
   ChevronRight,
   Ambulance,
   Building2,
-  Stethoscope
+  Stethoscope,
+  LogOut
 } from 'lucide-react';
 import { AppMode } from '../types';
 
@@ -20,6 +21,7 @@ interface SidebarProps {
   onOpenMaster: () => void;
   onLogoutMaster: () => void;
   selectedExamsCount: number;
+  onLogoutSystem?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -28,7 +30,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isMaster,
   onOpenMaster,
   onLogoutMaster,
-  selectedExamsCount
+  selectedExamsCount,
+  onLogoutSystem
 }) => {
   const navItems = [
     {
@@ -164,6 +167,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {isMaster ? 'Conectado' : 'Entrar'}
           </span>
         </button>
+
+        {onLogoutSystem && (
+          <button
+            type="button"
+            onClick={onLogoutSystem}
+            className="w-full mt-2 flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold text-slate-500 hover:text-rose-700 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 transition-colors cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Bloquear / Sair do Sistema</span>
+          </button>
+        )}
       </div>
 
       {/* Protocol Quick Reminder Card */}

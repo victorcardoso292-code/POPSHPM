@@ -6,7 +6,8 @@ import {
   Calculator,
   Search,
   Sparkles,
-  Command
+  Command,
+  LogOut
 } from 'lucide-react';
 import { AppMode } from '../types';
 
@@ -21,6 +22,7 @@ interface HeaderProps {
   selectedExamsCount: number;
   onOpenUniversalSearch?: () => void;
   onOpenSmartDrawer?: () => void;
+  onLogoutSystem?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -33,7 +35,8 @@ export const Header: React.FC<HeaderProps> = ({
   onSearchChange,
   selectedExamsCount,
   onOpenUniversalSearch,
-  onOpenSmartDrawer
+  onOpenSmartDrawer,
+  onLogoutSystem
 }) => {
   return (
     <header className="bg-white text-slate-800 shadow-xs border-b border-slate-200/90 sticky top-0 z-40">
@@ -156,6 +159,19 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <Lock className="w-3.5 h-3.5 text-[#0E7B86]" />
                 <span className="hidden sm:inline">Acesso Master</span>
+              </button>
+            )}
+
+            {/* System Logout / Lock Button */}
+            {onLogoutSystem && (
+              <button
+                type="button"
+                onClick={onLogoutSystem}
+                className="flex items-center gap-1.5 bg-slate-50 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-600 hover:text-rose-700 font-semibold transition-colors cursor-pointer"
+                title="Sair do Sistema / Bloquear Tela"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Sair</span>
               </button>
             )}
           </div>

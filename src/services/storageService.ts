@@ -5,6 +5,46 @@ const MASTER_HASH_KEY = 'hpmPopMasterHashV2';
 const MASTER_SESSION_KEY = 'hpmPopMasterSessionV2';
 const MASTER_DEFAULT_PASSWORD = 'HPM@2026';
 
+export const SYSTEM_DEFAULT_USER = 'HPM';
+export const SYSTEM_DEFAULT_PASSWORD = 'HPM@2026';
+const SYSTEM_AUTH_KEY = 'hpmSystemAuthV1';
+
+export function isSystemAuthenticated(): boolean {
+  try {
+    return (
+      localStorage.getItem(SYSTEM_AUTH_KEY) === 'true' ||
+      sessionStorage.getItem(SYSTEM_AUTH_KEY) === 'true'
+    );
+  } catch {
+    return false;
+  }
+}
+
+export function setSystemAuth(authenticated: boolean, remember: boolean = true): void {
+  try {
+    if (authenticated) {
+      if (remember) {
+        localStorage.setItem(SYSTEM_AUTH_KEY, 'true');
+        sessionStorage.setItem(SYSTEM_AUTH_KEY, 'true');
+      } else {
+        sessionStorage.setItem(SYSTEM_AUTH_KEY, 'true');
+        localStorage.removeItem(SYSTEM_AUTH_KEY);
+      }
+    } else {
+      localStorage.removeItem(SYSTEM_AUTH_KEY);
+      sessionStorage.removeItem(SYSTEM_AUTH_KEY);
+    }
+  } catch {
+    // Ignore storage issues
+  }
+}
+
+export function verifySystemCredentials(username: string, password: string): boolean {
+  const normalizedUser = username.trim().toUpperCase();
+  const normalizedPass = password.trim();
+  return normalizedUser === SYSTEM_DEFAULT_USER && normalizedPass === SYSTEM_DEFAULT_PASSWORD;
+}
+
 const PS_STORAGE_KEY = 'hpmPsExamsStorageV3';
 const AMOR_STORAGE_KEY = 'hpmAmorExamsStorageV3';
 const LAB_STORAGE_KEY = 'hpmLabExamsStorageV3';

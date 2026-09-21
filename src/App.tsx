@@ -13,6 +13,7 @@ import { MasterModal } from './components/MasterModal';
 import { UniversalSearchModal } from './components/UniversalSearchModal';
 import { SmartRuleDrawer } from './components/SmartRuleDrawer';
 import { Footer } from './components/Footer';
+import { LoginScreen } from './components/LoginScreen';
 
 import { AppMode, ExamRow, ExamTableType, SelectedExamItem } from './types';
 import { 
@@ -24,10 +25,13 @@ import {
   saveLabExams,
   resetExamsToDefault,
   isMasterLoggedIn,
-  setMasterSession
+  setMasterSession,
+  isSystemAuthenticated,
+  setSystemAuth
 } from './services/storageService';
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => isSystemAuthenticated());
   const [activeMode, setActiveMode] = useState<AppMode>('pops-ps');
   const [globalSearch, setGlobalSearch] = useState<string>('');
   const [isMaster, setIsMaster] = useState<boolean>(() => isMasterLoggedIn());
@@ -194,7 +198,16 @@ export default function App() {
     setActiveMode(mode);
   };
 
+  const handleLogoutSystem = () => {
+    setSystemAuth(false);
+    setIsAuthenticated(false);
+  };
+
   const selectedCount = Object.keys(selectedExams).length;
+
+  if (!isAuthenticated) {
+    return <LoginScreen onLoginSuccess={() => setIsAuthenticated(true)} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#F4F8F9] text-slate-900 flex flex-col font-sans selection:bg-[#B01B52] selection:text-white">
@@ -210,6 +223,7 @@ export default function App() {
         selectedExamsCount={selectedCount}
         onOpenUniversalSearch={() => setIsUniversalSearchOpen(true)}
         onOpenSmartDrawer={() => setIsSmartDrawerOpen(true)}
+        onLogoutSystem={handleLogoutSystem}
       />
 
       {/* Main Layout */}
@@ -222,6 +236,7 @@ export default function App() {
           onOpenMaster={() => setIsMasterModalOpen(true)}
           onLogoutMaster={handleLogoutMaster}
           selectedExamsCount={selectedCount}
+          onLogoutSystem={handleLogoutSystem}
         />
 
         {/* Dynamic Content Body */}

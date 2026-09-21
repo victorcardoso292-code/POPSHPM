@@ -182,31 +182,31 @@ ${auditResult.documentosExigidos.map(d => `- ${d}`).join('\n')}`;
   return (
     <div className="space-y-5">
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-amber-950/80 to-slate-900 border border-amber-800/50 rounded-2xl p-5 text-white shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-[#095962] via-[#0E7B86] to-[#095962] border border-[#0E7B86]/40 rounded-2xl p-5 text-white shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-black uppercase tracking-widest text-amber-400 bg-amber-950/90 border border-amber-700/50 px-2.5 py-0.5 rounded-full">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-black uppercase tracking-widest text-[#EBF7F8] bg-white/15 border border-white/20 px-3 py-0.5 rounded-full">
               Inteligência Artificial Hospitalar
             </span>
-            <span className="text-xs text-slate-300 font-medium">Powered by Gemini 3.7 Flash</span>
+            <span className="text-xs text-white/80 font-medium">Hospital Palmas Medical</span>
           </div>
           <h2 className="text-2xl font-black tracking-tight text-white m-0">
             Auditor Preventivo & Copilot de POPs
           </h2>
-          <p className="text-xs text-slate-300 max-w-xl leading-relaxed m-0">
+          <p className="text-xs text-white/90 max-w-xl leading-relaxed m-0">
             Valide pedidos médicos em tempo real, previna glosas, encontre códigos TUSS correlacionados e esclareça dúvidas operacionais instantaneamente.
           </p>
         </div>
 
         {/* Tab switch buttons */}
-        <div className="flex items-center gap-2 bg-slate-900/90 p-1.5 rounded-xl border border-slate-700">
+        <div className="flex items-center gap-1.5 bg-[#07474e] p-1.5 rounded-xl border border-white/15">
           <button
             type="button"
             onClick={() => setActiveTab('copilot')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
               activeTab === 'copilot'
-                ? 'bg-amber-400 text-slate-950 shadow-sm'
-                : 'text-slate-300 hover:text-white'
+                ? 'bg-white text-[#095962] shadow-xs'
+                : 'text-white/80 hover:text-white'
             }`}
           >
             <Bot className="w-4 h-4" />
@@ -215,10 +215,10 @@ ${auditResult.documentosExigidos.map(d => `- ${d}`).join('\n')}`;
           <button
             type="button"
             onClick={() => setActiveTab('auditor')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
               activeTab === 'auditor'
-                ? 'bg-amber-400 text-slate-950 shadow-sm'
-                : 'text-slate-300 hover:text-white'
+                ? 'bg-white text-[#095962] shadow-xs'
+                : 'text-white/80 hover:text-white'
             }`}
           >
             <ShieldAlert className="w-4 h-4" />

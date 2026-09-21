@@ -105,18 +105,18 @@ export const HospitalReportsViewer: React.FC<HospitalReportsViewerProps> = ({
       {/* Screen View */}
       <div className="print:hidden space-y-5">
         {/* Header Hero */}
-        <div className="bg-gradient-to-r from-slate-900 via-amber-950/70 to-slate-900 border border-amber-800/40 rounded-2xl p-5 text-white shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-widest text-amber-400 bg-amber-950/80 border border-amber-700/50 px-2.5 py-0.5 rounded-full">
+        <div className="bg-gradient-to-r from-[#095962] via-[#0E7B86] to-[#095962] border border-[#0E7B86]/40 rounded-2xl p-5 sm:p-6 text-white shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-black uppercase tracking-widest text-[#EBF7F8] bg-white/15 border border-white/20 px-3 py-0.5 rounded-full">
                 Área de Internação Hospitalar
               </span>
-              <span className="text-xs text-slate-300 font-medium">Controle de Documentos Obrigatórios</span>
+              <span className="text-xs text-white/80 font-medium">Controle de Documentos Obrigatórios</span>
             </div>
-            <h2 className="text-2xl font-black tracking-tight text-white m-0">
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white m-0">
               Relatórios da Internação
             </h2>
-            <p className="text-xs text-slate-300 max-w-xl leading-relaxed m-0">
+            <p className="text-xs sm:text-sm text-white/90 max-w-xl leading-relaxed m-0">
               Relação de relatórios institucionais para impressão e conferência na admissão do paciente.
             </p>
           </div>
@@ -124,7 +124,7 @@ export const HospitalReportsViewer: React.FC<HospitalReportsViewerProps> = ({
           <button
             type="button"
             onClick={handlePrintChecklist}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#B01B52] hover:bg-[#971444] text-white font-bold text-xs shadow-xs transition-all self-start md:self-auto cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#B01B52] hover:bg-[#971444] text-white font-bold text-xs shadow-xs transition-all self-start md:self-auto cursor-pointer border border-[#F7D0DF]/30"
           >
             <Printer className="w-4 h-4 text-white" />
             <span>Imprimir Checklist do Prontuário</span>
@@ -175,7 +175,7 @@ export const HospitalReportsViewer: React.FC<HospitalReportsViewerProps> = ({
               placeholder="Pesquisar número do relatório (ex: 2, 4, 7, 10)..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-9.5 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white"
+              className="w-full pl-9.5 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0E7B86] focus:bg-white text-slate-800"
             />
           </div>
           
@@ -188,7 +188,7 @@ export const HospitalReportsViewer: React.FC<HospitalReportsViewerProps> = ({
                 setCopiedList(true);
                 setTimeout(() => setCopiedList(false), 2000);
               }}
-              className="px-3 py-2 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+              className="px-3 py-2 bg-[#EBF7F8] hover:bg-[#d8eff2] border border-[#C4E5E8] text-[#0E7B86] rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
               title="Copiar sequência de números para colar no PEP ou ERP"
             >
               {copiedList ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
@@ -277,11 +277,11 @@ export const HospitalReportsViewer: React.FC<HospitalReportsViewerProps> = ({
         </div>
 
         {/* Orientation Card */}
-        <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 text-xs text-amber-950 font-medium flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+        <div className="bg-[#EBF7F8] border border-[#C4E5E8] rounded-2xl p-4 text-xs text-[#095962] font-medium flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-[#0E7B86] flex-shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <strong className="text-amber-900 block font-extrabold">Instrução Operacional de Admissão:</strong>
-            <span>
+            <strong className="text-[#095962] block font-extrabold">Instrução Operacional de Admissão:</strong>
+            <span className="text-slate-700">
               Todos os relatórios listados pelos respectivos números devem ser impressos no momento da abertura da internação na recepção e anexados ao prontuário físico para encaminhamento ao posto de enfermagem.
             </span>
           </div>

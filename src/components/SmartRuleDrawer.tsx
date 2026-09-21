@@ -115,16 +115,16 @@ export const SmartRuleDrawer: React.FC<SmartRuleDrawerProps> = ({
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-4 sm:p-5 bg-gradient-to-r from-teal-950 via-teal-900 to-slate-900 text-white flex items-center justify-between">
+        <div className="p-4 sm:p-5 bg-gradient-to-r from-[#095962] via-[#0E7B86] to-[#095962] text-white flex items-center justify-between border-b border-[#0E7B86]/40">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-teal-600/80 border border-teal-400/40 flex items-center justify-center font-bold text-amber-300 shadow-inner">
-              <Sparkles className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center font-bold text-white shadow-2xs">
+              <Sparkles className="w-5 h-5 text-[#EBF7F8]" />
             </div>
             <div>
               <h3 className="text-base font-black tracking-tight text-white m-0">
                 Raio-X Rápido & Regras do Convênio
               </h3>
-              <p className="text-[11px] text-teal-200/80 m-0">
+              <p className="text-[11px] text-white/80 m-0">
                 Consulte autorizações, tokens, acessos e tire dúvidas instantâneas
               </p>
             </div>
@@ -133,7 +133,7 @@ export const SmartRuleDrawer: React.FC<SmartRuleDrawerProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-xl text-teal-200 hover:text-white hover:bg-teal-800 transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl text-white/80 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>

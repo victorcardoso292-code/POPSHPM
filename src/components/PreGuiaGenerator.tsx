@@ -215,18 +215,18 @@ export const PreGuiaGenerator: React.FC<PreGuiaGeneratorProps> = ({
       {/* Screen View */}
       <div className="print:hidden space-y-5">
         {/* Banner */}
-        <div className="bg-gradient-to-r from-slate-900 via-cyan-950/80 to-slate-900 border border-cyan-800/50 rounded-2xl p-5 text-white shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-gradient-to-r from-[#095962] via-[#0E7B86] to-[#095962] border border-[#0E7B86]/40 rounded-2xl p-5 text-white shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-widest text-cyan-400 bg-cyan-950/90 border border-cyan-700/50 px-2.5 py-0.5 rounded-full">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-black uppercase tracking-widest text-[#EBF7F8] bg-white/15 border border-white/20 px-3 py-0.5 rounded-full">
                 Módulo de Autorizações TISS
               </span>
-              <span className="text-xs text-slate-300 font-medium">Hospital Palmas Medical</span>
+              <span className="text-xs text-white/80 font-medium">Hospital Palmas Medical</span>
             </div>
             <h2 className="text-2xl font-black tracking-tight text-white m-0">
               Emissor de Pré-Guia & Justificativas
             </h2>
-            <p className="text-xs text-slate-300 max-w-xl leading-relaxed m-0">
+            <p className="text-xs text-white/90 max-w-xl leading-relaxed m-0">
               Elabore solicitações de autorização com justificativas clínicas formuladas por IA, prontas para inclusão nos portais de convênios.
             </p>
           </div>
@@ -235,7 +235,7 @@ export const PreGuiaGenerator: React.FC<PreGuiaGeneratorProps> = ({
             <button
               type="button"
               onClick={handleSaveDraft}
-              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs border border-white/20 transition-colors"
             >
               <Save className="w-4 h-4" />
               <span>Salvar Rascunho</span>
@@ -243,7 +243,7 @@ export const PreGuiaGenerator: React.FC<PreGuiaGeneratorProps> = ({
             <button
               type="button"
               onClick={handlePrint}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-xs shadow-md transition-all active:scale-95"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#B01B52] hover:bg-[#971444] text-white font-bold text-xs shadow-xs transition-all active:scale-95 border border-[#F7D0DF]/30"
             >
               <Printer className="w-4 h-4" />
               <span>Imprimir Pré-Guia</span>

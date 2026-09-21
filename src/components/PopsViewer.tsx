@@ -94,18 +94,18 @@ export const PopsViewer: React.FC<PopsViewerProps> = ({
   return (
     <div className="space-y-5">
       {/* Top Banner & AI Prompt Bar */}
-      <div className="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 border border-teal-800/60 rounded-2xl p-5 text-white shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-[#095962] via-[#0E7B86] to-[#095962] border border-[#0E7B86]/40 rounded-2xl p-5 text-white shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-black uppercase tracking-widest text-teal-400 bg-teal-950/80 border border-teal-700/50 px-2.5 py-0.5 rounded-full">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-black uppercase tracking-widest text-[#EBF7F8] bg-white/15 border border-white/20 px-3 py-0.5 rounded-full">
               Procedimentos Operacionais Padrão (POPs)
             </span>
-            <span className="text-xs text-slate-300 font-medium">Hospital Palmas Medical</span>
+            <span className="text-xs text-white/80 font-medium">Hospital Palmas Medical</span>
           </div>
           <h2 className="text-2xl font-black tracking-tight text-white m-0">
             POP {activeConvenioObj?.name || selectedPlanId}
           </h2>
-          <p className="text-xs text-slate-300 max-w-2xl leading-relaxed m-0">
+          <p className="text-xs text-white/90 max-w-2xl leading-relaxed m-0">
             Consulte regras de elegibilidade, pacotes TUSS, autorização de exames de imagem e laboratoriais, critérios de UTI e internação.
           </p>
         </div>
@@ -115,9 +115,9 @@ export const PopsViewer: React.FC<PopsViewerProps> = ({
             <button
               type="button"
               onClick={() => onOpenAiWithPrompt(`Como funciona o fluxo de autorização no convênio ${selectedPlanId}? Quais os principais códigos TUSS e regras de carência/token?`)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow-md transition-all active:scale-95"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#B01B52] hover:bg-[#971444] text-white font-bold text-xs shadow-xs transition-all active:scale-95 border border-[#F7D0DF]/30 cursor-pointer"
             >
-              <Sparkles className="w-4 h-4 fill-slate-950 text-slate-950" />
+              <Sparkles className="w-4 h-4 fill-white text-white" />
               <span>Auditar Convênio com IA</span>
             </button>
           )}

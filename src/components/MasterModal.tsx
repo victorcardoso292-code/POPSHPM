@@ -126,9 +126,6 @@ export const MasterModal: React.FC<MasterModalProps> = ({
                 onChange={e => setPassword(e.target.value)}
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-teal-500 focus:bg-white"
               />
-              <p className="text-[11px] text-slate-400 mt-1">
-                Dica institucional padrão: <code>HPM@2026</code>
-              </p>
             </div>
 
             <button

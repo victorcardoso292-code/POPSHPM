@@ -311,7 +311,7 @@ export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
     cnpj: '12.955.953/0001-92',
     portalUrl: 'https://credenciado.amil.com.br/login',
     labUrgencia: 'AUTORIZAR',
-    pacotePs: '10101012 CONSULTA',
+    pacotePs: '10101039 CONSULTA EM PRONTO SOCORRO',
     imagemUrgencia: 'AUTORIZAR RX / TC / RM',
     criticalNotes: [
       'NÃO ATENDER RADIOLOGIA ELETIVA.',
@@ -344,11 +344,11 @@ export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
         steps: [
           'Realizar consulta de elegibilidade prévia no portal Amil.',
           'Solicitar e validar o TOKEN com o paciente.',
-          'Lançar código de consulta 10101012 no portal.',
+          'Lançar código de consulta 10101039 no portal.',
           'Coletar assinatura física do paciente na guia autorizada.'
         ],
         textItems: [
-          'Código informado no POP: 10101012 — CONSULTA.',
+          'Código informado no POP: 10101039 — CONSULTA EM PRONTO SOCORRO.',
           'Antes do atendimento, realizar consulta de elegibilidade.',
           'Não esquecer de solicitar o TOKEN para validar o atendimento.',
           'OBRIGATÓRIO o paciente assinar a guia.',

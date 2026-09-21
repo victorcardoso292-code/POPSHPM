@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+:root {
+  --color-medical-berry: #B01B52;
+  --color-medical-berry-hover: #971444;
+  --color-medical-berry-light: #FDF2F6;
+  --color-medical-berry-border: #F7D0DF;
+  --color-medical-teal: #0E7B86;
+  --color-medical-teal-hover: #095962;
+  --color-medical-teal-light: #EBF7F8;
+  --color-medical-teal-ice: #D8ECEE;
+}

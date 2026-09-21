@@ -1,0 +1,6 @@
+{
+  "name": "Central de Autorizações & POPs Hospitalar",
+  "description": "Sistema hospitalar inteligente de Procedimentos Operacionais Padrão (POPs), consulta de convênios, tabelas de exames, valores de procedimentos e cirurgias, relatórios de internação, ramais e auditoria assistida por IA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,292 @@
+import React, { useState, useMemo, useEffect } from 'react';
+import { 
+  Files, 
+  Search, 
+  Printer, 
+  CheckCircle, 
+  CheckSquare, 
+  Square, 
+  FileText, 
+  AlertCircle,
+  Building2,
+  Copy,
+  Check
+} from 'lucide-react';
+import { HOSPITAL_REPORTS } from '../data/hospitalData';
+import { HospitalReportType } from '../types';
+
+interface HospitalReportsViewerProps {
+  initialType?: 'PARTICULAR' | 'URGÊNCIA' | 'ELETIVO';
+}
+
+export const HospitalReportsViewer: React.FC<HospitalReportsViewerProps> = ({
+  initialType = 'URGÊNCIA'
+}) => {
+  const [selectedType, setSelectedType] = useState<'PARTICULAR' | 'URGÊNCIA' | 'ELETIVO'>(initialType);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [checkedReports, setCheckedReports] = useState<{ [key: string]: boolean }>({});
+  const [copiedList, setCopiedList] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (initialType) {
+      setSelectedType(initialType);
+    }
+  }, [initialType]);
+
+  const activeReportConfig = useMemo(() => {
+    return HOSPITAL_REPORTS.find(r => r.tipo === selectedType) || HOSPITAL_REPORTS[0];
+  }, [selectedType]);
+
+  const filteredNums = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    return activeReportConfig.nums.filter(num => num.includes(q));
+  }, [activeReportConfig, searchTerm]);
+
+  const toggleCheck = (num: string) => {
+    setCheckedReports(prev => ({
+      ...prev,
+      [`${selectedType}-${num}`]: !prev[`${selectedType}-${num}`]
+    }));
+  };
+
+  const handleSelectAll = () => {
+    const allChecked = activeReportConfig.nums.every(num => !!checkedReports[`${selectedType}-${num}`]);
+    const nextState = { ...checkedReports };
+    activeReportConfig.nums.forEach(num => {
+      nextState[`${selectedType}-${num}`] = !allChecked;
+    });
+    setCheckedReports(nextState);
+  };
+
+  const handlePrintChecklist = () => {
+    window.print();
+  };
+
+  const checkedCount = activeReportConfig.nums.filter(num => !!checkedReports[`${selectedType}-${num}`]).length;
+
+  return (
+    <div className="space-y-5">
+      {/* Print View */}
+      <div id="print-reports-checklist" className="hidden print:block font-sans text-slate-900 p-8">
+        <div className="border-b-2 border-slate-900 pb-4 mb-6">
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 m-0">
+            HOSPITAL PALMAS MEDICAL • CHECKLIST DE INTERNAÇÃO
+          </h1>
+          <p className="text-xs text-slate-600 m-0 mt-1">
+            Tipo de Internação: <strong>{selectedType}</strong> • Data: {new Date().toLocaleDateString('pt-BR')}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3 mb-8">
+          {activeReportConfig.nums.map(num => (
+            <div key={num} className="flex items-center gap-3 border border-slate-300 p-2.5 rounded">
+              <div className="w-5 h-5 border-2 border-slate-900 rounded flex items-center justify-center font-bold text-xs">
+                {checkedReports[`${selectedType}-${num}`] ? '✓' : ''}
+              </div>
+              <span className="font-mono font-bold text-sm text-slate-900">Relatório Nº {num}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-2 gap-8 text-center text-xs pt-12 border-t border-slate-300">
+          <div>
+            <div className="border-t border-slate-400 pt-1 w-48 mx-auto"></div>
+            <p className="font-bold m-0">Recepção de Internação</p>
+            <p className="text-[10px] text-slate-500 m-0">Assinatura / Carimbo</p>
+          </div>
+          <div>
+            <div className="border-t border-slate-400 pt-1 w-48 mx-auto"></div>
+            <p className="font-bold m-0">Posto de Enfermagem</p>
+            <p className="text-[10px] text-slate-500 m-0">Recebimento do Prontuário</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Screen View */}
+      <div className="print:hidden space-y-5">
+        {/* Header Hero */}
+        <div className="bg-gradient-to-r from-slate-900 via-amber-950/70 to-slate-900 border border-amber-800/40 rounded-2xl p-5 text-white shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black uppercase tracking-widest text-amber-400 bg-amber-950/80 border border-amber-700/50 px-2.5 py-0.5 rounded-full">
+                Área de Internação Hospitalar
+              </span>
+              <span className="text-xs text-slate-300 font-medium">Controle de Documentos Obrigatórios</span>
+            </div>
+            <h2 className="text-2xl font-black tracking-tight text-white m-0">
+              Relatórios da Internação
+            </h2>
+            <p className="text-xs text-slate-300 max-w-xl leading-relaxed m-0">
+              Relação de relatórios institucionais para impressão e conferência na admissão do paciente.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handlePrintChecklist}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#B01B52] hover:bg-[#971444] text-white font-bold text-xs shadow-xs transition-all self-start md:self-auto cursor-pointer"
+          >
+            <Printer className="w-4 h-4 text-white" />
+            <span>Imprimir Checklist do Prontuário</span>
+          </button>
+        </div>
+
+        {/* Category Tabs */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {HOSPITAL_REPORTS.map(rep => {
+            const isSelected = selectedType === rep.tipo;
+            return (
+              <button
+                key={rep.tipo}
+                type="button"
+                onClick={() => setSelectedType(rep.tipo)}
+                className={`p-4 rounded-2xl border text-left transition-all shadow-2xs flex items-center justify-between cursor-pointer ${
+                  isSelected
+                    ? rep.tipo === 'URGÊNCIA'
+                      ? 'bg-[#FDF2F6] border-2 border-[#B01B52]'
+                      : 'bg-[#EBF7F8] border-2 border-[#0E7B86]'
+                    : 'bg-white hover:bg-[#EBF7F8]/40 border-slate-200 text-slate-700'
+                }`}
+              >
+                <div>
+                  <span className="text-[11px] uppercase font-black tracking-wider text-slate-400 block mb-0.5">
+                    Modalidade
+                  </span>
+                  <h3 className="text-lg font-black text-slate-900 m-0 leading-tight">
+                    {rep.tipo}
+                  </h3>
+                </div>
+                <span className={`text-xs font-black px-2.5 py-1 rounded-full ${
+                  rep.tipo === 'URGÊNCIA' ? 'bg-[#B01B52] text-white' : 'bg-[#0E7B86] text-white'
+                }`}>
+                  {rep.nums.length} Relatórios
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Search Bar for Document Numbers */}
+        <div className="relative bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="search"
+              placeholder="Pesquisar número do relatório (ex: 2, 4, 7, 10)..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full pl-9.5 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white"
+            />
+          </div>
+          
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => {
+                const listStr = activeReportConfig.nums.join(', ');
+                navigator.clipboard.writeText(listStr);
+                setCopiedList(true);
+                setTimeout(() => setCopiedList(false), 2000);
+              }}
+              className="px-3 py-2 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+              title="Copiar sequência de números para colar no PEP ou ERP"
+            >
+              {copiedList ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{copiedList ? 'Copiado!' : 'Copiar Sequência'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSelectAll}
+              className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer"
+            >
+              {checkedCount === activeReportConfig.nums.length ? 'Desmarcar Todos' : 'Marcar Todos'}
+            </button>
+          </div>
+        </div>
+
+        {/* Documents Grid / Interactive List - Numbers Only */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
+            <div>
+              <span className="text-xs uppercase font-extrabold tracking-wider text-slate-400">
+                Documentos para Impressão • {selectedType}
+              </span>
+              <h3 className="text-lg font-black text-slate-900 m-0">
+                Relação de Relatórios ({filteredNums.length} itens)
+              </h3>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <span className="text-xs font-black text-slate-800 block">
+                  {checkedCount} de {activeReportConfig.nums.length} impressos
+                </span>
+                <span className="text-[10px] text-slate-400 font-bold">
+                  {Math.round((checkedCount / Math.max(1, activeReportConfig.nums.length)) * 100)}% concluído
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Visual Progress Bar */}
+          <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+            <div 
+              className="bg-emerald-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${(checkedCount / Math.max(1, activeReportConfig.nums.length)) * 100}%` }}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {filteredNums.map(num => {
+              const checkKey = `${selectedType}-${num}`;
+              const isChecked = !!checkedReports[checkKey];
+
+              return (
+                <button
+                  key={num}
+                  type="button"
+                  onClick={() => toggleCheck(num)}
+                  className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 text-left ${
+                    isChecked
+                      ? 'bg-emerald-50 border-emerald-400 text-emerald-950 ring-2 ring-emerald-500/20 shadow-xs'
+                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex-shrink-0">
+                      {isChecked ? (
+                        <CheckSquare className="w-4 h-4 text-emerald-600" />
+                      ) : (
+                        <Square className="w-4 h-4 text-slate-400" />
+                      )}
+                    </div>
+                    <span className="font-mono text-sm font-black text-slate-900 bg-white border border-slate-200 px-2 py-0.5 rounded shadow-2xs truncate">
+                      Nº {num}
+                    </span>
+                  </div>
+                  {isChecked && (
+                    <span className="text-[9px] font-black uppercase text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded flex-shrink-0">
+                      OK
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Orientation Card */}
+        <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 text-xs text-amber-950 font-medium flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <strong className="text-amber-900 block font-extrabold">Instrução Operacional de Admissão:</strong>
+            <span>
+              Todos os relatórios listados pelos respectivos números devem ser impressos no momento da abertura da internação na recepção e anexados ao prontuário físico para encaminhamento ao posto de enfermagem.
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

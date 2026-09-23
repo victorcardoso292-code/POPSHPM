@@ -93,3 +93,38 @@
   }
 }
 
+/* ==========================================================================
+   ALERTA OPERACIONAL PISCANTE - PEGAR ASSINATURAS NAS GUIAS
+   ========================================================================== */
+@keyframes alertPulseGlow {
+  0%, 100% {
+    background-color: #b91c1c; /* red-700 */
+    box-shadow: 0 1px 6px rgba(185, 28, 28, 0.4);
+  }
+  50% {
+    background-color: #dc2626; /* red-600 */
+    box-shadow: 0 2px 14px rgba(220, 38, 38, 0.7);
+  }
+}
+
+@keyframes alertIconBlink {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1.18);
+    filter: drop-shadow(0 0 5px rgba(253, 224, 71, 0.9));
+  }
+  50% {
+    opacity: 0.2;
+    transform: scale(0.88);
+    filter: drop-shadow(0 0 1px rgba(253, 224, 71, 0.2));
+  }
+}
+
+.animate-alert-banner {
+  animation: alertPulseGlow 1.6s ease-in-out infinite;
+}
+
+.animate-alert-icon {
+  animation: alertIconBlink 0.75s ease-in-out infinite;
+}
+

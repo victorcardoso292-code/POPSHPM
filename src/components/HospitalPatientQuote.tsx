@@ -246,10 +246,17 @@ export const HospitalPatientQuote: React.FC<HospitalPatientQuoteProps> = ({
             <span className="w-2 h-2 rounded-full bg-emerald-600 flex-shrink-0"></span>
             <span><strong>À Vista (PIX, Débito ou Dinheiro):</strong> {formatCurrencyBRL(total)}</span>
           </div>
-          <div className="flex items-center gap-2 text-slate-800">
-            <span className="w-2 h-2 rounded-full bg-[#B01B52] flex-shrink-0"></span>
-            <span><strong>Cartão de Crédito:</strong> em até <strong>{installmentCount}x de {formatCurrencyBRL(installmentValue)}</strong> sem juros</span>
-          </div>
+          {type === 'exames' ? (
+            <div className="flex items-center gap-2 text-slate-800">
+              <span className="w-2 h-2 rounded-full bg-[#B01B52] flex-shrink-0"></span>
+              <span><strong>Cartão de Crédito:</strong> Paciente PS é apenas no crédito à vista 1x</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-slate-800">
+              <span className="w-2 h-2 rounded-full bg-[#B01B52] flex-shrink-0"></span>
+              <span><strong>Cartão de Crédito:</strong> em até <strong>{installmentCount}x de {formatCurrencyBRL(installmentValue)}</strong> sem juros</span>
+            </div>
+          )}
           <p className="text-[10px] text-slate-500 m-0 pt-1">
             * Aceitamos as principais bandeiras de cartões (Visa, Mastercard, Elo, Hipercard, Amex).
           </p>
@@ -289,6 +296,9 @@ export const HospitalPatientQuote: React.FC<HospitalPatientQuoteProps> = ({
           </li>
           {type === 'exames' ? (
             <>
+              <li>
+                <strong>Formas de Pagamento &amp; Cartão de Crédito:</strong> Aceitamos PIX, Débito e Dinheiro à vista. Para exames realizados no Pronto-Socorro, o <strong>Cartão de Crédito Paciente PS é apenas no crédito à vista 1x</strong>.
+              </li>
               <li>
                 <strong>Exames com Contraste:</strong> A aplicação de contraste depende de questionário prévio de segurança, triagem e jejum recomendado. Pacientes com alterações renais ou histórico alérgico devem apresentar exames recentes de ureia e creatinina.
               </li>

@@ -7,7 +7,8 @@ import {
   Search,
   Sparkles,
   Command,
-  LogOut
+  LogOut,
+  AlertTriangle
 } from 'lucide-react';
 import { AppMode } from '../types';
 
@@ -40,6 +41,21 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <header className="bg-white text-slate-800 shadow-xs border-b border-slate-200/90 sticky top-0 z-40">
+      {/* Caixa de Alerta Operacional: PEGAR ASSINATURAS NAS GUIAS */}
+      <div 
+        className="w-full bg-red-700 text-white animate-alert-banner border-b border-red-900/60 py-2 px-4 shadow-sm select-none"
+        role="alert"
+        aria-live="assertive"
+      >
+        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2.5 sm:gap-3 text-center">
+          <AlertTriangle className="w-5 h-5 text-yellow-300 animate-alert-icon flex-shrink-0" />
+          <span className="text-xs sm:text-sm font-black tracking-wider uppercase drop-shadow-sm text-white">
+            PEGAR ASSINATURAS NAS GUIAS
+          </span>
+          <AlertTriangle className="w-5 h-5 text-yellow-300 animate-alert-icon flex-shrink-0" />
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           

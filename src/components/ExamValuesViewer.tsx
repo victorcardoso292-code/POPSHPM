@@ -288,6 +288,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
 
     text += `--------------------------------------------------\n`;
     text += `💰 *VALOR TOTAL ESTIMADO: ${formatCurrencyBRL(cartTotal)}*\n`;
+    text += `💳 *Formas de Pagamento:* À vista (PIX, Débito ou Dinheiro). Cartão de Crédito Paciente PS é apenas no crédito à vista 1x.\n`;
     if (quoteNotes.trim()) {
       text += `📝 Obs: ${quoteNotes.trim()}\n`;
     }
@@ -318,7 +319,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
           notes={quoteNotes}
           items={quoteItemsForExams}
           total={cartTotal}
-          installmentCount={6}
+          installmentCount={1}
         />
       </div>
 
@@ -1190,6 +1191,19 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
                   </div>
                 </div>
 
+                {/* PS Credit Card Payment Notice */}
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center justify-between text-xs text-amber-900 shadow-2xs">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-amber-600 flex-shrink-0"></span>
+                    <span>
+                      <strong>Condição de Pagamento:</strong> Cartão de Crédito Paciente PS é apenas no crédito à vista 1x.
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-100 px-2 py-0.5 rounded border border-amber-300">
+                    Regra PS
+                  </span>
+                </div>
+
                 {/* Panoramic Table of Exams with Complete Descriptions */}
                 <div className="bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden">
                   <div className="p-4 bg-[#EBF7F8] border-b border-[#C4E5E8] flex items-center justify-between">
@@ -1324,7 +1338,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
                   notes={quoteNotes}
                   items={quoteItemsForExams}
                   total={cartTotal}
-                  installmentCount={6}
+                  installmentCount={1}
                   isPrintPreview={true}
                 />
               </div>

@@ -10,6 +10,7 @@ import {
   Ambulance,
   Building2,
   Stethoscope,
+  KeyRound,
   LogOut
 } from 'lucide-react';
 import { AppMode } from '../types';
@@ -49,6 +50,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: Building2,
       badge: 'Internação',
       badgeColor: 'bg-[#FDF2F6] text-[#B01B52] border border-[#F7D0DF]'
+    },
+    {
+      id: 'portais' as AppMode,
+      label: 'Portais & Senhas',
+      subtitle: 'Logins e autorizadores de convênios',
+      icon: KeyRound,
+      badge: '44 Acessos',
+      badgeColor: 'bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]'
     },
     {
       id: 'exames' as AppMode,

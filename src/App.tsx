@@ -9,6 +9,7 @@ import { HospitalReportsViewer } from './components/HospitalReportsViewer';
 import { HospitalExtensionsViewer } from './components/HospitalExtensionsViewer';
 import { AiHospitalAssistant } from './components/AiHospitalAssistant';
 import { PreGuiaGenerator } from './components/PreGuiaGenerator';
+import { PortaisSenhasViewer } from './components/PortaisSenhasViewer';
 import { MasterModal } from './components/MasterModal';
 import { UniversalSearchModal } from './components/UniversalSearchModal';
 import { SmartRuleDrawer } from './components/SmartRuleDrawer';
@@ -253,8 +254,13 @@ export default function App() {
             <PopsInternacaoViewer
               onOpenAiWithPrompt={handleOpenAiWithPrompt}
               onGeneratePreGuia={handleGeneratePreGuiaFromPops}
+              onNavigateToPortais={() => setActiveMode('portais')}
               initialPlanId={selectedPlanForPops}
             />
+          )}
+
+          {activeMode === 'portais' && (
+            <PortaisSenhasViewer />
           )}
 
           {activeMode === 'exames' && (

@@ -502,14 +502,16 @@ export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
     name: 'CASSI',
     badge: 'CS',
     category: 'Autogestão',
+    portalUrl: 'https://www.polimed.com.br/autenticadorOrizon/loginAutenticador',
     labUrgencia: 'AUTORIZAR',
     pacotePs: '10101039 CONSULTA EM PRONTO SOCORRO',
     imagemUrgencia: 'Solicitar Autorização em todos os pedidos.',
     criticalNotes: [
+      'O portal de autorizações da CASSI é o ORIZON (Polimed), tanto no Pronto-Socorro como na Internação.',
       'Após solicitação de internação, é OBRIGATÓRIO ligar para a Central CASSI para validar a autorização ou tratar eventuais pendências.'
     ],
     accessCredentials: [
-      ['Portal CASSI / Orizon', 'https://www.polimed.com.br/autenticadorOrizon/loginAutenticador'],
+      ['Portal CASSI (Orizon - PS & Internação)', 'https://www.polimed.com.br/autenticadorOrizon/loginAutenticador'],
       ['Login MEDICAL', '12955953000192'],
       ['Senha MEDICAL', 'Hpm2025hpm@'],
       ['Código Prestador', '2120820']

@@ -1,11 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ExternalLink, Globe, Printer, FileText } from 'lucide-react';
+import { ExternalLink, Globe, Printer, FileText, Copy, Check, Eye, EyeOff, AlertTriangle, KeyRound, ShieldAlert } from 'lucide-react';
 import { SERVIR_DATA, CONVENIOS_MASTER_LIST } from '../data/popsData';
 import { TABELA_DIARIAS_DATA, ALL_DIARIAS_ITEMS, DiariaItem, ConvenioDiariasRules } from '../data/diariasData';
+import { PORTAIS_CREDENCIAIS, PORTAIS_RULES, PortalCredential } from '../data/portaisData';
 
 interface PopsInternacaoViewerProps {
   onOpenAiWithPrompt?: (prompt: string) => void;
   onGeneratePreGuia?: (convenio: string, code?: string, desc?: string) => void;
+  onNavigateToPortais?: () => void;
   initialPlanId?: string;
 }
 
@@ -14,6 +16,7 @@ type PopActiveTab = 'clinica' | 'uti' | 'todos' | 'cirurgias' | 'portal';
 export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
   onOpenAiWithPrompt,
   onGeneratePreGuia,
+  onNavigateToPortais,
   initialPlanId
 }) => {
   const [selectedPlanId, setSelectedPlanId] = useState<string>(initialPlanId || '');
@@ -23,6 +26,19 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [planSearch, setPlanSearch] = useState<string>('');
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('Todos');
+  const [revealedPasswords, setRevealedPasswords] = useState<{ [id: string]: boolean }>({});
+  const [copiedCredential, setCopiedCredential] = useState<{ id: string; field: 'login' | 'senha' } | null>(null);
+
+  const togglePasswordReveal = (id: string) => {
+    setRevealedPasswords(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const copyCredField = (id: string, field: 'login' | 'senha', text: string) => {
+    if (!text || text === 'Verificar no portal' || text.includes('Não se aplica')) return;
+    navigator.clipboard.writeText(text);
+    setCopiedCredential({ id, field });
+    setTimeout(() => setCopiedCredential(null), 1800);
+  };
 
   useEffect(() => {
     if (initialPlanId) {
@@ -187,6 +203,40 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
   const planDisplayName = planDiariasRules?.convenioName || activeConvenioObj?.name || (selectedPlanId === 'SERVIR' ? 'SERVIR' : selectedPlanId) || 'Convênio';
   const planCategory = planDiariasRules?.category || activeConvenioObj?.category || 'Autogestão';
   const planBadge = selectedPlanId.toUpperCase() === 'ASSEFAZ' ? 'AF' : (planDiariasRules?.badge || activeConvenioObj?.badge || (selectedPlanId ? selectedPlanId.slice(0, 2).toUpperCase() : 'CV'));
+
+  const isBradesco = selectedPlanId.toUpperCase().includes('BRADESCO') || planDisplayName.toUpperCase().includes('BRADESCO');
+  const isCassi = selectedPlanId.toUpperCase().includes('CASSI') || planDisplayName.toUpperCase().includes('CASSI');
+
+  const matchingCredentials = useMemo(() => {
+    const rawTerms = [
+      selectedPlanId.toLowerCase(),
+      planDisplayName.toLowerCase(),
+      activeConvenioObj?.id?.toLowerCase() || '',
+      activeConvenioObj?.name?.toLowerCase() || ''
+    ].filter(Boolean);
+
+    if (isBradesco) {
+      return PORTAIS_CREDENCIAIS.filter(c => 
+        c.id === 'bradesco-internacao-medical' || c.id === 'bradesco-internacao-st'
+      );
+    }
+
+    if (isCassi) {
+      return PORTAIS_CREDENCIAIS.filter(c => c.id === 'cassi-medical' || c.convenio.toLowerCase().includes('cassi'));
+    }
+
+    return PORTAIS_CREDENCIAIS.filter(cred => {
+      const cName = cred.convenio.toLowerCase();
+      const cId = cred.id.toLowerCase();
+      return rawTerms.some(term => {
+        const cleanTerm = term.replace(/[^a-z0-9]/g, '');
+        const cleanName = cName.replace(/[^a-z0-9]/g, '');
+        if (cleanTerm.length >= 3 && cleanName.includes(cleanTerm)) return true;
+        if (cleanName.length >= 3 && cleanTerm.includes(cleanName)) return true;
+        return cName.includes(term) || cId.includes(term);
+      });
+    });
+  }, [selectedPlanId, planDisplayName, activeConvenioObj, isBradesco, isCassi]);
 
   // Título e subtítulo do cabeçalho da listagem conforme a aba
   const headings = {
@@ -1470,56 +1520,294 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
 
           {/* Módulo Especial: Portal, Acessos & Contatos */}
           {activeTab === 'portal' && (
-            <div className="pop-module">
-              <h4>Portal, Acessos &amp; Contatos</h4>
-              <p>
-                Canais oficiais de autorização, portal da operadora e suporte prestador do convênio {planDisplayName}.
-              </p>
+            <div className="space-y-6">
+              {/* Notificação Especial se for Bradesco: Apenas Portal de Internação */}
+              {isBradesco && (
+                <div className="bg-gradient-to-r from-rose-50 to-pink-50 border-2 border-[#B01B52] rounded-2xl p-5 shadow-xs">
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-[#B01B52] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                      <AlertTriangle className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="space-y-2 flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="bg-[#B01B52] text-white text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md">
+                          Portal Oficial de Internação • Convênio Bradesco
+                        </span>
+                        <span className="text-xs font-semibold text-slate-600">
+                          Internação Clínica, Cirúrgica e UTI
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-slate-800 font-medium m-0 leading-relaxed">
+                        Na <strong>Internação</strong>, as autorizações e prorrogações hospitalares do convênio Bradesco são realizadas exclusivamente pelo <strong>Portal Bradesco Seguros</strong>:
+                      </p>
 
-              <div className="pop-module-grid">
-                <div className="pop-module-item">
-                  <strong><i>◇</i>Portal da operadora</strong>
-                  <span>
-                    {activeConvenioObj?.portalUrl
-                      ? 'Acesso direto ao portal eletrônico oficial da operadora.'
-                      : 'Acesso pelo sistema autorizador web ou TISS contratado.'}
-                  </span>
-                  {activeConvenioObj?.portalUrl && (
-                    <a
-                      href={activeConvenioObj.portalUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0E7B86] text-white rounded-lg text-xs font-bold hover:bg-[#095962] transition-colors"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      Acessar Portal da Operadora ↗
-                    </a>
-                  )}
+                      <div className="bg-white border border-rose-200 rounded-xl p-4 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-2">
+                        <div>
+                          <strong className="text-xs sm:text-sm text-slate-900 block font-bold">
+                            Portal Bradesco Seguros (Internação Hospitalar)
+                          </strong>
+                          <p className="text-[11px] text-slate-600 mt-1 m-0">
+                            Acesso exclusivo para internação hospitalar. Login CPF + CNPJ e senha pessoal.
+                          </p>
+                        </div>
+                        <a
+                          href="https://www.bradescoseguros.com.br/clientes/produtos/plano-saude"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white rounded-lg text-xs font-bold transition-colors flex-shrink-0 shadow-2xs"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          Abrir Bradesco Seguros ↗
+                        </a>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              )}
 
-                <div className="pop-module-item">
-                  <strong><i>◇</i>Central de Autorizações</strong>
-                  <span>
-                    {activeConvenioObj?.contacts && activeConvenioObj.contacts.length > 0
-                      ? activeConvenioObj.contacts.filter(c => !c.includes('@')).join(' • ')
-                      : 'Central de Atendimento ao Prestador e Urgência 24h.'}
-                  </span>
+              {/* Notificação Especial se for CASSI: Portal Orizon tanto no PS como na Internação */}
+              {isCassi && (
+                <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 border-2 border-[#0E7B86] rounded-2xl p-5 shadow-xs">
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-[#0E7B86] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                      <Globe className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="space-y-2 flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="bg-[#0E7B86] text-white text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md">
+                          Portal Oficial de Autorização • Convênio CASSI
+                        </span>
+                        <span className="text-xs font-semibold text-teal-800">
+                          Tanto no Pronto-Socorro quanto na Internação
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-slate-800 font-medium m-0 leading-relaxed">
+                        O portal de autorizações da <strong>CASSI</strong> é o <strong>ORIZON</strong>, utilizado tanto no <strong>Pronto-Socorro</strong> como na <strong>Internação</strong>:
+                      </p>
+
+                      <div className="bg-white border border-teal-200 rounded-xl p-4 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-2">
+                        <div>
+                          <strong className="text-xs sm:text-sm text-slate-900 block font-bold">
+                            Portal Orizon / Polimed (Autorizador CASSI)
+                          </strong>
+                          <p className="text-[11px] text-slate-600 mt-1 m-0">
+                            Código Prestador: <strong className="text-slate-900 font-bold">2120820</strong> • Login: <strong className="text-slate-900 font-bold">12955953000192</strong> • Senha: <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono font-bold text-slate-800 border border-slate-200">Hpm2025hpm@</code>
+                          </p>
+                        </div>
+                        <a
+                          href="https://www.polimed.com.br/autenticadorOrizon/loginAutenticador"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#0E7B86] hover:bg-[#095962] text-white rounded-lg text-xs font-bold transition-colors flex-shrink-0 shadow-2xs"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          Abrir Orizon (CASSI) ↗
+                        </a>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              )}
 
-                <div className="pop-module-item">
-                  <strong><i>◇</i>E-mail &amp; Auditoria Concorrente</strong>
-                  <span>
-                    {activeConvenioObj?.contacts && activeConvenioObj.contacts.some(c => c.includes('@'))
-                      ? activeConvenioObj.contacts.filter(c => c.includes('@')).join(' • ')
-                      : 'Envio de laudos médicos para prorrogação de internação e relatórios de UTI.'}
-                  </span>
+              {/* Credenciais e Usuários Oficiais deste Convênio */}
+              {matchingCredentials.length > 0 && (
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-[#EBF7F8] text-[#0E7B86] flex items-center justify-center font-bold">
+                        <KeyRound className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-slate-900 m-0 tracking-tight">
+                          Usuários &amp; Senhas Cadastrados ({matchingCredentials.length})
+                        </h4>
+                        <p className="text-xs text-slate-500 m-0 font-medium">
+                          Credenciais oficiais para autorização em {planDisplayName}
+                        </p>
+                      </div>
+                    </div>
+
+                    {onNavigateToPortais && (
+                      <button
+                        type="button"
+                        onClick={onNavigateToPortais}
+                        className="text-xs font-bold text-[#0E7B86] hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        Ver todos os convênios →
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {matchingCredentials.map(cred => {
+                      const isPwdVisible = revealedPasswords[cred.id] || false;
+                      const isCopiedLogin = copiedCredential?.id === cred.id && copiedCredential?.field === 'login';
+                      const isCopiedPwd = copiedCredential?.id === cred.id && copiedCredential?.field === 'senha';
+
+                      return (
+                        <div
+                          key={cred.id}
+                          className="bg-slate-50/80 border border-slate-200 rounded-xl p-4 flex flex-col justify-between gap-3 shadow-2xs"
+                        >
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <span
+                                className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                                  cred.hospital === 'Medical'
+                                    ? 'bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]'
+                                    : cred.hospital === 'Santa Thereza'
+                                    ? 'bg-[#FDF2F6] text-[#B01B52] border border-[#F7D0DF]'
+                                    : 'bg-purple-50 text-purple-700 border border-purple-200'
+                                }`}
+                              >
+                                {cred.hospital}
+                              </span>
+
+                              <span className="text-[11px] font-bold text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200">
+                                {cred.category}
+                              </span>
+                            </div>
+
+                            <div>
+                              <strong className="text-xs font-bold text-slate-900 block leading-tight">
+                                {cred.siteName}
+                              </strong>
+                              {cred.notes && (
+                                <p className="text-[11px] text-slate-500 mt-1 m-0 leading-snug">
+                                  {cred.notes}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Login and Password rows */}
+                            <div className="bg-white border border-slate-200 rounded-lg p-2.5 space-y-2 text-xs">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-[10px] font-bold uppercase text-slate-400 w-12 flex-shrink-0">
+                                  Login:
+                                </span>
+                                <code className="font-mono font-bold text-slate-800 flex-1 truncate">
+                                  {cred.login}
+                                </code>
+                                <button
+                                  type="button"
+                                  onClick={() => copyCredField(cred.id, 'login', cred.login)}
+                                  className="p-1 text-slate-400 hover:text-[#0E7B86] rounded cursor-pointer"
+                                  title="Copiar usuário"
+                                >
+                                  {isCopiedLogin ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                                </button>
+                              </div>
+
+                              <div className="flex items-center justify-between gap-2 border-t border-slate-100 pt-1.5">
+                                <span className="text-[10px] font-bold uppercase text-slate-400 w-12 flex-shrink-0">
+                                  Senha:
+                                </span>
+                                <code className="font-mono font-bold text-slate-800 flex-1 truncate">
+                                  {isPwdVisible || cred.senha === 'pessoal' || cred.senha === 'Verificar no portal'
+                                    ? cred.senha
+                                    : '••••••••••••'}
+                                </code>
+                                <div className="flex items-center gap-1">
+                                  {cred.senha !== 'pessoal' && cred.senha !== 'Verificar no portal' && (
+                                    <button
+                                      type="button"
+                                      onClick={() => togglePasswordReveal(cred.id)}
+                                      className="p-1 text-slate-400 hover:text-slate-700 rounded cursor-pointer"
+                                      title={isPwdVisible ? 'Ocultar' : 'Exibir'}
+                                    >
+                                      {isPwdVisible ? <EyeOff className="w-3.5 h-3.5 text-amber-600" /> : <Eye className="w-3.5 h-3.5" />}
+                                    </button>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => copyCredField(cred.id, 'senha', cred.senha)}
+                                    className="p-1 text-slate-400 hover:text-[#0E7B86] rounded cursor-pointer"
+                                    title="Copiar senha"
+                                  >
+                                    {isCopiedPwd ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+
+                            {cred.responsavel && (
+                              <div className="text-[11px] text-slate-600">
+                                <strong className="text-[#B01B52]">Resp: </strong>
+                                <span className="break-all">{cred.responsavel}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {cred.portalUrl.startsWith('http') && (
+                            <a
+                              href={cred.portalUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-1 inline-flex items-center justify-center gap-1.5 w-full py-1.5 bg-[#0E7B86] hover:bg-[#095962] text-white rounded-lg text-xs font-bold transition-colors"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                              Acessar Portal ↗
+                            </a>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
+              )}
 
-                <div className="pop-module-item">
-                  <strong><i>◇</i>Prazos e Prorrogações</strong>
-                  <span>
-                    Prorrogações de leito e UTI devem ser enviadas com 24h a 48h de antecedência com relatório do médico assistente e intensivista.
-                  </span>
+              {/* Informações Complementares de Contato */}
+              <div className="pop-module">
+                <h4>Canais de Suporte &amp; Regulação</h4>
+                <p>
+                  Canais oficiais de autorização, suporte ao prestador e auditoria de {planDisplayName}.
+                </p>
+
+                <div className="pop-module-grid">
+                  <div className="pop-module-item">
+                    <strong><i>◇</i>Portal da operadora</strong>
+                    <span>
+                      {activeConvenioObj?.portalUrl
+                        ? 'Acesso direto ao portal eletrônico oficial da operadora.'
+                        : 'Acesso pelo sistema autorizador web ou TISS contratado.'}
+                    </span>
+                    {activeConvenioObj?.portalUrl && (
+                      <a
+                        href={activeConvenioObj.portalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0E7B86] text-white rounded-lg text-xs font-bold hover:bg-[#095962] transition-colors"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        Acessar Portal da Operadora ↗
+                      </a>
+                    )}
+                  </div>
+
+                  <div className="pop-module-item">
+                    <strong><i>◇</i>Central de Autorizações</strong>
+                    <span>
+                      {activeConvenioObj?.contacts && activeConvenioObj.contacts.length > 0
+                        ? activeConvenioObj.contacts.filter(c => !c.includes('@')).join(' • ')
+                        : 'Central de Atendimento ao Prestador e Urgência 24h.'}
+                    </span>
+                  </div>
+
+                  <div className="pop-module-item">
+                    <strong><i>◇</i>E-mail &amp; Auditoria Concorrente</strong>
+                    <span>
+                      {activeConvenioObj?.contacts && activeConvenioObj.contacts.some(c => c.includes('@'))
+                        ? activeConvenioObj.contacts.filter(c => c.includes('@')).join(' • ')
+                        : 'Envio de laudos médicos para prorrogação de internação e relatórios de UTI.'}
+                    </span>
+                  </div>
+
+                  <div className="pop-module-item">
+                    <strong><i>◇</i>Prazos e Prorrogações</strong>
+                    <span>
+                      Prorrogações de leito e UTI devem ser enviadas com 24h a 48h de antecedência com relatório do médico assistente e intensivista.
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

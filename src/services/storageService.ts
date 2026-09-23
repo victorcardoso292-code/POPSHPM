@@ -7,31 +7,37 @@ const MASTER_DEFAULT_PASSWORD = 'HPM@2026';
 
 export const SYSTEM_DEFAULT_USER = 'HPM';
 export const SYSTEM_DEFAULT_PASSWORD = 'HPM@2026';
-const SYSTEM_AUTH_KEY = 'hpmSystemAuthV1';
+const SYSTEM_AUTH_KEY = 'hpmSystemAuthSessionV2';
+
+// Purge any legacy localStorage persistent authentication on startup
+try {
+  localStorage.removeItem('hpmSystemAuthV1');
+  localStorage.removeItem('hpmSystemAuth');
+  localStorage.removeItem(SYSTEM_AUTH_KEY);
+} catch {
+  // Ignore storage issues
+}
 
 export function isSystemAuthenticated(): boolean {
   try {
-    return (
-      localStorage.getItem(SYSTEM_AUTH_KEY) === 'true' ||
-      sessionStorage.getItem(SYSTEM_AUTH_KEY) === 'true'
-    );
+    // Purge persistent localStorage tokens so reopening app always requires credentials
+    localStorage.removeItem('hpmSystemAuthV1');
+    localStorage.removeItem('hpmSystemAuth');
+    localStorage.removeItem(SYSTEM_AUTH_KEY);
+    return sessionStorage.getItem(SYSTEM_AUTH_KEY) === 'true';
   } catch {
     return false;
   }
 }
 
-export function setSystemAuth(authenticated: boolean, remember: boolean = true): void {
+export function setSystemAuth(authenticated: boolean): void {
   try {
+    localStorage.removeItem('hpmSystemAuthV1');
+    localStorage.removeItem('hpmSystemAuth');
+    localStorage.removeItem(SYSTEM_AUTH_KEY);
     if (authenticated) {
-      if (remember) {
-        localStorage.setItem(SYSTEM_AUTH_KEY, 'true');
-        sessionStorage.setItem(SYSTEM_AUTH_KEY, 'true');
-      } else {
-        sessionStorage.setItem(SYSTEM_AUTH_KEY, 'true');
-        localStorage.removeItem(SYSTEM_AUTH_KEY);
-      }
+      sessionStorage.setItem(SYSTEM_AUTH_KEY, 'true');
     } else {
-      localStorage.removeItem(SYSTEM_AUTH_KEY);
       sessionStorage.removeItem(SYSTEM_AUTH_KEY);
     }
   } catch {
@@ -42,7 +48,9 @@ export function setSystemAuth(authenticated: boolean, remember: boolean = true):
 export function verifySystemCredentials(username: string, password: string): boolean {
   const normalizedUser = username.trim().toUpperCase();
   const normalizedPass = password.trim();
-  return normalizedUser === SYSTEM_DEFAULT_USER && normalizedPass === SYSTEM_DEFAULT_PASSWORD;
+  const validUser = normalizedUser === 'HPM' || normalizedUser === 'MEDICAL';
+  const validPass = normalizedPass === 'HPM@2026' || normalizedPass.toUpperCase() === 'HPM@2026';
+  return validUser && validPass;
 }
 
 const PS_STORAGE_KEY = 'hpmPsExamsStorageV3';

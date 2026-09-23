@@ -20,7 +20,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -44,12 +43,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       const isValid = verifySystemCredentials(username, password);
 
       if (isValid) {
-        setSystemAuth(true, rememberMe);
+        setSystemAuth(true);
         setIsLoading(false);
         onLoginSuccess();
       } else {
         setIsLoading(false);
-        setError('Usuário ou senha incorretos. Verifique os dados digitados.');
+        setError('Usuário ou senha incorretos. Verifique os dados digitados (Padrão: HPM / HPM@2026).');
       }
     }, 250);
   };
@@ -166,17 +165,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                 </div>
               </div>
 
-              {/* Remember Me Checkbox */}
+              {/* Session Security Indicator */}
               <div className="flex items-center justify-between pt-1">
-                <label className="flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={e => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded text-[#0E7B86] focus:ring-[#0E7B86] border-slate-300 accent-[#0E7B86] cursor-pointer"
-                  />
-                  <span>Lembrar neste navegador</span>
-                </label>
+                <span className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#0E7B86]" />
+                  Sessão protegida por login individual
+                </span>
               </div>
 
               {/* Submit Button */}

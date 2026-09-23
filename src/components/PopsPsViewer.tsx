@@ -60,9 +60,20 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
 
   const planCategories = ['Todos', 'Autogestão', 'Seguradora', 'Privado', 'Militar', 'Estadual'];
 
-  const allPlansList = useMemo(() => {
-    const plans = [
-      ...CONVENIOS_MASTER_LIST.map(c => ({
+  // Lista mestra completa de convênios do PS, deduplicada e ordenada estritamente de A a Z
+  const fullPlansList = useMemo(() => {
+    const map = new Map<string, {
+      id: string;
+      name: string;
+      category: string;
+      badge: string;
+      pacotePs: string;
+      labUrgencia: string;
+      imagemUrgencia: string;
+    }>();
+
+    CONVENIOS_MASTER_LIST.forEach(c => {
+      map.set(c.id, {
         id: c.id,
         name: c.name,
         category: c.category,
@@ -70,29 +81,43 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
         pacotePs: c.pacotePs,
         labUrgencia: c.labUrgencia,
         imagemUrgencia: c.imagemUrgencia
-      })),
-      { 
-        id: 'SERVIR', 
-        name: 'SERVIR (Plano de Saúde TO)', 
-        category: 'Estadual', 
-        badge: 'SE',
-        pacotePs: '10101037 (Adulto) / 10101038 (Pediatria)',
-        labUrgencia: 'Incluso no pacote',
-        imagemUrgencia: 'RX Incluso / TC c/ Pedido'
-      }
-    ];
+      });
+    });
 
-    return plans.filter(p => {
+    if (!map.has('SERVIR')) {
+      map.set('SERVIR', {
+        id: 'SERVIR',
+        name: 'SERVIR (Plano de Saúde TO)',
+        category: 'Estadual',
+        badge: 'SE',
+        pacotePs: '10101037 (Pediatria) / 10101038 (Adulto)',
+        labUrgencia: 'Incluso no pacote',
+        imagemUrgencia: 'RX e RM Inclusos no Pacote'
+      });
+    }
+
+    return Array.from(map.values()).sort((a, b) =>
+      a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
+    );
+  }, []);
+
+  const allPlansList = useMemo(() => {
+    const filtered = fullPlansList.filter(p => {
       const matchCat = activeCategoryFilter === 'Todos' || 
         (activeCategoryFilter === 'Autogestão' && p.category.toLowerCase().includes('autogest')) ||
         (activeCategoryFilter === 'Militar' && p.category.toLowerCase().includes('militar')) ||
         p.category === activeCategoryFilter;
-      const matchSearch = p.name.toLowerCase().includes(planSearch.toLowerCase()) || 
+      const matchSearch = !planSearch ||
+        p.name.toLowerCase().includes(planSearch.toLowerCase()) || 
         p.id.toLowerCase().includes(planSearch.toLowerCase()) ||
         p.category.toLowerCase().includes(planSearch.toLowerCase());
       return matchCat && matchSearch;
     });
-  }, [planSearch, activeCategoryFilter]);
+
+    return filtered.sort((a, b) =>
+      a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
+    );
+  }, [fullPlansList, planSearch, activeCategoryFilter]);
 
   const activeConvenioObj = useMemo(() => {
     if (selectedPlanId === 'SERVIR') return null;
@@ -265,7 +290,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
             onChange={e => handleSelectPlan(e.target.value)}
             className="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0E7B86] cursor-pointer"
           >
-            {allPlansList.map(p => (
+            {fullPlansList.map(p => (
               <option key={p.id} value={p.id}>
                 {p.name} ({p.category})
               </option>
@@ -355,7 +380,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
             <div className="min-w-0">
               <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight">Radiologia & Imagem</span>
               <span className="text-xs font-black text-slate-800 block break-words mt-0.5">
-                {selectedPlanId === 'SERVIR' ? 'RX Incluso / TC c/ Pedido' : (activeConvenioObj?.imagemUrgencia || 'Solicitar Autorização')}
+                {selectedPlanId === 'SERVIR' ? 'RX e RM Inclusos no Pacote' : (activeConvenioObj?.imagemUrgencia || 'Solicitar Autorização')}
               </span>
             </div>
           </div>
@@ -403,6 +428,31 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
             <div>
               <span className="font-bold text-slate-400 block text-[10px] uppercase">Senha Medical</span>
               <span className="font-mono font-black text-[#B01B52] text-sm">Hpm2025hpm@</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Banner Especial SERVIR no PS */}
+      {selectedPlanId === 'SERVIR' && (
+        <div className="bg-[#FDF2F6] border-2 border-[#B01B52] rounded-2xl p-5 shadow-sm space-y-2.5">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-[#B01B52] text-white flex items-center justify-center font-black text-sm flex-shrink-0 mt-0.5">
+              !
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-sm sm:text-base font-black text-[#87143E] m-0">
+                REGRA DE EXAMES NO PRONTO-SOCORRO: RX E RM INCLUSOS NO PACOTE
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-800 m-0 font-medium leading-relaxed">
+                No SERVIR <strong>NÃO precisa pegar autorização para RX e RM</strong> pois o pacote já está incluso.
+              </p>
+              <p className="text-xs sm:text-sm text-[#B01B52] m-0 font-black leading-relaxed">
+                ⚠️ OBRIGATÓRIO: PEGAR ASSINATURA NA GUIA E COLOCAR A CAPA JUNTOS.
+              </p>
+              <p className="text-[11px] text-slate-500 m-0 font-medium">
+                * Esta orientação aplica-se exclusivamente ao POPS de Pronto-Socorro.
+              </p>
             </div>
           </div>
         </div>
@@ -662,14 +712,21 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                     </p>
                   </div>
 
-                  <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-1">
+                  <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
                     <span className="text-xs font-bold uppercase text-[#B01B52]">Exames de Imagem</span>
                     <p className="text-sm font-black text-slate-800 m-0">
-                      {selectedPlanId === 'SERVIR' ? 'RX Incluso / TC c/ Pedido' : (activeConvenioObj?.imagemUrgencia || 'Solicitar Autorização')}
+                      {selectedPlanId === 'SERVIR' ? 'RX e RM Inclusos no Pacote (Sem autorização)' : (activeConvenioObj?.imagemUrgencia || 'Solicitar Autorização')}
                     </p>
-                    <p className="text-xs text-slate-500 m-0 leading-relaxed">
-                      Radiografias simples e Tomografias de urgência conforme laudo do médico assistente.
+                    <p className="text-xs text-slate-600 m-0 leading-relaxed font-medium">
+                      {selectedPlanId === 'SERVIR'
+                        ? 'Não precisa pegar autorização para RX e RM pois o pacote está incluso. Pegar assinatura na guia e colocar a capa juntos.'
+                        : 'Radiografias simples e Tomografias de urgência conforme laudo do médico assistente.'}
                     </p>
+                    {selectedPlanId === 'SERVIR' && (
+                      <div className="mt-1 pt-2 border-t border-slate-100 flex items-center gap-1.5 text-xs font-black text-[#B01B52]">
+                        <span>⚠️ Obrigatório: Pegar assinatura na guia e anexar a capa juntos.</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 

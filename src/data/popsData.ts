@@ -40,7 +40,11 @@ export const SERVIR_DATA: { [key: string]: PopCardItem[] } = {
     {
       title: 'Pacotes do Pronto-Socorro',
       icon: '✚',
-      info: 'Inclusos no pacote: RX, RM, ECG e laboratoriais de urgência.',
+      info: 'Não precisa pegar autorização para RX e RM pois o pacote está incluso. Pegar assinatura na guia e colocar a capa juntos.',
+      alerts: [
+        'RX e RM inclusos no pacote do Pronto-Socorro — Não precisa autorização.',
+        'Obrigatório pegar assinatura na guia e colocar a capa juntos.'
+      ],
       rows: [
         ['10101037', 'PACOTE PRONTO SOCORRO ADULTO'],
         ['10101038', 'PACOTE PRONTO SOCORRO PEDIATRIA']
@@ -303,6 +307,34 @@ export const SERVIR_DATA: { [key: string]: PopCardItem[] } = {
 };
 
 export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
+  {
+    id: 'SERVIR',
+    name: 'SERVIR (Plano de Saúde TO)',
+    badge: 'SE',
+    category: 'Estadual',
+    cnpj: '12.955.953/0001-92',
+    portalUrl: 'https://servir.facilinformatica.com.br',
+    labUrgencia: 'Incluso no Pacote PS',
+    pacotePs: '10101037 (Pediatria) / 10101038 (Adulto)',
+    imagemUrgencia: 'RX e RM Inclusos no Pacote (Sem autorização)',
+    accessCredentials: [
+      ['Portal Servir', 'https://servir.facilinformatica.com.br'],
+      ['Login', '12955953000192'],
+      ['Senha', 'Medical@2025']
+    ],
+    sections: {
+      ps: {
+        id: 'ps',
+        label: 'Pronto-Socorro',
+        textItems: [
+          'Consulta Pronto Socorro Adulto: 10101038.',
+          'Consulta Pronto Socorro Pediatria: 10101037.',
+          'Não precisa pegar autorização para RX e RM pois o pacote está incluso.',
+          'Obrigatório pegar assinatura na guia e colocar a capa juntos.'
+        ]
+      }
+    }
+  },
   {
     id: 'AMIL',
     name: 'AMIL',
@@ -1253,6 +1285,145 @@ export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
         textItems: [
           'Código PS: 64620107.',
           'RX e Tomografia no PS exigem autorização.'
+        ]
+      }
+    }
+  },
+  {
+    id: 'LIFE EMPRESARIAL',
+    name: 'LIFE EMPRESARIAL',
+    badge: 'LE',
+    category: 'Privado',
+    labUrgencia: 'AUTORIZAR',
+    pacotePs: 'CONSULTA + EXAMES CONFORME PORTAL',
+    imagemUrgencia: 'Raio-X, Tomografia e USG exigem autorização',
+    accessCredentials: [
+      ['Portal Life Empresarial', 'https://portal.lifeempresarial.com.br/PlanodeSaude/'],
+      ['Login (CNPJ)', '12955953000192'],
+      ['Senha', 'Medical@2026'],
+      ['Responsável', 'Recepção e-mail']
+    ],
+    contacts: [
+      'Site: https://portal.lifeempresarial.com.br/PlanodeSaude/',
+      'Central de Atendimento Prestador'
+    ],
+    sections: {
+      ps: {
+        id: 'ps',
+        label: 'Pronto-Socorro',
+        textItems: [
+          'Acesso ao portal Life Empresarial com CNPJ 12955953000192 e nova senha: Medical@2026.',
+          'Verificar elegibilidade do beneficiário antes do atendimento.',
+          'Solicitar autorização prévia para exames laboratoriais e de imagem no portal do prestador.',
+          'Colher assinatura obrigatória do paciente na Guia TISS física (campo 57).'
+        ]
+      }
+    }
+  },
+  {
+    id: 'NOTREDAME',
+    name: 'NOTREDAME INTERMÉDICA (GNDI)',
+    badge: 'ND',
+    category: 'Privado',
+    labUrgencia: 'A preencher',
+    pacotePs: 'A preencher',
+    imagemUrgencia: 'A preencher',
+    accessCredentials: [
+      ['Portal GNDI / Savi', 'https://savi.hapvida.com.br/savi-atendimento/'],
+      ['Login', '12955953000192'],
+      ['Senha', 'Redemedical123'],
+      ['Observações', 'Portal Savi Hapvida GNDI']
+    ],
+    contacts: [
+      'A preencher com os telefones e contatos oficiais do convênio'
+    ],
+    sections: {
+      ps: {
+        id: 'ps',
+        label: 'Pronto-Socorro',
+        textItems: [
+          'Aguardando inclusão de diretrizes e regras operacionais do convênio.',
+          'Acesso pelo portal Savi Hapvida GNDI com usuário e senha institucionais.'
+        ]
+      }
+    }
+  },
+  {
+    id: 'OMINT',
+    name: 'OMINT SAÚDE',
+    badge: 'OM',
+    category: 'Seguradora',
+    labUrgencia: 'A preencher',
+    pacotePs: 'A preencher',
+    imagemUrgencia: 'A preencher',
+    accessCredentials: [
+      ['Portal Credenciado Omint', 'https://www.omint.com.br/credenciado/'],
+      ['Login', 'A preencher'],
+      ['Senha', 'A preencher']
+    ],
+    contacts: [
+      'A preencher com os telefones e contatos oficiais do convênio'
+    ],
+    sections: {
+      ps: {
+        id: 'ps',
+        label: 'Pronto-Socorro',
+        textItems: [
+          'Aguardando inclusão de diretrizes e regras operacionais do convênio.'
+        ]
+      }
+    }
+  },
+  {
+    id: 'SUS',
+    name: 'SUS (SISTEMA ÚNICO DE SAÚDE)',
+    badge: 'SUS',
+    category: 'Estadual',
+    labUrgencia: 'A preencher',
+    pacotePs: 'A preencher',
+    imagemUrgencia: 'A preencher',
+    accessCredentials: [
+      ['Sistema / Regulação', 'SISREG / CNES / BPA'],
+      ['Login', 'A preencher'],
+      ['Senha', 'A preencher']
+    ],
+    contacts: [
+      'Central de Regulação Estadual / Municipal'
+    ],
+    sections: {
+      ps: {
+        id: 'ps',
+        label: 'Pronto-Socorro',
+        textItems: [
+          'Fluxo de atendimento SUS / Regulação de leitos e urgência.',
+          'Aguardando inclusão de diretrizes e regras operacionais do convênio.'
+        ]
+      }
+    }
+  },
+  {
+    id: 'SEMUS',
+    name: 'SEMUS PALMAS',
+    badge: 'SM',
+    category: 'Estadual',
+    labUrgencia: 'A preencher',
+    pacotePs: 'A preencher',
+    imagemUrgencia: 'A preencher',
+    accessCredentials: [
+      ['Regulação SEMUS', 'Central de Regulação de Urgência de Palmas'],
+      ['Login', 'A preencher'],
+      ['Senha', 'A preencher']
+    ],
+    contacts: [
+      'Secretaria Municipal de Saúde de Palmas'
+    ],
+    sections: {
+      ps: {
+        id: 'ps',
+        label: 'Pronto-Socorro',
+        textItems: [
+          'Atendimento regulado pela Secretaria Municipal de Saúde de Palmas.',
+          'Aguardando inclusão de diretrizes e regras operacionais do convênio.'
         ]
       }
     }

@@ -132,7 +132,7 @@ export const PORTAIS_CREDENCIAIS: PortalCredential[] = [
   {
     id: 'capsesp-medical',
     hospital: 'Medical',
-    convenio: 'Capsesp',
+    convenio: 'Capesesp / Capesaúde',
     category: 'Convênio',
     siteName: 'Portal Capesesp Credenciado',
     portalUrl: 'https://servicosn.capesesp.com.br/novo/dist/login/login.php',
@@ -143,7 +143,7 @@ export const PORTAIS_CREDENCIAIS: PortalCredential[] = [
   {
     id: 'capsesp-retroativo',
     hospital: 'Medical',
-    convenio: 'Capsesp (Retroativo)',
+    convenio: 'Capesesp (Retroativo)',
     category: 'Convênio',
     siteName: 'Portal Capesesp Guias Retroativas',
     portalUrl: 'https://servicosn.capesesp.com.br/novo/dist/login/login.php?tipoLogin=450000250',
@@ -273,9 +273,9 @@ export const PORTAIS_CREDENCIAIS: PortalCredential[] = [
     convenio: 'Life Empresarial',
     category: 'Convênio',
     siteName: 'Life Empresarial Saúde Prestador',
-    portalUrl: 'https://www.lifeempresarial.com.br',
+    portalUrl: 'https://portal.lifeempresarial.com.br/PlanodeSaude/',
     login: '12955953000192',
-    senha: 'Kora2026#',
+    senha: 'Medical@2026',
     responsavel: 'Recepção e-mail'
   },
   {
@@ -481,7 +481,7 @@ export const PORTAIS_CREDENCIAIS: PortalCredential[] = [
   {
     id: 'sul-america-medical',
     hospital: 'Medical',
-    convenio: 'SulAmérica Saúde',
+    convenio: 'Sul América Saúde',
     category: 'Convênio',
     siteName: 'Portal Prestador SulAmérica',
     portalUrl: 'https://saude.sulamerica.com.br/prestador/',
@@ -515,5 +515,82 @@ export const PORTAIS_CREDENCIAIS: PortalCredential[] = [
       'costa.amaral@marinha.mil.br',
       'lucas.scherr@marinha.mil.br'
     ]
+  },
+  {
+    id: 'golden-cross-medical',
+    hospital: 'Medical',
+    convenio: 'Golden Cross',
+    category: 'Convênio',
+    siteName: 'Portal GoldenTiss Prestador',
+    portalUrl: 'https://portal.goldentiss.com.br/portaltiss/tiss/info/home.golden',
+    login: '12.955.953/0001-92',
+    senha: 'Kora2022',
+    notes: 'Central: 4002-2001 • E-mail procedimento: procedimento@goldencross.com.br'
+  },
+  {
+    id: 'fusex-medical',
+    hospital: 'Medical',
+    convenio: 'FUSEX (Exército)',
+    category: 'Convênio',
+    siteName: 'Guia de Encaminhamento FUSEX',
+    portalUrl: 'http://www.dgp.eb.mil.br/index.php/fusex',
+    login: 'A preencher',
+    senha: 'A preencher',
+    notes: 'Atendimento e autorização mediante Guia FUSEX original carimbada e assinada pelo escalão militar.'
+  },
+  {
+    id: 'omint-medical',
+    hospital: 'Medical',
+    convenio: 'Omint Saúde',
+    category: 'Convênio',
+    siteName: 'Portal Credenciado Omint',
+    portalUrl: 'https://www.omint.com.br/credenciado/',
+    login: 'A preencher',
+    senha: 'A preencher',
+    notes: 'Aguardando credenciais do prestador Omint.'
+  },
+  {
+    id: 'vigimed-medical',
+    hospital: 'Medical',
+    convenio: 'Vigimed',
+    category: 'Convênio',
+    siteName: 'Portal Vigimed Autorizador',
+    portalUrl: 'https://www.vigimed.com.br/',
+    login: 'A preencher',
+    senha: 'A preencher',
+    notes: 'Aguardando credenciais do prestador Vigimed.'
+  },
+  {
+    id: 'unafisco-medical',
+    hospital: 'Medical',
+    convenio: 'Unafisco Saúde',
+    category: 'Convênio',
+    siteName: 'Portal Unafisco Saúde',
+    portalUrl: 'https://unafiscosaude.org.br/',
+    login: 'A preencher',
+    senha: 'A preencher',
+    notes: 'Aguardando credenciais do prestador Unafisco Saúde.'
+  },
+  {
+    id: 'sus-medical',
+    hospital: 'Ambos',
+    convenio: 'SUS (Sistema Único de Saúde)',
+    category: 'Convênio',
+    siteName: 'Regulação SISREG / CNES',
+    portalUrl: 'https://sisregiii.saude.gov.br/',
+    login: 'A preencher',
+    senha: 'A preencher',
+    notes: 'Regulação de urgência e leitos pelo Sistema Único de Saúde.'
+  },
+  {
+    id: 'semus-palmas-medical',
+    hospital: 'Ambos',
+    convenio: 'SEMUS Palmas',
+    category: 'Convênio',
+    siteName: 'Central de Regulação Municipal SEMUS',
+    portalUrl: 'https://palmas.to.gov.br/',
+    login: 'A preencher',
+    senha: 'A preencher',
+    notes: 'Regulação municipal de leitos e encaminhamentos SEMUS Palmas.'
   }
 ];

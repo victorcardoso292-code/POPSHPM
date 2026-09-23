@@ -20,11 +20,11 @@ try {
 
 export function isSystemAuthenticated(): boolean {
   try {
-    // Purge persistent localStorage tokens so reopening app always requires credentials
     localStorage.removeItem('hpmSystemAuthV1');
     localStorage.removeItem('hpmSystemAuth');
     localStorage.removeItem(SYSTEM_AUTH_KEY);
-    return sessionStorage.getItem(SYSTEM_AUTH_KEY) === 'true';
+    sessionStorage.removeItem(SYSTEM_AUTH_KEY);
+    return false;
   } catch {
     return false;
   }

@@ -1276,6 +1276,71 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
           </div>
         </header>
 
+        {/* Banner Especial para CASSI e ORIZON */}
+        {isCassi && (
+          <div className="bg-[#EBF7F8] border-2 border-[#0E7B86] rounded-2xl p-5 mb-5 shadow-sm space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-xl bg-[#0E7B86] text-white flex items-center justify-center font-black text-sm">
+                  !
+                </span>
+                <div>
+                  <h3 className="text-base font-black text-[#095962] m-0">
+                    PORTAL DA CASSI É O ORIZON • PRONTO-SOCORRO &amp; INTERNAÇÃO
+                  </h3>
+                  <p className="text-xs text-slate-600 m-0 font-medium">
+                    Todas as solicitações de internação e atendimentos de emergência devem ser feitas via autenticador Orizon (Polimed).
+                  </p>
+                </div>
+              </div>
+
+              <a
+                href="https://www.polimed.com.br/autenticadorOrizon/loginAutenticador"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0E7B86] hover:bg-[#095962] text-white rounded-xl text-xs font-bold transition-all shadow-xs w-fit"
+              >
+                <span>Acessar Portal Orizon</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+
+            <div className="bg-white/90 border border-[#C4E5E8] rounded-xl p-3.5 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div>
+                <span className="font-bold text-slate-400 block text-[10px] uppercase">Código Prestador</span>
+                <span className="font-mono font-black text-slate-900 text-sm">2120820</span>
+              </div>
+              <div>
+                <span className="font-bold text-slate-400 block text-[10px] uppercase">Usuário Medical (CNPJ)</span>
+                <span className="font-mono font-black text-slate-900 text-sm">12955953000192</span>
+              </div>
+              <div>
+                <span className="font-bold text-slate-400 block text-[10px] uppercase">Senha Medical</span>
+                <span className="font-mono font-black text-[#B01B52] text-sm">Hpm2025hpm@</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-xl p-2.5 m-0 font-semibold flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+              <span>
+                <strong>Atenção Obrigatória:</strong> Após a solicitação de internação no Orizon, ligue imediatamente para a Central CASSI: <strong>0800 729 0090 / 0800 729 0080</strong> para validar e liberar o atendimento.
+              </span>
+            </p>
+          </div>
+        )}
+
+        {isBradesco && (
+          <div className="bg-[#FFF8E6] border border-[#F5C242] rounded-2xl p-4 mb-5 text-xs text-slate-800 space-y-1.5 shadow-xs">
+            <div className="flex items-center gap-2 font-black text-[#946200] uppercase tracking-wider">
+              <AlertTriangle className="w-4 h-4 text-[#D97706]" />
+              Atenção aos Portais Bradesco:
+            </div>
+            <p className="m-0 leading-relaxed font-medium">
+              O portal para <strong>INTERNAÇÃO</strong> é o site oficial Bradesco Seguros (com senha pessoal do operador e CPF). Já o portal para <strong>PRONTO-SOCORRO</strong> é processado no <strong>ORIZON (Polimed)</strong>. Para cotação de <strong>OPMES</strong>, utilize o Gestão de Insumos Orizon.
+            </p>
+          </div>
+        )}
+
         {/* Workspace Section */}
         <section className="pop-workspace" aria-labelledby="section-title">
           <div className="pop-workspace-head">

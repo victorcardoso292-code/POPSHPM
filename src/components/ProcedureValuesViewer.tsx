@@ -29,6 +29,7 @@ import {
   PROCEDIMENTOS_MEDICOS_ESPECIFICOS, 
   PROCEDURES_METADATA 
 } from '../data/proceduresData';
+import { HospitalPatientQuote, QuoteItem } from './HospitalPatientQuote';
 
 interface ProcedureValuesViewerProps {
   initialSearch?: string;
@@ -43,6 +44,7 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
   const [selectedItems, setSelectedItems] = useState<Record<string, SelectedProcedureItem>>({});
   const [isCartExpanded, setIsCartExpanded] = useState(false);
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [modalQuoteTab, setModalQuoteTab] = useState<'editor' | 'preview'>('editor');
   const [patientName, setPatientName] = useState('');
   const [doctorName, setDoctorName] = useState('');
   const [quoteNotes, setQuoteNotes] = useState('');
@@ -166,6 +168,26 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
   // Payment installment calculations (up to 6x)
   const installment6x = cartTotal > 0 ? cartTotal / 6 : 0;
 
+  const quoteItemsForProcedures: QuoteItem[] = useMemo(() => {
+    return cartItems.map(item => {
+      const unit = item.procedure.price;
+      const subtotal = unit * item.quantity;
+      const detailParts: string[] = [];
+      if (item.procedure.diarias) detailParts.push(`Diárias: ${item.procedure.diarias}`);
+      if (item.procedure.notes) detailParts.push(item.procedure.notes);
+
+      return {
+        code: item.procedure.id || undefined,
+        description: item.procedure.description,
+        category: item.procedure.category || undefined,
+        detail: detailParts.length > 0 ? detailParts.join(' • ') : undefined,
+        quantity: item.quantity,
+        unitPrice: unit,
+        subtotal
+      };
+    });
+  }, [cartItems]);
+
   // Copy budget summary
   const handleCopyBudget = () => {
     if (cartItems.length === 0) return;
@@ -204,7 +226,23 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Header Banner - Identity Medical Kora Saúde */}
+      {/* Printable Area for Hospital Patient Quote (A4 Formatted) */}
+      <div id="print-procedure-slip" className="hidden print:block font-sans text-slate-900 w-full m-0 p-0">
+        <HospitalPatientQuote
+          type="procedimentos"
+          patientName={patientName}
+          doctorName={doctorName}
+          tableReference="Tabela Oficial de Pacotes Cirúrgicos & Procedimentos 2026"
+          notes={quoteNotes}
+          items={quoteItemsForProcedures}
+          total={cartTotal}
+          installmentCount={6}
+        />
+      </div>
+
+      {/* Screen Interactive Container */}
+      <div className="print:hidden space-y-6">
+        {/* Header Banner - Identity Medical Kora Saúde */}
       <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-7 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
           <div className="space-y-2">
@@ -749,37 +787,70 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
           )}
         </div>
       )}
+      </div>
 
       {/* FULL PANORAMIC MODAL (For Quote & A4 Print) */}
       {isQuoteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-xs animate-in fade-in duration-150 print:hidden">
           <div className="bg-white rounded-3xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
             {/* Modal Header */}
-            <div className="p-5 sm:p-6 bg-gradient-to-r from-[#095962] via-[#0E7B86] to-[#095962] text-white flex items-center justify-between border-b border-[#0E7B86]/40">
+            <div className="p-4 sm:p-5 bg-gradient-to-r from-[#095962] via-[#0E7B86] to-[#095962] text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#0E7B86]/40">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-[#B01B52] flex items-center justify-center font-bold text-white shadow-sm flex-shrink-0">
-                  <Stethoscope className="w-6 h-6" />
+                <div className="w-10 h-10 rounded-2xl bg-[#B01B52] flex items-center justify-center font-bold text-white shadow-sm flex-shrink-0">
+                  <Stethoscope className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-base sm:text-lg font-black text-white m-0 tracking-tight">
-                    Detalhamento do Orçamento Cirúrgico & Procedimentos
+                    Orçamento Cirúrgico & Procedimentos
                   </h3>
                   <p className="text-xs text-[#EBF7F8] m-0">
                     Hospital Palmas Medical • Emissão de Guia A4 e Condições de Pagamento
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsQuoteModalOpen(false)}
-                className="p-2 rounded-xl text-white/80 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+
+              {/* View Mode Toggle: Edição vs Pré-visualização A4 */}
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 bg-white/15 p-1 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setModalQuoteTab('editor')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      modalQuoteTab === 'editor'
+                        ? 'bg-white text-[#095962] shadow-xs'
+                        : 'text-white/80 hover:text-white'
+                    }`}
+                  >
+                    Itens & Dados
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModalQuoteTab('preview')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      modalQuoteTab === 'preview'
+                        ? 'bg-white text-[#095962] shadow-xs'
+                        : 'text-white/80 hover:text-white'
+                    }`}
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Visualizar Documento A4</span>
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsQuoteModalOpen(false)}
+                  className="p-2 rounded-xl text-white/80 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
+                  title="Fechar"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* Modal Body */}
-            <div className="p-5 sm:p-6 space-y-6 overflow-y-auto flex-1 bg-slate-50">
+            {modalQuoteTab === 'editor' ? (
+              <div className="p-5 sm:p-6 space-y-6 overflow-y-auto flex-1 bg-slate-50">
               {/* Summary KPIs */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
@@ -971,6 +1042,27 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
                 </ul>
               </div>
             </div>
+            ) : (
+              /* Modal Body - Mode 2: Live A4 Document Preview */
+              <div className="p-4 sm:p-6 bg-slate-100 overflow-y-auto flex-1">
+                <div className="text-center mb-3">
+                  <span className="text-xs font-semibold text-slate-500">
+                    Pré-visualização do documento oficial pronto para impressão ou salvamento em PDF (A4):
+                  </span>
+                </div>
+                <HospitalPatientQuote
+                  type="procedimentos"
+                  patientName={patientName}
+                  doctorName={doctorName}
+                  tableReference="Tabela Oficial de Pacotes Cirúrgicos & Procedimentos 2026"
+                  notes={quoteNotes}
+                  items={quoteItemsForProcedures}
+                  total={cartTotal}
+                  installmentCount={6}
+                  isPrintPreview={true}
+                />
+              </div>
+            )}
 
             {/* Modal Footer */}
             <div className="p-4 sm:p-5 bg-white border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -1000,10 +1092,10 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
                 <button
                   type="button"
                   onClick={handlePrintQuote}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#B01B52] hover:bg-[#971444] text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#B01B52] hover:bg-[#971444] text-white text-xs font-bold shadow-sm transition-all active:scale-95 cursor-pointer"
                 >
                   <Printer className="w-4 h-4 text-white" />
-                  <span>Imprimir Guia A4</span>
+                  <span>Imprimir / Salvar em PDF (A4)</span>
                 </button>
 
                 <button

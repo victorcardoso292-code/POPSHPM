@@ -210,37 +210,41 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F8F9] text-slate-900 flex flex-col font-sans selection:bg-[#B01B52] selection:text-white">
+    <div className="min-h-screen bg-[#F4F8F9] text-slate-900 flex flex-col font-sans selection:bg-[#B01B52] selection:text-white print:bg-white print:min-h-0 print:p-0 print:m-0 print:w-full">
       {/* Top Header */}
-      <Header
-        activeMode={activeMode}
-        onSelectMode={handleSelectMode}
-        isMaster={isMaster}
-        onOpenMaster={() => setIsMasterModalOpen(true)}
-        onLogoutMaster={handleLogoutMaster}
-        globalSearch={globalSearch}
-        onSearchChange={setGlobalSearch}
-        selectedExamsCount={selectedCount}
-        onOpenUniversalSearch={() => setIsUniversalSearchOpen(true)}
-        onOpenSmartDrawer={() => setIsSmartDrawerOpen(true)}
-        onLogoutSystem={handleLogoutSystem}
-      />
-
-      {/* Main Layout */}
-      <div className="flex-1 flex flex-col lg:flex-row max-w-7xl w-full mx-auto">
-        {/* Navigation Sidebar */}
-        <Sidebar
+      <div className="print:hidden">
+        <Header
           activeMode={activeMode}
           onSelectMode={handleSelectMode}
           isMaster={isMaster}
           onOpenMaster={() => setIsMasterModalOpen(true)}
           onLogoutMaster={handleLogoutMaster}
+          globalSearch={globalSearch}
+          onSearchChange={setGlobalSearch}
           selectedExamsCount={selectedCount}
+          onOpenUniversalSearch={() => setIsUniversalSearchOpen(true)}
+          onOpenSmartDrawer={() => setIsSmartDrawerOpen(true)}
           onLogoutSystem={handleLogoutSystem}
         />
+      </div>
+
+      {/* Main Layout */}
+      <div className="flex-1 flex flex-col lg:flex-row max-w-7xl w-full mx-auto print:max-w-none print:w-full print:m-0 print:p-0 print:block">
+        {/* Navigation Sidebar */}
+        <div className="print:hidden">
+          <Sidebar
+            activeMode={activeMode}
+            onSelectMode={handleSelectMode}
+            isMaster={isMaster}
+            onOpenMaster={() => setIsMasterModalOpen(true)}
+            onLogoutMaster={handleLogoutMaster}
+            selectedExamsCount={selectedCount}
+            onLogoutSystem={handleLogoutSystem}
+          />
+        </div>
 
         {/* Dynamic Content Body */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 overflow-y-auto print:p-0 print:m-0 print:overflow-visible print:w-full print:max-w-none print:block">
           {(activeMode === 'pops-ps' || activeMode === 'pops') && (
             <PopsPsViewer
               onOpenAiWithPrompt={handleOpenAiWithPrompt}
@@ -313,37 +317,45 @@ export default function App() {
       </div>
 
       {/* Medical Kora Saúde Footer */}
-      <Footer onNavigateToMode={handleSelectMode} />
+      <div className="print:hidden">
+        <Footer onNavigateToMode={handleSelectMode} />
+      </div>
 
       {/* Universal Search Modal */}
-      <UniversalSearchModal
-        isOpen={isUniversalSearchOpen}
-        onClose={() => setIsUniversalSearchOpen(false)}
-        onNavigateToConvenio={handleNavigateToConvenio}
-        onNavigateToExames={handleNavigateToExames}
-        onNavigateToRamais={handleNavigateToRamais}
-        onNavigateToRelatorios={handleNavigateToRelatorios}
-        psExams={psExams}
-        amorExams={amorExams}
-        labExams={labExams}
-      />
+      <div className="print:hidden">
+        <UniversalSearchModal
+          isOpen={isUniversalSearchOpen}
+          onClose={() => setIsUniversalSearchOpen(false)}
+          onNavigateToConvenio={handleNavigateToConvenio}
+          onNavigateToExames={handleNavigateToExames}
+          onNavigateToRamais={handleNavigateToRamais}
+          onNavigateToRelatorios={handleNavigateToRelatorios}
+          psExams={psExams}
+          amorExams={amorExams}
+          labExams={labExams}
+        />
+      </div>
 
       {/* Smart Rule & Snapshot Drawer */}
-      <SmartRuleDrawer
-        isOpen={isSmartDrawerOpen}
-        onClose={() => setIsSmartDrawerOpen(false)}
-        defaultConvenioId={smartDrawerDefaultPlanId || selectedPlanForPops}
-        onNavigateToConvenio={handleNavigateToConvenio}
-      />
+      <div className="print:hidden">
+        <SmartRuleDrawer
+          isOpen={isSmartDrawerOpen}
+          onClose={() => setIsSmartDrawerOpen(false)}
+          defaultConvenioId={smartDrawerDefaultPlanId || selectedPlanForPops}
+          onNavigateToConvenio={handleNavigateToConvenio}
+        />
+      </div>
 
       {/* Master Login / Admin Modal */}
-      <MasterModal
-        isOpen={isMasterModalOpen}
-        onClose={() => setIsMasterModalOpen(false)}
-        isMaster={isMaster}
-        onLoginSuccess={handleLoginMaster}
-        onLogout={handleLogoutMaster}
-      />
+      <div className="print:hidden">
+        <MasterModal
+          isOpen={isMasterModalOpen}
+          onClose={() => setIsMasterModalOpen(false)}
+          isMaster={isMaster}
+          onLoginSuccess={handleLoginMaster}
+          onLogout={handleLogoutMaster}
+        />
+      </div>
     </div>
   );
 }

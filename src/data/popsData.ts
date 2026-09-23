@@ -503,22 +503,28 @@ export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
     badge: 'CS',
     category: 'Autogestão',
     portalUrl: 'https://www.polimed.com.br/autenticadorOrizon/loginAutenticador',
-    labUrgencia: 'AUTORIZAR',
+    labUrgencia: 'AUTORIZAR VIA ORIZON',
     pacotePs: '10101039 CONSULTA EM PRONTO SOCORRO',
-    imagemUrgencia: 'Solicitar Autorização em todos os pedidos.',
+    imagemUrgencia: 'Solicitar Autorização no Orizon para RX, TC e RM.',
     criticalNotes: [
-      'O portal de autorizações da CASSI é o ORIZON (Polimed), tanto no Pronto-Socorro como na Internação.',
-      'Após solicitação de internação, é OBRIGATÓRIO ligar para a Central CASSI para validar a autorização ou tratar eventuais pendências.'
+      'PORTAL ORIZON (POLIMED): O portal de autorizações da CASSI é o ORIZON, tanto no Pronto-Socorro como na Internação.',
+      'Após qualquer solicitação de internação, é OBRIGATÓRIO ligar para a Central CASSI (0800 729 0090 / 0800 729 0080) para validar a autorização ou tratar eventuais pendências.',
+      'No Pronto-Socorro: elegibilidade, consulta médica (10101039) e exames de urgência são lançados diretamente no autenticador Orizon.',
+      'Curativos no PS: tipo SP/SADT, Operadora CASSI, Guia Principal 01, Código TUSS 20104090.',
+      'Apoio e Suporte ao Portal Orizon pelo telefone: 4004-4550.'
     ],
     accessCredentials: [
       ['Portal CASSI (Orizon - PS & Internação)', 'https://www.polimed.com.br/autenticadorOrizon/loginAutenticador'],
-      ['Login MEDICAL', '12955953000192'],
+      ['Login MEDICAL (CNPJ)', '12955953000192'],
       ['Senha MEDICAL', 'Hpm2025hpm@'],
-      ['Código Prestador', '2120820']
+      ['Código Prestador Medical', '2120820'],
+      ['Unidade Santa Thereza (Login)', '25016319000136'],
+      ['Unidade Santa Thereza (Senha)', 'Hst@2025'],
+      ['Código Prestador Santa Thereza', '2120821']
     ],
     contacts: [
       'Central CASSI: 0800 729 0090 / 0800 729 0080',
-      'Suporte Orizon: 4004-4550',
+      'Suporte Portal Orizon: 4004-4550',
       'go.negociacao@cassi.com.br',
       'central.opme@cassi.com.br',
       'opme.negociacao@cassi.com.br'
@@ -527,17 +533,64 @@ export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
       ps: {
         id: 'ps',
         label: 'Pronto-Socorro',
+        steps: [
+          'Acessar o portal Orizon (Polimed) pelo link oficial do autenticador.',
+          'Informar o Login Medical (12955953000192) e Senha (Hpm2025hpm@) com o Código do Prestador 2120820.',
+          'Realizar verificação de elegibilidade do beneficiário CASSI.',
+          'Lançar a consulta de urgência pelo código 10101039.',
+          'Para exames laboratoriais e radiológicos de urgência, cadastrar pedido médico no Orizon.',
+          'Para curativos: Guia SP/SADT, Guia Principal 01, Código 20104090.'
+        ],
         textItems: [
+          'Portal oficial: Orizon (Polimed) — tanto no PS como na Internação.',
           '10101039 — Consulta em Pronto-Socorro.',
           'Curativos: SP/SADT / Operadora CASSI / Guia principal 01 / código 20104090.',
-          'Solicitar autorização em todos os pedidos de exames laboratoriais e imagem.'
+          'Solicitar autorização em todos os pedidos de exames laboratoriais e de imagem no Orizon.'
+        ]
+      },
+      elegibilidade: {
+        id: 'elegibilidade',
+        label: 'Elegibilidade & Token',
+        steps: [
+          'No autenticador Orizon, selecionar a operadora CASSI.',
+          'Digitar a matrícula da carteirinha ou CPF do paciente.',
+          'Conferir a vigência e situação cadastral do beneficiário.',
+          'Imprimir a guia autorizada e colher assinatura do paciente.'
+        ]
+      },
+      exames: {
+        id: 'exames',
+        label: 'Exames de Urgência no PS',
+        steps: [
+          'Acessar menu de solicitação SP/SADT no portal Orizon.',
+          'Informar o CRM do médico solicitante do PS.',
+          'Adicionar códigos TUSS dos exames laboratoriais ou de imagem.',
+          'Anexar justificativa ou pedido médico quando solicitado pelo portal Orizon.',
+          'Confirmar emissão da guia e colher assinatura do paciente.'
+        ],
+        codes: [
+          { code: '10101039', label: 'CONSULTA EM PRONTO SOCORRO' },
+          { code: '20104090', label: 'CURATIVO DE PEQUENO / MÉDIO PORTE' },
+          { code: '40304361', label: 'HEMOGRAMA COMPLETO COM CONTAGEM DE PLAQUETAS' },
+          { code: '40301630', label: 'CREATININA, DOSAGEM' },
+          { code: '40302580', label: 'UREIA, DOSAGEM' },
+          { code: '40316149', label: 'GASOMETRIA ARTERIAL' },
+          { code: '40808033', label: 'RADIOGRAFIA DE TÓRAX (PA E PERFIL)' },
+          { code: '41001010', label: 'TOMOGRAFIA COMPUTADORIZADA DE CRÂNIO' }
         ]
       },
       internacao: {
         id: 'internacao',
         label: 'Internação',
+        steps: [
+          'Acessar o portal Orizon (Polimed) e selecionar a opção Guia de Solicitação de Internação.',
+          'Preencher dados do médico assistente, diagnóstico/CID-10 e procedimento principal.',
+          'Informar a acomodação contratual (Enfermaria ou Apartamento).',
+          'Concluir o pedido no Orizon.',
+          'OBRIGATÓRIO: Ligar para a Central CASSI (0800 729 0090) para validação imediata e acompanhamento do número da autorização.'
+        ],
         codes: [
-          { code: '10102019', label: 'Visita Hospitalar' },
+          { code: '10102019', label: 'Visita Hospitalar (Paciente Internado Clínico)' },
           { code: '60000651', label: 'Diária de Apartamento Standard' },
           { code: '60000694', label: 'Diária de Enfermaria' },
           { code: '60000775', label: 'Hospital Dia' },

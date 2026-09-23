@@ -19,3 +19,77 @@
   --color-medical-teal-light: #EBF7F8;
   --color-medical-teal-ice: #D8ECEE;
 }
+
+/* ==========================================================================
+   REGRAS DE IMPRESSÃO PROFISSIONAL (A4) - ORÇAMENTOS HOSPITALARES
+   ========================================================================== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm 10mm 12mm;
+  }
+
+  html, body, #root {
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 11pt !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Oculta toda a interface de navegação e componentes interativos */
+  header,
+  nav,
+  aside,
+  footer,
+  .print\:hidden,
+  [data-print-hide="true"],
+  .fixed,
+  button {
+    display: none !important;
+  }
+
+  /* Garante que o contêiner principal expanda sem limites ou cortes de scroll */
+  main {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Mostra com prioridade total a área de impressão A4 */
+  .print\:block {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Previne quebras de página no meio de linhas de tabelas e assinaturas */
+  table {
+    page-break-inside: auto;
+    width: 100% !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  .page-break-avoid {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}
+

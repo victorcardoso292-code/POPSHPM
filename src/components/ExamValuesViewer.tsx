@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { ExamRow, ExamTableType, SelectedExamItem } from '../types';
 import { parseMoneyValue, formatCurrencyBRL, isImagingExamWithContrast } from '../data/examData';
+import { HospitalPatientQuote, QuoteItem } from './HospitalPatientQuote';
 
 interface ExamValuesViewerProps {
   psExams: ExamRow[];
@@ -89,6 +90,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
 
   // Expanded Quote Modal & View states
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState<boolean>(false);
+  const [modalQuoteTab, setModalQuoteTab] = useState<'editor' | 'preview'>('editor');
   const [isInlineQuoteExpanded, setIsInlineQuoteExpanded] = useState<boolean>(true);
   const [patientNameQuote, setPatientNameQuote] = useState<string>('');
   const [quoteNotes, setQuoteNotes] = useState<string>('');
@@ -172,6 +174,29 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
   const totalExamItemsCount = useMemo(() => {
     return selectedList.reduce((acc, item) => acc + (item.quantity || 1), 0);
   }, [selectedList]);
+
+  const tableRefName = useMemo(() => {
+    if (activeTable === 'amor') return 'Tabela Amor Saúde Contratual 2026';
+    if (activeTable === 'lab') return 'Tabela Laboratorial TUSS';
+    return `Pronto-Socorro / ${psPriceMode === 'medPrev' ? 'Tabela MedPrev' : 'Particular / Médica'}`;
+  }, [activeTable, psPriceMode]);
+
+  const quoteItemsForExams: QuoteItem[] = useMemo(() => {
+    return selectedList.map(item => {
+      const unit = getItemUnitPrice(item);
+      const subtotal = getItemTotal(item);
+      const detail = item.hasContrast ? 'Com Contraste (+ R$ 250,00)' : 'Sem Contraste';
+      return {
+        code: item.exam.code || undefined,
+        description: item.exam.description,
+        category: item.exam.category || undefined,
+        detail,
+        quantity: item.quantity || 1,
+        unitPrice: unit,
+        subtotal
+      };
+    });
+  }, [selectedList, psPriceMode]);
 
   // Open edit modal
   const handleOpenEdit = (index: number) => {
@@ -285,103 +310,16 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
   return (
     <div className="space-y-5">
       {/* Printable Area for Hospital Quote (A4 Formatted) */}
-      <div id="print-exam-slip" className="hidden print:block font-sans text-slate-900 p-8">
-        <div className="border-b-2 border-slate-900 pb-4 mb-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-2xl font-black tracking-tight text-slate-900 m-0">
-                HOSPITAL PALMAS MEDICAL
-              </h1>
-              <p className="text-sm font-bold text-teal-800 m-0">
-                CENTRAL DE AUTORIZAÇÕES & ATENDIMENTO DIAGNÓSTICO
-              </p>
-            </div>
-            <div className="text-right">
-              <span className="inline-block bg-slate-900 text-white text-xs font-black px-2.5 py-1 rounded">
-                GUIA DE ORÇAMENTO
-              </span>
-              <p className="text-[11px] text-slate-600 m-0 mt-1">
-                Emissão: {new Date().toLocaleDateString('pt-BR')} às {new Date().toLocaleTimeString('pt-BR')}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {patientNameQuote && (
-          <div className="mb-4 p-3 bg-slate-50 border border-slate-200 rounded-lg">
-            <span className="text-[10px] uppercase font-bold text-slate-500 block">Paciente:</span>
-            <p className="text-sm font-extrabold text-slate-900 m-0">{patientNameQuote}</p>
-          </div>
-        )}
-
-        <div className="mb-4">
-          <span className="text-[10px] uppercase font-bold text-slate-500 block">Tabela de Referência Aplicada:</span>
-          <p className="text-xs font-extrabold text-slate-800 m-0">
-            {activeTable === 'amor' ? 'Tabela Amor Saúde Contratual 2026' : (activeTable === 'lab' ? 'Tabela de Exames Laboratoriais (TUSS)' : `Pronto-Socorro / ${psPriceMode === 'medPrev' ? 'Tabela MedPrev' : 'Particular / Médica'}`)}
-          </p>
-        </div>
-
-        <table className="w-full border-collapse text-xs mb-6">
-          <thead>
-            <tr className="border-b-2 border-slate-800 bg-slate-100">
-              <th className="text-left py-2 px-2 font-bold w-12">Item</th>
-              <th className="text-left py-2 px-2 font-bold w-24">Código</th>
-              <th className="text-left py-2 px-2 font-bold">Descrição Completa do Exame</th>
-              <th className="text-center py-2 px-2 font-bold w-16">Qtd</th>
-              <th className="text-center py-2 px-2 font-bold w-28">Contraste</th>
-              <th className="text-right py-2 px-2 font-bold w-28">Valor Unit.</th>
-              <th className="text-right py-2 px-2 font-bold w-28">Subtotal</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-300">
-            {selectedList.map((item, idx) => {
-              const unit = getItemUnitPrice(item);
-              const subtotal = getItemTotal(item);
-              return (
-                <tr key={idx}>
-                  <td className="py-2.5 px-2 font-bold text-slate-500">{idx + 1}</td>
-                  <td className="py-2.5 px-2 font-mono font-bold">{item.exam.code || '—'}</td>
-                  <td className="py-2.5 px-2 font-medium leading-snug">{item.exam.description}</td>
-                  <td className="py-2.5 px-2 text-center font-bold">{item.quantity || 1}</td>
-                  <td className="py-2.5 px-2 text-center font-bold text-[11px]">
-                    {item.hasContrast ? '+ R$ 250,00' : 'Não'}
-                  </td>
-                  <td className="py-2.5 px-2 text-right font-medium">{formatCurrencyBRL(unit)}</td>
-                  <td className="py-2.5 px-2 text-right font-bold">{formatCurrencyBRL(subtotal)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-
-        {quoteNotes && (
-          <div className="mb-6 p-3 border border-slate-300 rounded text-xs">
-            <span className="font-bold block text-slate-700">Observações / Orientações:</span>
-            <p className="text-slate-600 m-0 mt-0.5 whitespace-pre-wrap">{quoteNotes}</p>
-          </div>
-        )}
-
-        <div className="border-t-2 border-slate-900 pt-3 flex justify-between items-center text-sm font-black mb-10">
-          <span>VALOR TOTAL ESTIMADO ({totalExamItemsCount} exames):</span>
-          <span className="text-2xl text-slate-900">{formatCurrencyBRL(cartTotal)}</span>
-        </div>
-
-        <div className="text-[10px] text-slate-500 mb-12">
-          * Este documento é uma estimativa prévia de valores e procedimentos. Valores válidos por 7 dias a partir da data de emissão. A realização de exames com contraste está sujeita à triagem médica e questionário de segurança.
-        </div>
-
-        <div className="grid grid-cols-2 gap-10 text-center text-xs pt-8 border-t border-slate-300">
-          <div>
-            <div className="border-t border-slate-400 pt-1 w-52 mx-auto"></div>
-            <p className="font-bold m-0">Atendente / Recepção Hospitalar</p>
-            <p className="text-[10px] text-slate-500 m-0">Hospital Palmas Medical</p>
-          </div>
-          <div>
-            <div className="border-t border-slate-400 pt-1 w-52 mx-auto"></div>
-            <p className="font-bold m-0">Paciente / Responsável Financeiro</p>
-            <p className="text-[10px] text-slate-500 m-0">Assinatura</p>
-          </div>
-        </div>
+      <div id="print-exam-slip" className="hidden print:block font-sans text-slate-900 w-full m-0 p-0">
+        <HospitalPatientQuote
+          type="exames"
+          patientName={patientNameQuote}
+          tableReference={tableRefName}
+          notes={quoteNotes}
+          items={quoteItemsForExams}
+          total={cartTotal}
+          installmentCount={6}
+        />
       </div>
 
       {/* Main Interactive Screen View */}
@@ -1133,213 +1071,264 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
 
       {/* FULLSCREEN PANORAMIC MODAL: ORÇAMENTO COMPLETO COM TODAS AS DESCRIÇÕES */}
       {isQuoteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-xs animate-in fade-in duration-150 print:hidden">
           <div className="bg-white rounded-3xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
             {/* Modal Header */}
-            <div className="p-5 sm:p-6 bg-gradient-to-r from-[#095962] via-[#0E7B86] to-[#095962] text-white flex items-center justify-between border-b border-[#0E7B86]/40">
+            <div className="p-4 sm:p-5 bg-gradient-to-r from-[#095962] via-[#0E7B86] to-[#095962] text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#0E7B86]/40">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-[#B01B52] flex items-center justify-center font-bold text-white shadow-sm flex-shrink-0">
-                  <FileText className="w-6 h-6" />
+                <div className="w-10 h-10 rounded-2xl bg-[#B01B52] flex items-center justify-center font-bold text-white shadow-sm flex-shrink-0">
+                  <FileText className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-white m-0">
-                    Detalhamento Completo do Orçamento Hospitalar
+                  <h3 className="text-base sm:text-lg font-black text-white m-0">
+                    Orçamento Hospitalar de Exames
                   </h3>
                   <p className="text-xs text-[#EBF7F8] m-0">
-                    Visão ampla com descrições na íntegra, adicionais de contraste e emissão de guias
+                    Hospital Palmas Medical • Documento Oficial para o Paciente
                   </p>
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setIsQuoteModalOpen(false)}
-                className="p-2 rounded-xl text-white/80 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              {/* View Mode Toggle: Edição vs Pré-visualização A4 */}
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 bg-white/15 p-1 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setModalQuoteTab('editor')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      modalQuoteTab === 'editor'
+                        ? 'bg-white text-[#095962] shadow-xs'
+                        : 'text-white/80 hover:text-white'
+                    }`}
+                  >
+                    Itens & Dados
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModalQuoteTab('preview')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      modalQuoteTab === 'preview'
+                        ? 'bg-white text-[#095962] shadow-xs'
+                        : 'text-white/80 hover:text-white'
+                    }`}
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Visualizar Documento A4</span>
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsQuoteModalOpen(false)}
+                  className="p-2 rounded-xl text-white/80 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
+                  title="Fechar"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
-            {/* Modal Body - Scrollable */}
-            <div className="p-5 sm:p-6 space-y-6 overflow-y-auto flex-1 bg-slate-50">
-              {/* Summary KPIs */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase block">Valor Total Estimado</span>
-                  <div className="text-xl font-black text-[#B01B52] mt-1 font-mono">
-                    {formatCurrencyBRL(cartTotal)}
+            {/* Modal Body - Mode 1: Editor */}
+            {modalQuoteTab === 'editor' ? (
+              <div className="p-5 sm:p-6 space-y-6 overflow-y-auto flex-1 bg-slate-50">
+                {/* Summary KPIs */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase block">Valor Total Estimado</span>
+                    <div className="text-xl font-black text-[#B01B52] mt-1 font-mono">
+                      {formatCurrencyBRL(cartTotal)}
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase block">Total de Procedimentos</span>
+                    <div className="text-xl font-black text-slate-900 mt-1">
+                      {totalExamItemsCount} itens
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase block">Exames com Contraste</span>
+                    <div className="text-xl font-black text-[#0E7B86] mt-1">
+                      {totalContrastCount} {totalContrastCount === 1 ? 'exame' : 'exames'}
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase block">Tabela Referência</span>
+                    <div className="text-xs font-extrabold text-slate-800 mt-2 truncate">
+                      {activeTable === 'amor' ? 'Amor Saúde' : (activeTable === 'lab' ? 'Laboratorial' : `PS (${psPriceMode === 'medPrev' ? 'MedPrev' : 'Particular'})`)}
+                    </div>
                   </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase block">Total de Procedimentos</span>
-                  <div className="text-xl font-black text-slate-900 mt-1">
-                    {totalExamItemsCount} itens
+                {/* Optional Fields: Patient Name & Notes */}
+                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1 uppercase tracking-wider">
+                      Nome do Paciente (Para Impressão ou Envio)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex.: Maria Francisca dos Santos"
+                      value={patientNameQuote}
+                      onChange={e => setPatientNameQuote(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-[#0E7B86] focus:bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1 uppercase tracking-wider">
+                      Observações / Orientações de Preparo (Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex.: Jejum de 8 horas, levar exames anteriores de imagem..."
+                      value={quoteNotes}
+                      onChange={e => setQuoteNotes(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-[#0E7B86] focus:bg-white"
+                    />
                   </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase block">Exames com Contraste</span>
-                  <div className="text-xl font-black text-[#0E7B86] mt-1">
-                    {totalContrastCount} {totalContrastCount === 1 ? 'exame' : 'exames'}
+                {/* Panoramic Table of Exams with Complete Descriptions */}
+                <div className="bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden">
+                  <div className="p-4 bg-[#EBF7F8] border-b border-[#C4E5E8] flex items-center justify-between">
+                    <h4 className="text-xs font-black text-[#095962] uppercase tracking-wider m-0">
+                      Relação Detalhada de Procedimentos Orçados
+                    </h4>
+                    <span className="text-xs text-slate-600 font-medium">
+                      {selectedList.length} itens cadastrados
+                    </span>
                   </div>
-                </div>
 
-                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase block">Tabela Referência</span>
-                  <div className="text-xs font-extrabold text-slate-800 mt-2 truncate">
-                    {activeTable === 'amor' ? 'Amor Saúde' : (activeTable === 'lab' ? 'Laboratorial' : `PS (${psPriceMode === 'medPrev' ? 'MedPrev' : 'Particular'})`)}
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse text-left text-xs">
+                      <thead>
+                        <tr className="bg-[#095962] text-white">
+                          <th className="py-3 px-3 font-bold w-12 text-center">#</th>
+                          <th className="py-3 px-3 font-bold w-28">Código TUSS</th>
+                          <th className="py-3 px-4 font-bold">Descrição Completa do Exame</th>
+                          <th className="py-3 px-3 font-bold text-center w-24">Tabela</th>
+                          <th className="py-3 px-3 font-bold text-center w-32">Contraste</th>
+                          <th className="py-3 px-3 font-bold text-center w-24">Qtd</th>
+                          <th className="py-3 px-3 font-bold text-right w-28">Valor Unit.</th>
+                          <th className="py-3 px-3 font-bold text-right w-28">Subtotal</th>
+                          <th className="py-3 px-3 font-bold text-center w-14">Ação</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200">
+                        {selectedEntries.map(([key, item], idx) => {
+                          const unit = getItemUnitPrice(item);
+                          const subtotal = getItemTotal(item);
+                          const canContrast = item.tableType === 'ps' && isImagingExamWithContrast(item.exam.description);
+                          const qty = item.quantity || 1;
+
+                          return (
+                            <tr key={key} className="hover:bg-[#EBF7F8]/30 transition-colors">
+                              <td className="py-3 px-3 text-center font-bold text-slate-400">
+                                {idx + 1}
+                              </td>
+                              <td className="py-3 px-3 font-mono font-bold text-[#0E7B86]">
+                                {item.exam.code ? (
+                                  <span className="bg-[#EBF7F8] text-[#0E7B86] px-2 py-1 rounded border border-[#C4E5E8] text-xs font-bold">
+                                    {item.exam.code}
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-400 font-normal">—</span>
+                                )}
+                              </td>
+                              <td className="py-3 px-4 text-slate-900">
+                                <div className="font-bold text-xs leading-relaxed text-slate-900">
+                                  {item.exam.description}
+                                </div>
+                              </td>
+                              <td className="py-3 px-3 text-center">
+                                <span className="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-1 rounded">
+                                  {item.tableType === 'amor' ? 'Amor Saúde' : (item.tableType === 'lab' ? 'Laboratório' : 'PS / MedPrev')}
+                                </span>
+                              </td>
+                              <td className="py-3 px-3 text-center">
+                                {canContrast ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => onToggleSelectExam(item.tableType, item.index, item.exam, !item.hasContrast)}
+                                    className={`px-2 py-1 rounded-lg text-[10px] font-extrabold transition-all border cursor-pointer ${
+                                      item.hasContrast
+                                        ? 'bg-[#0E7B86] text-white border-[#0E7B86] shadow-2xs'
+                                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
+                                    }`}
+                                  >
+                                    {item.hasContrast ? '✓ Com Contraste' : '+ Adicionar'}
+                                  </button>
+                                ) : (
+                                  <span className="text-slate-300 text-[10px]">—</span>
+                                )}
+                              </td>
+                              <td className="py-3 px-3 text-center">
+                                <div className="flex items-center justify-center bg-slate-100 border border-slate-300 rounded-lg p-0.5 w-20 mx-auto">
+                                  <button
+                                    type="button"
+                                    onClick={() => onUpdateExamQuantity ? onUpdateExamQuantity(key, qty - 1) : null}
+                                    className="w-5 h-5 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white rounded font-bold cursor-pointer"
+                                  >
+                                    -
+                                  </button>
+                                  <span className="w-6 text-center text-xs font-bold text-slate-900 font-mono">
+                                    {qty}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => onUpdateExamQuantity ? onUpdateExamQuantity(key, qty + 1) : null}
+                                    className="w-5 h-5 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white rounded font-bold cursor-pointer"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              </td>
+                              <td className="py-3 px-3 text-right font-mono font-medium text-slate-700">
+                                {formatCurrencyBRL(unit)}
+                              </td>
+                              <td className="py-3 px-3 text-right font-mono font-bold text-[#0E7B86]">
+                                {formatCurrencyBRL(subtotal)}
+                              </td>
+                              <td className="py-3 px-3 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => onRemoveExamItem ? onRemoveExamItem(key) : onToggleSelectExam(item.tableType, item.index, item.exam, false)}
+                                  className="p-1 text-slate-400 hover:text-[#B01B52] hover:bg-[#FDF2F6] rounded transition-colors cursor-pointer"
+                                  title="Remover item"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
-
-              {/* Optional Fields: Patient Name & Notes */}
-              <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1 uppercase tracking-wider">
-                    Nome do Paciente (Para Impressão ou Envio)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Ex.: Maria Francisca dos Santos"
-                    value={patientNameQuote}
-                    onChange={e => setPatientNameQuote(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-[#0E7B86] focus:bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1 uppercase tracking-wider">
-                    Observações / Orientações de Preparo (Opcional)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Ex.: Jejum de 8 horas, levar exames anteriores de imagem..."
-                    value={quoteNotes}
-                    onChange={e => setQuoteNotes(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-[#0E7B86] focus:bg-white"
-                  />
-                </div>
-              </div>
-
-              {/* Panoramic Table of Exams with Complete Descriptions */}
-              <div className="bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden">
-                <div className="p-4 bg-[#EBF7F8] border-b border-[#C4E5E8] flex items-center justify-between">
-                  <h4 className="text-xs font-black text-[#095962] uppercase tracking-wider m-0">
-                    Relação Detalhada de Procedimentos Orçados
-                  </h4>
-                  <span className="text-xs text-slate-600 font-medium">
-                    {selectedList.length} itens cadastrados
+            ) : (
+              /* Modal Body - Mode 2: Live A4 Document Preview */
+              <div className="p-4 sm:p-6 bg-slate-100 overflow-y-auto flex-1">
+                <div className="text-center mb-3">
+                  <span className="text-xs font-semibold text-slate-500">
+                    Pré-visualização do documento que será impresso ou salvo em PDF para entrega ao paciente:
                   </span>
                 </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse text-left text-xs">
-                    <thead>
-                      <tr className="bg-[#095962] text-white">
-                        <th className="py-3 px-3 font-bold w-12 text-center">#</th>
-                        <th className="py-3 px-3 font-bold w-28">Código TUSS</th>
-                        <th className="py-3 px-4 font-bold">Descrição Completa do Exame</th>
-                        <th className="py-3 px-3 font-bold text-center w-24">Tabela</th>
-                        <th className="py-3 px-3 font-bold text-center w-32">Contraste</th>
-                        <th className="py-3 px-3 font-bold text-center w-24">Qtd</th>
-                        <th className="py-3 px-3 font-bold text-right w-28">Valor Unit.</th>
-                        <th className="py-3 px-3 font-bold text-right w-28">Subtotal</th>
-                        <th className="py-3 px-3 font-bold text-center w-14">Ação</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200">
-                      {selectedEntries.map(([key, item], idx) => {
-                        const unit = getItemUnitPrice(item);
-                        const subtotal = getItemTotal(item);
-                        const canContrast = item.tableType === 'ps' && isImagingExamWithContrast(item.exam.description);
-                        const qty = item.quantity || 1;
-
-                        return (
-                          <tr key={key} className="hover:bg-[#EBF7F8]/30 transition-colors">
-                            <td className="py-3 px-3 text-center font-bold text-slate-400">
-                              {idx + 1}
-                            </td>
-                            <td className="py-3 px-3 font-mono font-bold text-[#0E7B86]">
-                              {item.exam.code ? (
-                                <span className="bg-[#EBF7F8] text-[#0E7B86] px-2 py-1 rounded border border-[#C4E5E8] text-xs font-bold">
-                                  {item.exam.code}
-                                </span>
-                              ) : (
-                                <span className="text-slate-400 font-normal">—</span>
-                              )}
-                            </td>
-                            <td className="py-3 px-4 text-slate-900">
-                              <div className="font-bold text-xs leading-relaxed text-slate-900">
-                                {item.exam.description}
-                              </div>
-                            </td>
-                            <td className="py-3 px-3 text-center">
-                              <span className="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-1 rounded">
-                                {item.tableType === 'amor' ? 'Amor Saúde' : (item.tableType === 'lab' ? 'Laboratório' : 'PS / MedPrev')}
-                              </span>
-                            </td>
-                            <td className="py-3 px-3 text-center">
-                              {canContrast ? (
-                                <button
-                                  type="button"
-                                  onClick={() => onToggleSelectExam(item.tableType, item.index, item.exam, !item.hasContrast)}
-                                  className={`px-2 py-1 rounded-lg text-[10px] font-extrabold transition-all border cursor-pointer ${
-                                    item.hasContrast
-                                      ? 'bg-[#0E7B86] text-white border-[#0E7B86] shadow-2xs'
-                                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
-                                  }`}
-                                >
-                                  {item.hasContrast ? '✓ Com Contraste' : '+ Adicionar'}
-                                </button>
-                              ) : (
-                                <span className="text-slate-300 text-[10px]">—</span>
-                              )}
-                            </td>
-                            <td className="py-3 px-3 text-center">
-                              <div className="flex items-center justify-center bg-slate-100 border border-slate-300 rounded-lg p-0.5 w-20 mx-auto">
-                                <button
-                                  type="button"
-                                  onClick={() => onUpdateExamQuantity ? onUpdateExamQuantity(key, qty - 1) : null}
-                                  className="w-5 h-5 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white rounded font-bold cursor-pointer"
-                                >
-                                  -
-                                </button>
-                                <span className="w-6 text-center text-xs font-bold text-slate-900 font-mono">
-                                  {qty}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => onUpdateExamQuantity ? onUpdateExamQuantity(key, qty + 1) : null}
-                                  className="w-5 h-5 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white rounded font-bold cursor-pointer"
-                                >
-                                  +
-                                </button>
-                              </div>
-                            </td>
-                            <td className="py-3 px-3 text-right font-mono font-medium text-slate-700">
-                              {formatCurrencyBRL(unit)}
-                            </td>
-                            <td className="py-3 px-3 text-right font-mono font-bold text-[#0E7B86]">
-                              {formatCurrencyBRL(subtotal)}
-                            </td>
-                            <td className="py-3 px-3 text-center">
-                              <button
-                                type="button"
-                                onClick={() => onRemoveExamItem ? onRemoveExamItem(key) : onToggleSelectExam(item.tableType, item.index, item.exam, false)}
-                                className="p-1 text-slate-400 hover:text-[#B01B52] hover:bg-[#FDF2F6] rounded transition-colors cursor-pointer"
-                                title="Remover item"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                <HospitalPatientQuote
+                  type="exames"
+                  patientName={patientNameQuote}
+                  tableReference={tableRefName}
+                  notes={quoteNotes}
+                  items={quoteItemsForExams}
+                  total={cartTotal}
+                  installmentCount={6}
+                  isPrintPreview={true}
+                />
               </div>
-            </div>
+            )}
 
             {/* Modal Footer Actions */}
             <div className="p-4 sm:p-5 bg-white border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -1388,10 +1377,10 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
                 <button
                   type="button"
                   onClick={handlePrintQuote}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#B01B52] hover:bg-[#971444] text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#B01B52] hover:bg-[#971444] text-white text-xs font-bold shadow-sm transition-all active:scale-95 cursor-pointer"
                 >
                   <Printer className="w-4 h-4 text-white" />
-                  <span>Imprimir Guia A4</span>
+                  <span>Imprimir / Salvar em PDF (A4)</span>
                 </button>
 
                 <button

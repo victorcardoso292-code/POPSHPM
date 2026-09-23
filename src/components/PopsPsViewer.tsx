@@ -362,6 +362,52 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
         </div>
       </div>
 
+      {/* Banner Especial CASSI e ORIZON no PS */}
+      {selectedPlanId === 'CASSI' && (
+        <div className="bg-[#EBF7F8] border-2 border-[#0E7B86] rounded-2xl p-5 shadow-sm space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-[#0E7B86] text-white flex items-center justify-center font-black text-sm">
+                !
+              </div>
+              <div>
+                <h3 className="text-base font-black text-[#095962] m-0">
+                  PORTAL DA CASSI É O ORIZON • PRONTO-SOCORRO &amp; INTERNAÇÃO
+                </h3>
+                <p className="text-xs text-slate-600 m-0 font-medium">
+                  Tanto no Pronto-Socorro como na Internação, utilize o autenticador Orizon (Polimed) para elegibilidade, consultas e exames.
+                </p>
+              </div>
+            </div>
+
+            <a
+              href="https://www.polimed.com.br/autenticadorOrizon/loginAutenticador"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0E7B86] hover:bg-[#095962] text-white rounded-xl text-xs font-bold transition-all shadow-xs w-fit"
+            >
+              <span>Abrir Portal Orizon</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+
+          <div className="bg-white/90 border border-[#C4E5E8] rounded-xl p-3.5 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div>
+              <span className="font-bold text-slate-400 block text-[10px] uppercase">Código Prestador</span>
+              <span className="font-mono font-black text-slate-900 text-sm">2120820</span>
+            </div>
+            <div>
+              <span className="font-bold text-slate-400 block text-[10px] uppercase">Usuário Medical (CNPJ)</span>
+              <span className="font-mono font-black text-slate-900 text-sm">12955953000192</span>
+            </div>
+            <div>
+              <span className="font-bold text-slate-400 block text-[10px] uppercase">Senha Medical</span>
+              <span className="font-mono font-black text-[#B01B52] text-sm">Hpm2025hpm@</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* SUB-TABS */}
       <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden">
         {/* Horizontal Navigation Tab Bar */}

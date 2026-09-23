@@ -262,7 +262,7 @@ export default function App() {
       </div>
 
       {/* Main Layout */}
-      <div className="flex-1 flex flex-col lg:flex-row max-w-7xl w-full mx-auto print:max-w-none print:w-full print:m-0 print:p-0 print:block">
+      <div className="flex-1 flex flex-col lg:flex-row w-full max-w-[1720px] 2xl:max-w-[1850px] mx-auto px-2 sm:px-4 lg:px-6 print:max-w-none print:w-full print:m-0 print:p-0 print:block">
         {/* Navigation Sidebar */}
         <div className="print:hidden">
           <Sidebar

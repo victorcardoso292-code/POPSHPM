@@ -275,13 +275,13 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
           {filteredPlansForGrid.map(plan => (
             <button
               key={plan.id}
               type="button"
               onClick={() => handleSelectPlan(plan.id)}
-              className="bg-white border-1.5 border-slate-200/90 hover:border-[#0E7B86] hover:shadow-md rounded-2xl p-5 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between group space-y-4"
+              className="bg-white border-1.5 border-slate-200/90 hover:border-[#0E7B86] hover:shadow-md rounded-2xl p-6 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between group space-y-4"
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
@@ -302,7 +302,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                   <h3 className="font-black text-slate-900 text-lg tracking-tight leading-snug group-hover:text-[#0E7B86] transition-colors m-0 break-words">
                     {plan.name}
                   </h3>
-                  <p className="text-sm text-slate-600 font-medium mt-1.5 m-0 line-clamp-2">
+                  <p className="text-sm text-slate-600 font-medium mt-1.5 m-0 line-clamp-3">
                     {plan.pacotePs || 'Consulta e procedimentos de emergência'}
                   </p>
                 </div>
@@ -495,28 +495,36 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
         }
         .pop-stats {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 14px;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 16px;
         }
         .pop-stat {
           display: flex;
-          gap: 14px;
+          gap: 16px;
           align-items: center;
           border: 1.5px solid #e2e8f0;
           background: #f8fafc;
-          border-radius: 14px;
-          padding: 14px 16px;
+          border-radius: 16px;
+          padding: 18px 22px;
+          min-height: 86px;
+          box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+          transition: all 0.2s ease;
+        }
+        .pop-stat:hover {
+          background: #ffffff;
+          border-color: #cbd5e1;
+          box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
         }
         .pop-stat-icon {
           display: grid;
           place-items: center;
-          width: 40px;
-          height: 40px;
-          flex: 0 0 40px;
+          width: 44px;
+          height: 44px;
+          flex: 0 0 44px;
           border-radius: 12px;
           background: #ebf7f8;
           color: #0e7b86;
-          font-size: 20px;
+          font-size: 22px;
         }
         .pop-stat:nth-child(2) .pop-stat-icon {
           background: #fff0f5;
@@ -529,29 +537,28 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
         .pop-stat small {
           display: block;
           color: #475569;
-          font-size: 12px;
+          font-size: 12.5px;
           font-weight: 850;
-          letter-spacing: .07em;
+          letter-spacing: .06em;
           text-transform: uppercase;
         }
         .pop-stat strong {
           display: block;
           margin-top: 4px;
-          font-size: 15px;
-          line-height: 1.3;
+          font-size: 16px;
+          line-height: 1.35;
           color: #0f172a;
           font-weight: 850;
           letter-spacing: -0.015em;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+          word-break: break-word;
+          white-space: normal;
         }
         .pop-workspace {
           margin-top: 24px;
           overflow: hidden;
         }
         .pop-workspace-head {
-          padding: 26px 28px 0;
+          padding: 28px 32px 0;
         }
         .pop-eyebrow {
           color: #0e7b86;
@@ -563,7 +570,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
         .pop-workspace h2 {
           margin: 6px 0 5px;
           color: #0f172a;
-          font-size: 24px;
+          font-size: 25px;
           letter-spacing: -.035em;
           font-weight: 850;
           line-height: 1.25;
@@ -578,29 +585,29 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
         }
         .pop-toolbar {
           display: flex;
-          gap: 14px;
+          gap: 16px;
           justify-content: space-between;
           align-items: center;
           flex-wrap: wrap;
         }
         .pop-tabs {
           display: flex;
-          gap: 5px;
-          padding: 5px;
+          gap: 6px;
+          padding: 6px;
+          flex-wrap: wrap;
           max-width: 100%;
-          overflow-x: auto;
           background: #f1f5f9;
-          border: 1px solid #e2e8f0;
-          border-radius: 13px;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 14px;
         }
         .pop-tab {
           border: 0;
           background: transparent;
-          border-radius: 9px;
-          padding: 10px 16px;
+          border-radius: 10px;
+          padding: 11px 18px;
           color: #475569;
-          font-weight: 750;
-          font-size: 14px;
+          font-weight: 800;
+          font-size: 14.5px;
           font-family: inherit;
           cursor: pointer;
           transition: all 0.15s ease;
@@ -614,9 +621,9 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
           box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
         }
         .pop-count {
-          font-size: 12px;
-          font-weight: 800;
-          opacity: .85;
+          font-size: 12.5px;
+          font-weight: 850;
+          opacity: .9;
           margin-left: 6px;
         }
         .pop-actions {
@@ -717,13 +724,13 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
         .pop-cards {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 18px;
-          padding: 0 28px 30px;
+          gap: 20px;
+          padding: 0 32px 34px;
         }
         .pop-card {
           border: 1.5px solid #e2e8f0;
-          border-radius: 16px;
-          padding: 22px 24px 20px;
+          border-radius: 18px;
+          padding: 26px 28px 24px;
           transition: border-color .2s, box-shadow .2s;
           min-width: 0;
           background: #fff;
@@ -735,7 +742,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
         .pop-cardtop {
           display: flex;
           justify-content: space-between;
-          gap: 10px;
+          gap: 12px;
           align-items: center;
         }
         .pop-code {
@@ -745,10 +752,10 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
           background: #f0f7f8;
           border: 1.5px solid #c4e5e8;
           color: #0e7b86;
-          border-radius: 9px;
-          padding: 7px 12px;
+          border-radius: 10px;
+          padding: 8px 14px;
           font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 850;
           letter-spacing: 0.02em;
         }
@@ -768,10 +775,10 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
           color: #0e7b86;
           background: #ebf7f8;
           border: 1px solid #c4e5e8;
-          font-size: 11.5px;
+          font-size: 12px;
           font-weight: 850;
-          padding: 6px 10px;
-          border-radius: 7px;
+          padding: 6px 12px;
+          border-radius: 8px;
           white-space: nowrap;
           text-transform: uppercase;
           letter-spacing: 0.04em;
@@ -782,9 +789,9 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
           border: 1px solid #c4e5e8;
         }
         .pop-card h4 {
-          font-size: 17px;
+          font-size: 18px;
           line-height: 1.4;
-          margin: 14px 0 12px;
+          margin: 16px 0 14px;
           color: #0f172a;
           font-weight: 850;
           letter-spacing: -0.015em;
@@ -792,40 +799,47 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
         }
         .pop-detail-grid {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 12px;
-          margin-top: 15px;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 16px;
+          margin-top: 18px;
         }
         .pop-detail {
           background: #f8fafc;
           border: 1.5px solid #e2e8f0;
-          border-radius: 11px;
-          padding: 12px 15px;
+          border-radius: 14px;
+          padding: 18px 22px;
           min-width: 0;
+          box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+          transition: all 0.2s ease;
+        }
+        .pop-detail:hover {
+          background: #ffffff;
+          border-color: #cbd5e1;
         }
         .pop-detail b {
           display: block;
           color: #475569;
-          font-size: 12.5px;
-          letter-spacing: .02em;
-          margin-bottom: 5px;
-          font-weight: 800;
+          font-size: 13px;
+          letter-spacing: .025em;
+          margin-bottom: 6px;
+          font-weight: 850;
           text-transform: uppercase;
         }
         .pop-detail span {
           display: block;
-          font-size: 14px;
-          line-height: 1.55;
+          font-size: 15.5px;
+          line-height: 1.6;
           color: #0f172a;
-          font-weight: 600;
+          font-weight: 650;
           overflow-wrap: anywhere;
+          word-break: break-word;
         }
         .pop-footer-note {
-          padding: 16px 28px;
+          padding: 18px 32px;
           border-top: 1px solid #e2e8f0;
           color: #64748b;
           background: #f8fafc;
-          font-size: 13.5px;
+          font-size: 14px;
           line-height: 1.6;
           font-weight: 500;
         }

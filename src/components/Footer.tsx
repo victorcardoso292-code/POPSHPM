@@ -8,7 +8,7 @@ interface FooterProps {
 export const Footer: React.FC<FooterProps> = ({ onNavigateToMode }) => {
   return (
     <footer className="bg-[#D8ECEE] text-slate-700 border-t border-[#C4E5E8] mt-auto">
-      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="w-full max-w-[1720px] 2xl:max-w-[1850px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           
           {/* Brand Column */}

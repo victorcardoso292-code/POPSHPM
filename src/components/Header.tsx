@@ -44,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
         role="alert"
         aria-live="assertive"
       >
-        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2.5 sm:gap-3 text-center">
+        <div className="w-full max-w-[1720px] 2xl:max-w-[1850px] mx-auto flex items-center justify-center gap-2.5 sm:gap-3 text-center">
           <AlertTriangle className="w-5 h-5 text-yellow-300 animate-alert-icon flex-shrink-0" />
           <span className="text-xs sm:text-sm font-black tracking-wider uppercase drop-shadow-sm text-white">
             PEGAR ASSINATURAS NAS GUIAS
@@ -53,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
+      <div className="w-full max-w-[1720px] 2xl:max-w-[1850px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           
           {/* Brand & Logo (Medical Kora Saúde) */}

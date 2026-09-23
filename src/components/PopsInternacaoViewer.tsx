@@ -16,8 +16,8 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
   onGeneratePreGuia,
   initialPlanId
 }) => {
-  const [selectedPlanId, setSelectedPlanId] = useState<string>(initialPlanId || 'ASSEFAZ');
-  const [viewMode, setViewMode] = useState<'grid' | 'details'>('details');
+  const [selectedPlanId, setSelectedPlanId] = useState<string>(initialPlanId || '');
+  const [viewMode, setViewMode] = useState<'grid' | 'details'>(initialPlanId ? 'details' : 'grid');
   const [activeTab, setActiveTab] = useState<PopActiveTab>('clinica');
   const [query, setQuery] = useState<string>('');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -30,6 +30,8 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
       setViewMode('details');
       setActiveTab('clinica');
       setQuery('');
+    } else {
+      setViewMode('grid');
     }
   }, [initialPlanId]);
 
@@ -182,9 +184,9 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
   }, [allItems, clinicaDiarias, utiDiarias, activeTab, query]);
 
   // Informações de apresentação do convênio ativo
-  const planDisplayName = planDiariasRules?.convenioName || activeConvenioObj?.name || (selectedPlanId === 'SERVIR' ? 'SERVIR' : selectedPlanId);
+  const planDisplayName = planDiariasRules?.convenioName || activeConvenioObj?.name || (selectedPlanId === 'SERVIR' ? 'SERVIR' : selectedPlanId) || 'Convênio';
   const planCategory = planDiariasRules?.category || activeConvenioObj?.category || 'Autogestão';
-  const planBadge = selectedPlanId.toUpperCase() === 'ASSEFAZ' ? 'AF' : (planDiariasRules?.badge || activeConvenioObj?.badge || selectedPlanId.slice(0, 2).toUpperCase());
+  const planBadge = selectedPlanId.toUpperCase() === 'ASSEFAZ' ? 'AF' : (planDiariasRules?.badge || activeConvenioObj?.badge || (selectedPlanId ? selectedPlanId.slice(0, 2).toUpperCase() : 'CV'));
 
   // Título e subtítulo do cabeçalho da listagem conforme a aba
   const headings = {

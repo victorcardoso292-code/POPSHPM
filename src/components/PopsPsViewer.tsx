@@ -1,28 +1,31 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { 
-  Building2, 
-  Search, 
   ExternalLink, 
-  AlertTriangle, 
-  CheckCircle2, 
+  Globe, 
+  Printer, 
+  FileText, 
   Copy, 
   Check, 
-  Sparkles, 
+  Eye, 
+  EyeOff, 
+  AlertTriangle, 
+  KeyRound, 
+  Ambulance,
+  Stethoscope, 
+  TestTube2, 
+  Scan, 
+  Building2, 
   Phone, 
   Mail, 
-  FileText, 
-  ShieldCheck, 
+  Search, 
+  Sparkles, 
+  CheckCircle2, 
+  AlertCircle, 
   Info,
-  ArrowRight,
-  Ambulance,
-  KeyRound,
-  Stethoscope,
-  TestTube2,
-  ScanLine,
-  ChevronLeft,
-  Globe
+  ShieldAlert
 } from 'lucide-react';
 import { SERVIR_DATA, CONVENIOS_MASTER_LIST } from '../data/popsData';
+import { PORTAIS_CREDENCIAIS, PortalCredential } from '../data/portaisData';
 
 interface PopsPsViewerProps {
   onOpenAiWithPrompt?: (prompt: string) => void;
@@ -30,7 +33,7 @@ interface PopsPsViewerProps {
   initialPlanId?: string;
 }
 
-type PsSubTab = 'atendimento' | 'exames' | 'token' | 'contatos';
+type PsActiveTab = 'atendimento' | 'exames' | 'token' | 'portal';
 
 export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
   onOpenAiWithPrompt,
@@ -39,28 +42,49 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
 }) => {
   const [selectedPlanId, setSelectedPlanId] = useState<string>(initialPlanId || '');
   const [viewMode, setViewMode] = useState<'grid' | 'details'>(initialPlanId ? 'details' : 'grid');
+  const [activeTab, setActiveTab] = useState<PsActiveTab>('atendimento');
+  const [query, setQuery] = useState<string>('');
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [planSearch, setPlanSearch] = useState<string>('');
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('Todos');
-  const [activeSubTab, setActiveSubTab] = useState<PsSubTab>('atendimento');
-  const [copiedText, setCopiedText] = useState<string | null>(null);
+  const [revealedPasswords, setRevealedPasswords] = useState<{ [id: string]: boolean }>({});
+  const [copiedCredential, setCopiedCredential] = useState<{ id: string; field: 'login' | 'senha' } | null>(null);
+
+  const togglePasswordReveal = (id: string) => {
+    setRevealedPasswords(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const copyCredField = (id: string, field: 'login' | 'senha', text: string) => {
+    if (!text || text === 'Verificar no portal' || text.includes('Não se aplica')) return;
+    navigator.clipboard.writeText(text);
+    setCopiedCredential({ id, field });
+    setTimeout(() => setCopiedCredential(null), 1800);
+  };
+
+  const copyCodeToClipboard = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(code);
+      setTimeout(() => setCopiedCode(null), 1300);
+    } catch {
+      // Fallback
+    }
+  };
 
   useEffect(() => {
     if (initialPlanId) {
       setSelectedPlanId(initialPlanId);
       setViewMode('details');
-      setActiveSubTab('atendimento');
+      setActiveTab('atendimento');
+      setQuery('');
+    } else {
+      setViewMode('grid');
     }
   }, [initialPlanId]);
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedText(text);
-    setTimeout(() => setCopiedText(null), 2000);
-  };
-
   const planCategories = ['Todos', 'Autogestão', 'Seguradora', 'Privado', 'Militar', 'Estadual'];
 
-  // Lista mestra completa de convênios do PS, deduplicada e ordenada estritamente de A a Z
+  // Lista mestra completa de convênios do PS ordenada estritamente A-Z
   const fullPlansList = useMemo(() => {
     const map = new Map<string, {
       id: string;
@@ -78,9 +102,9 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
         name: c.name,
         category: c.category,
         badge: c.badge,
-        pacotePs: c.pacotePs,
-        labUrgencia: c.labUrgencia,
-        imagemUrgencia: c.imagemUrgencia
+        pacotePs: c.pacotePs || 'Consulta Pronto-Socorro',
+        labUrgencia: c.labUrgencia || 'Conforme pedido médico',
+        imagemUrgencia: c.imagemUrgencia || 'Solicitar Autorização'
       });
     });
 
@@ -92,7 +116,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
         badge: 'SE',
         pacotePs: '10101037 (Pediatria) / 10101038 (Adulto)',
         labUrgencia: 'Incluso no pacote',
-        imagemUrgencia: 'RX e RM Inclusos no Pacote'
+        imagemUrgencia: 'RX e RM Inclusos no Pacote (Sem autorização)'
       });
     }
 
@@ -101,68 +125,127 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
     );
   }, []);
 
-  const allPlansList = useMemo(() => {
-    const filtered = fullPlansList.filter(p => {
+  const filteredPlansForGrid = useMemo(() => {
+    return fullPlansList.filter(p => {
       const matchCat = activeCategoryFilter === 'Todos' || 
         (activeCategoryFilter === 'Autogestão' && p.category.toLowerCase().includes('autogest')) ||
         (activeCategoryFilter === 'Militar' && p.category.toLowerCase().includes('militar')) ||
-        p.category === activeCategoryFilter;
-      const matchSearch = !planSearch ||
-        p.name.toLowerCase().includes(planSearch.toLowerCase()) || 
+        (activeCategoryFilter === 'Seguradora' && p.category.toLowerCase().includes('seguradora')) ||
+        (activeCategoryFilter === 'Privado' && p.category.toLowerCase().includes('privad')) ||
+        (activeCategoryFilter === 'Estadual' && p.category.toLowerCase().includes('estadual'));
+
+      const matchSearch = !planSearch || 
+        p.name.toLowerCase().includes(planSearch.toLowerCase()) ||
         p.id.toLowerCase().includes(planSearch.toLowerCase()) ||
         p.category.toLowerCase().includes(planSearch.toLowerCase());
+
       return matchCat && matchSearch;
     });
-
-    return filtered.sort((a, b) =>
-      a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
-    );
-  }, [fullPlansList, planSearch, activeCategoryFilter]);
+  }, [fullPlansList, activeCategoryFilter, planSearch]);
 
   const activeConvenioObj = useMemo(() => {
+    if (!selectedPlanId) return null;
     if (selectedPlanId === 'SERVIR') return null;
-    return CONVENIOS_MASTER_LIST.find(c => c.id === selectedPlanId) || null;
+    return CONVENIOS_MASTER_LIST.find(c => 
+      c.id.toUpperCase() === selectedPlanId.toUpperCase() ||
+      c.name.toUpperCase().includes(selectedPlanId.toUpperCase())
+    ) || null;
   }, [selectedPlanId]);
+
+  const planDisplayName = selectedPlanId === 'SERVIR' 
+    ? 'SERVIR (Plano de Saúde TO)' 
+    : (activeConvenioObj?.name || selectedPlanId || 'Convênio');
+  const planCategory = selectedPlanId === 'SERVIR' 
+    ? 'Estadual' 
+    : (activeConvenioObj?.category || 'Autogestão');
+  const planBadge = selectedPlanId === 'SERVIR' 
+    ? 'SE' 
+    : (activeConvenioObj?.badge || selectedPlanId.slice(0, 2).toUpperCase());
+
+  const isCassi = selectedPlanId.toUpperCase().includes('CASSI') || planDisplayName.toUpperCase().includes('CASSI');
+  const isServir = selectedPlanId.toUpperCase() === 'SERVIR' || planDisplayName.toUpperCase().includes('SERVIR');
+
+  // Credenciais vinculadas ao convênio para a aba Portal
+  const matchingCredentials = useMemo(() => {
+    const rawTerms = [
+      selectedPlanId.toLowerCase(),
+      planDisplayName.toLowerCase(),
+      activeConvenioObj?.id?.toLowerCase() || '',
+      activeConvenioObj?.name?.toLowerCase() || ''
+    ].filter(Boolean);
+
+    if (isCassi) {
+      return PORTAIS_CREDENCIAIS.filter(c => c.id === 'cassi-medical' || c.convenio.toLowerCase().includes('cassi'));
+    }
+
+    return PORTAIS_CREDENCIAIS.filter(cred => {
+      const cName = cred.convenio.toLowerCase();
+      const cId = cred.id.toLowerCase();
+      return rawTerms.some(term => {
+        const cleanTerm = term.replace(/[^a-z0-9]/g, '');
+        const cleanName = cName.replace(/[^a-z0-9]/g, '');
+        if (cleanTerm.length >= 3 && cleanName.includes(cleanTerm)) return true;
+        if (cleanName.length >= 3 && cleanTerm.includes(cleanName)) return true;
+        return cName.includes(term) || cId.includes(term);
+      });
+    });
+  }, [selectedPlanId, planDisplayName, activeConvenioObj, isCassi]);
 
   const handleSelectPlan = (planId: string) => {
     setSelectedPlanId(planId);
     setViewMode('details');
-    setActiveSubTab('atendimento');
+    setActiveTab('atendimento');
+    setQuery('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleBackToGrid = () => {
-    setViewMode('grid');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  // Contadores para abas
+  const counts = useMemo(() => {
+    if (isServir) {
+      const servirBlocks = SERVIR_DATA['Pronto-Socorro'] || [];
+      const rowsCount = servirBlocks.reduce((acc, curr) => acc + (curr.rows?.length || 0), 0);
+      return {
+        atendimento: rowsCount,
+        exames: 2,
+        token: 1,
+        portal: 1
+      };
+    }
+    const psSection = activeConvenioObj?.sections?.ps;
+    const itemsCount = (psSection?.procedures?.length || 0) + (psSection?.textItems?.length || 0) + 1;
+    return {
+      atendimento: itemsCount,
+      exames: 2,
+      token: activeConvenioObj?.sections?.token ? 2 : 1,
+      portal: matchingCredentials.length > 0 ? matchingCredentials.length : 1
+    };
+  }, [isServir, activeConvenioObj, matchingCredentials]);
 
   // ==========================================
-  // VIEW 1: SELEÇÃO DE CONVÊNIOS (GRID / ABAS)
+  // VIEW 1: SELETOR DE CONVÊNIOS EM GRID (PS)
+  // (100% IDÊNTICO AO POPS INTERNAÇÃO)
   // ==========================================
   if (viewMode === 'grid') {
     return (
-      <div className="space-y-6">
-        {/* Header Banner - Medical Kora Saúde Teal and Clean White */}
+      <div className="space-y-6 w-full max-w-[1700px] mx-auto pb-16">
         <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs">
           <div className="max-w-3xl space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-widest text-[#0E7B86] bg-[#EBF7F8] border border-[#C4E5E8] px-3 py-1 rounded-full flex items-center gap-1.5">
-                <Ambulance className="w-3.5 h-3.5 text-[#0E7B86]" />
-                POPs • Pronto-Socorro & Urgência
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8] flex items-center gap-1.5">
+                <Ambulance className="w-3 h-3 text-[#0E7B86]" />
+                <span>Central de POPS Pronto-Socorro</span>
               </span>
-              <span className="text-xs text-slate-400 font-medium hidden sm:inline">Hospital Palmas Medical</span>
+              <span className="text-xs text-slate-400 font-medium hidden sm:inline">Hospital Palmas Medical • Urgência 24h</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-[#0E7B86] m-0">
-              Escolha o Convênio do Paciente
+              Escolha o Convênio do Paciente (Pronto-Socorro)
             </h2>
             <p className="text-sm text-slate-600 leading-relaxed m-0">
-              Clique no convênio para abrir a página exclusiva com todas as regras de pronto-socorro, pacotes de atendimento, exames liberados na urgência e validação de token.
+              Selecione o convênio para abrir o guia operacional com pacotes de atendimento de urgência, exames liberados, regras de imagem e validação de token no balcão do PS.
             </p>
           </div>
 
-          {/* Filter pills & search */}
           <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            {/* Category pills */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
               {planCategories.map(cat => (
                 <button
@@ -171,7 +254,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                   onClick={() => setActiveCategoryFilter(cat)}
                   className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                     activeCategoryFilter === cat
-                      ? 'bg-[#B01B52] text-white shadow-xs'
+                      ? 'bg-[#0E7B86] text-white shadow-xs'
                       : 'bg-slate-100 hover:bg-[#EBF7F8] text-slate-600 hover:text-[#0E7B86]'
                   }`}
                 >
@@ -180,504 +263,1441 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
               ))}
             </div>
 
-            {/* Search Input */}
             <div className="relative w-full md:w-80">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="search"
-                placeholder="Buscar convênio (ex: Amil, Bradesco)..."
+                placeholder="Buscar convênio do Pronto-Socorro..."
                 value={planSearch}
                 onChange={e => setPlanSearch(e.target.value)}
-                className="w-full pl-9.5 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0E7B86] focus:bg-white text-slate-900 placeholder:text-slate-400"
+                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0E7B86] focus:bg-white text-slate-900 placeholder:text-slate-400"
               />
             </div>
           </div>
         </div>
 
-        {/* Counter of available plans */}
-        <div className="flex items-center justify-between px-1">
-          <span className="text-xs font-black uppercase tracking-wider text-slate-400">
-            Convênios Disponíveis ({allPlansList.length})
-          </span>
-          <span className="text-xs text-slate-500">
-            Clique em qualquer cartão para ver os detalhes
-          </span>
-        </div>
-
-        {/* Plan Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {allPlansList.map(plan => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredPlansForGrid.map(plan => (
             <button
               key={plan.id}
               type="button"
               onClick={() => handleSelectPlan(plan.id)}
-              className="w-full text-left bg-white border border-slate-200 hover:border-[#B01B52] hover:shadow-md rounded-2xl p-5 transition-all duration-150 cursor-pointer group flex flex-col justify-between gap-4"
+              className="bg-white border border-slate-200/90 hover:border-[#BFDEE7] hover:shadow-md rounded-2xl p-5 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between group space-y-4"
             >
               <div className="space-y-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-[#0E7B86] text-white font-black text-sm flex items-center justify-center flex-shrink-0 shadow-xs tracking-wider">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="w-12 h-12 rounded-xl bg-[#0E7B86] text-white font-black text-sm flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform">
                     {plan.badge}
                   </div>
-                  <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#FDF2F6] text-[#B01B52] border border-[#F7D0DF] transition-colors">
-                    {plan.category}
-                  </span>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]">
+                      {plan.category}
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded">
+                      PS 24h
+                    </span>
+                  </div>
                 </div>
 
                 <div>
-                  <h3 className="font-black text-slate-900 text-base tracking-tight leading-snug group-hover:text-[#B01B52] transition-colors m-0 break-words">
+                  <h3 className="font-black text-slate-900 text-base tracking-tight leading-snug group-hover:text-[#0E7B86] transition-colors m-0 break-words">
                     {plan.name}
                   </h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1 m-0">
-                    Regras e procedimentos operacionais de PS
+                  <p className="text-xs text-slate-500 font-medium mt-1 m-0 line-clamp-2">
+                    {plan.pacotePs || 'Consulta e procedimentos de emergência'}
                   </p>
                 </div>
               </div>
 
-              {/* Bottom indicator */}
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="font-bold text-[#B01B52] group-hover:underline flex items-center gap-1">
-                  Acessar POP do Plano
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                <span className="font-bold text-[#0E7B86] group-hover:underline flex items-center gap-1">
+                  Abrir Modelo de Pronto-Socorro →
                 </span>
                 <span className="text-[11px] text-slate-400 font-medium">Urgência</span>
               </div>
             </button>
           ))}
         </div>
-
-        {allPlansList.length === 0 && (
-          <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center space-y-3">
-            <Info className="w-8 h-8 text-slate-400 mx-auto" />
-            <p className="text-sm font-bold text-slate-700 m-0">Nenhum convênio encontrado com esse termo.</p>
-            <button
-              type="button"
-              onClick={() => { setPlanSearch(''); setActiveCategoryFilter('Todos'); }}
-              className="text-xs font-bold text-[#B01B52] hover:underline cursor-pointer"
-            >
-              Limpar filtros e exibir todos
-            </button>
-          </div>
-        )}
       </div>
     );
   }
 
   // ==========================================
-  // VIEW 2: PÁGINA EXCLUSIVA DO CONVÊNIO ESCOLHIDO
+  // VIEW 2: MODELO VISUAL IDÊNTICO AO POPS INTERNAÇÃO
+  // (COM AS REGRAS E DADOS EXCLUSIVOS DO PRONTO-SOCORRO)
   // ==========================================
-  const planDisplayName = activeConvenioObj?.name || (selectedPlanId === 'SERVIR' ? 'SERVIR (Plano de Saúde TO)' : selectedPlanId);
-  const planCategory = activeConvenioObj?.category || 'Estadual';
-  const planBadge = activeConvenioObj?.badge || (selectedPlanId === 'SERVIR' ? 'SE' : selectedPlanId.slice(0, 2));
+  const statPacote = isServir 
+    ? '10101037 / 10101038' 
+    : (activeConvenioObj?.pacotePs || 'Consulta PS');
+  const statLab = isServir 
+    ? 'Incluso no pacote' 
+    : (activeConvenioObj?.labUrgencia || 'Conforme pedido médico');
+  const statImagem = isServir 
+    ? 'RX e RM Inclusos no Pacote (Sem autorização)' 
+    : (activeConvenioObj?.imagemUrgencia || 'Solicitar Autorização');
 
   return (
-    <div className="space-y-6">
-      {/* Top Navigation Strip with Back Button & Quick Plan Selector */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={handleBackToGrid}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#EBF7F8] hover:bg-[#D8ECEE] text-[#0E7B86] font-bold text-xs transition-all cursor-pointer w-fit"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          <span>← Voltar para a lista de convênios</span>
-        </button>
+    <div className="pop-root">
+      <style>{`
+        .pop-root {
+          font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          text-rendering: optimizeLegibility;
+          color: #172b43;
+          background: #f3f7fa;
+          font-synthesis: none;
+          margin: -1rem;
+          padding: 1rem;
+          min-height: calc(100vh - 80px);
+          width: calc(100% + 2rem);
+        }
+        .pop-shell {
+          max-width: 100%;
+          width: 100%;
+          margin: 0;
+          padding: 10px 4px 70px;
+        }
+        .pop-topline {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin: 0 0 15px;
+          color: #64768a;
+          font-size: 13px;
+          font-weight: 500;
+          letter-spacing: -0.01em;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        .pop-crumb {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          flex-wrap: wrap;
+        }
+        .pop-crumb button.crumb-btn {
+          background: none;
+          border: 0;
+          color: #64768a;
+          cursor: pointer;
+          padding: 0;
+          font: inherit;
+          font-weight: 500;
+        }
+        .pop-crumb button.crumb-btn:hover {
+          color: #0e7b86;
+          text-decoration: underline;
+        }
+        .pop-crumb span.active-crumb {
+          color: #1b354c;
+          font-weight: 800;
+        }
+        .pop-top-actions {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .pop-plan-select {
+          padding: 6px 12px;
+          border: 1px solid #d8e5ec;
+          border-radius: 20px;
+          background: white;
+          color: #1b354c;
+          font-size: 12px;
+          font-weight: 700;
+          font-family: inherit;
+          outline: none;
+          cursor: pointer;
+        }
+        .pop-preview {
+          padding: 5px 12px;
+          border: 1px solid #d8e5ec;
+          border-radius: 30px;
+          background: white;
+          font-size: 12px;
+          font-weight: 600;
+          color: #475569;
+          white-space: nowrap;
+        }
+        .pop-hero, .pop-workspace {
+          background: #fff;
+          border: 1px solid #dae5ed;
+          box-shadow: 0 5px 18px #182f4b09;
+          border-radius: 20px;
+        }
+        .pop-hero {
+          padding: 28px 30px 23px;
+        }
+        .pop-hero-main {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+        .pop-badge {
+          display: grid;
+          place-items: center;
+          flex: 0 0 56px;
+          width: 56px;
+          height: 56px;
+          border-radius: 16px;
+          background: #0e7b86;
+          color: #fff;
+          font-size: 20px;
+          font-weight: 850;
+          letter-spacing: -0.02em;
+          box-shadow: 0 4px 9px #0e7b8625;
+        }
+        .pop-heading {
+          min-width: 0;
+          flex: 1;
+        }
+        .pop-name-row {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+        .pop-heading h1 {
+          margin: 0;
+          color: #0c2541;
+          letter-spacing: -0.04em;
+          font-size: 26px;
+          font-weight: 850;
+          line-height: 1.2;
+        }
+        .pop-tag {
+          padding: 4px 10px;
+          border-radius: 7px;
+          background: #e8f8fa;
+          border: 1px solid #bee6ec;
+          color: #14758a;
+          font-weight: 750;
+          font-size: 12px;
+          letter-spacing: 0.01em;
+        }
+        .pop-heading p {
+          margin: 5px 0 0;
+          color: #516780;
+          font-size: 13px;
+          font-weight: 500;
+          letter-spacing: -0.01em;
+        }
+        .pop-hero-rule {
+          height: 1px;
+          background: #edf1f5;
+          margin: 23px 0 16px;
+        }
+        .pop-stats {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+        }
+        .pop-stat {
+          display: flex;
+          gap: 12px;
+          align-items: center;
+          border: 1px solid #dde8f0;
+          background: #fbfdff;
+          border-radius: 13px;
+          padding: 13px;
+        }
+        .pop-stat-icon {
+          display: grid;
+          place-items: center;
+          width: 36px;
+          height: 36px;
+          flex: 0 0 36px;
+          border-radius: 10px;
+          background: #eaf7fb;
+          color: #08768d;
+          font-size: 18px;
+        }
+        .pop-stat:nth-child(2) .pop-stat-icon {
+          background: #fff0f5;
+          color: #b01b51;
+        }
+        .pop-stat:nth-child(3) .pop-stat-icon {
+          background: #eef5fa;
+          color: #245b7d;
+        }
+        .pop-stat small {
+          display: block;
+          color: #687b91;
+          font-size: 10.5px;
+          font-weight: 850;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+        }
+        .pop-stat strong {
+          display: block;
+          margin-top: 3px;
+          font-size: 13px;
+          line-height: 1.25;
+          color: #0c2541;
+          font-weight: 800;
+          letter-spacing: -0.015em;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .pop-workspace {
+          margin-top: 20px;
+          overflow: hidden;
+        }
+        .pop-workspace-head {
+          padding: 24px 26px 0;
+        }
+        .pop-eyebrow {
+          color: #0e7b86;
+          font-size: 11px;
+          font-weight: 850;
+          letter-spacing: .12em;
+          text-transform: uppercase;
+        }
+        .pop-workspace h2 {
+          margin: 5px 0 4px;
+          color: #122a46;
+          font-size: 22px;
+          letter-spacing: -.035em;
+          font-weight: 800;
+          line-height: 1.25;
+        }
+        .pop-subtext {
+          font-size: 13px;
+          color: #708196;
+          margin: 0 0 18px;
+          font-weight: 500;
+          letter-spacing: -0.01em;
+        }
+        .pop-toolbar {
+          display: flex;
+          gap: 12px;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+        .pop-tabs {
+          display: flex;
+          gap: 4px;
+          padding: 4px;
+          max-width: 100%;
+          overflow-x: auto;
+          background: #f1f6f9;
+          border: 1px solid #e5edf3;
+          border-radius: 11px;
+        }
+        .pop-tab {
+          border: 0;
+          background: transparent;
+          border-radius: 8px;
+          padding: 9px 14px;
+          color: #607387;
+          font-weight: 750;
+          font-size: 13px;
+          font-family: inherit;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          white-space: nowrap;
+          letter-spacing: -0.01em;
+        }
+        .pop-tab[aria-selected="true"] {
+          color: #0e7b86;
+          background: #fff;
+          font-weight: 800;
+          box-shadow: 0 2px 7px #182f4b16;
+        }
+        .pop-count {
+          font-size: 11px;
+          font-weight: 750;
+          opacity: .75;
+          margin-left: 5px;
+        }
+        .pop-actions {
+          display: flex;
+          gap: 9px;
+          align-items: center;
+        }
+        .pop-search {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          border: 1px solid #dce6ed;
+          border-radius: 9px;
+          padding: 0 12px;
+          background: white;
+          color: #6b8190;
+        }
+        .pop-search input {
+          width: 210px;
+          height: 38px;
+          border: 0;
+          outline: 0;
+          color: #203951;
+          background: transparent;
+          font-size: 13px;
+          font-family: inherit;
+          font-weight: 500;
+        }
+        .pop-search input::placeholder {
+          color: #94a3b8;
+        }
+        .pop-print {
+          border: 1px solid #dce6ed;
+          color: #234459;
+          background: white;
+          border-radius: 9px;
+          padding: 9px 12px;
+          font-size: 13px;
+          font-family: inherit;
+          font-weight: 700;
+          letter-spacing: -0.01em;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          transition: background .15s;
+        }
+        .pop-print:hover {
+          background: #f8fafc;
+        }
+        .pop-notice {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin: 21px 26px 0;
+          padding: 12px 15px;
+          border-radius: 11px;
+          background: #f1f9fb;
+          color: #245568;
+          font-size: 12px;
+          font-weight: 500;
+          line-height: 1.5;
+          border: 1px solid #d8ecf2;
+          letter-spacing: -0.01em;
+        }
+        .pop-notice b {
+          color: #176d82;
+          font-weight: 750;
+        }
+        .pop-list-head {
+          padding: 22px 26px 12px;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          gap: 14px;
+        }
+        .pop-list-head h3 {
+          font-size: 15px;
+          margin: 0 0 3px;
+          color: #1b354c;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+        }
+        .pop-list-head p {
+          font-size: 12px;
+          color: #708196;
+          margin: 0;
+          font-weight: 500;
+        }
+        .pop-results {
+          font-size: 12px;
+          color: #708196;
+          white-space: nowrap;
+          font-weight: 600;
+        }
+        .pop-cards {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 16px;
+          padding: 0 26px 27px;
+        }
+        .pop-card {
+          border: 1px solid #e0e9ef;
+          border-radius: 13px;
+          padding: 18px 20px 17px;
+          transition: border-color .2s, box-shadow .2s;
+          min-width: 0;
+          background: #fff;
+        }
+        .pop-card:hover {
+          border-color: #bfdee7;
+          box-shadow: 0 4px 12px #182f4b06;
+        }
+        .pop-cardtop {
+          display: flex;
+          justify-content: space-between;
+          gap: 7px;
+          align-items: center;
+        }
+        .pop-code {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: #eef5f9;
+          border: 1px solid #dceaf0;
+          color: #225570;
+          border-radius: 7px;
+          padding: 5px 9px;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+          font-size: 12.5px;
+          font-weight: 750;
+          letter-spacing: 0.02em;
+        }
+        .pop-copy {
+          border: 0;
+          background: none;
+          color: #8c9cad;
+          font-size: 14px;
+          padding: 2px 4px;
+          cursor: pointer;
+          transition: color .15s;
+        }
+        .pop-copy:hover {
+          color: #0e7b86;
+        }
+        .pop-category {
+          color: #0e7b86;
+          background: #ebf7f8;
+          border: 1px solid #c4e5e8;
+          font-size: 10px;
+          font-weight: 850;
+          padding: 5px 8px;
+          border-radius: 6px;
+          white-space: nowrap;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
+        .pop-category.urgencia {
+          color: #0e7b86;
+          background: #ebf7f8;
+          border: 1px solid #c4e5e8;
+        }
+        .pop-card h4 {
+          font-size: 14.5px;
+          line-height: 1.45;
+          margin: 12px 0 10px;
+          color: #1b304a;
+          font-weight: 800;
+          letter-spacing: -0.015em;
+          text-transform: uppercase;
+        }
+        .pop-detail-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 9px;
+          margin-top: 13px;
+        }
+        .pop-detail {
+          background: #f8fafc;
+          border: 1px solid #e9eff4;
+          border-radius: 8px;
+          padding: 10px 12px;
+          min-width: 0;
+        }
+        .pop-detail b {
+          display: block;
+          color: #637b90;
+          font-size: 11px;
+          letter-spacing: .02em;
+          margin-bottom: 4px;
+          font-weight: 750;
+        }
+        .pop-detail span {
+          display: block;
+          font-size: 11px;
+          line-height: 1.45;
+          color: #283e52;
+          font-weight: 500;
+          overflow-wrap: anywhere;
+        }
+        .pop-footer-note {
+          padding: 13px 26px;
+          border-top: 1px solid #e9eef3;
+          color: #6d8192;
+          background: #fcfdfe;
+          font-size: 11.5px;
+          line-height: 1.5;
+          font-weight: 500;
+        }
+        .pop-footer-note strong {
+          color: #38566d;
+          font-weight: 750;
+        }
 
-        {/* Quick Switch Dropdown */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400 font-medium hidden md:inline">Trocar Convênio:</span>
-          <select
-            value={selectedPlanId}
-            onChange={e => handleSelectPlan(e.target.value)}
-            className="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0E7B86] cursor-pointer"
-          >
-            {fullPlansList.map(p => (
-              <option key={p.id} value={p.id}>
-                {p.name} ({p.category})
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+        @media(max-width:960px){
+          .pop-detail-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+        @media(max-width:780px){
+          .pop-root {
+            margin: -1rem;
+            padding: 1rem;
+          }
+          .pop-shell {
+            padding: 10px 4px 45px;
+          }
+          .pop-hero {
+            padding: 20px 17px;
+          }
+          .pop-stats {
+            grid-template-columns: 1fr;
+          }
+          .pop-workspace-head {
+            padding: 20px 16px 0;
+          }
+          .pop-notice {
+            margin: 18px 16px 0;
+          }
+          .pop-cards {
+            padding: 0 16px 20px;
+          }
+          .pop-list-head {
+            padding: 20px 16px 12px;
+          }
+          .pop-tabs {
+            width: 100%;
+            overflow: auto;
+          }
+          .pop-actions, .pop-search {
+            flex: 1;
+          }
+          .pop-search input {
+            width: 100%;
+          }
+        }
+      `}</style>
 
-      {/* Dedicated Plan Header Card */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs space-y-5">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex items-start sm:items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-[#0E7B86] text-white font-black text-lg flex items-center justify-center flex-shrink-0 shadow-sm tracking-wider">
+      <main className="pop-shell">
+        {/* Topline Navigation & Plan Switcher */}
+        <nav className="pop-topline" aria-label="Localização">
+          <div className="pop-crumb">
+            <button 
+              type="button" 
+              className="crumb-btn"
+              onClick={() => setViewMode('grid')}
+            >
+              Central de Autorizações
+            </button>
+            <span>›</span>
+            <button 
+              type="button" 
+              className="crumb-btn"
+              onClick={() => setViewMode('grid')}
+            >
+              Pronto-Socorro
+            </button>
+            <span>›</span>
+            <span className="active-crumb">{planDisplayName}</span>
+          </div>
+
+          <div className="pop-top-actions">
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              className="pop-preview hover:border-[#0e7b86] hover:text-[#0e7b86] transition-colors cursor-pointer"
+            >
+              ← Todos os Convênios
+            </button>
+
+            <select
+              value={selectedPlanId}
+              onChange={e => handleSelectPlan(e.target.value)}
+              className="pop-plan-select"
+              title="Trocar Convênio"
+            >
+              {fullPlansList.map(p => (
+                <option key={p.id} value={p.id}>
+                  {p.name} ({p.category})
+                </option>
+              ))}
+            </select>
+
+            <span className="pop-preview">Modelo Pronto-Socorro</span>
+          </div>
+        </nav>
+
+        {/* Hero Section */}
+        <header className="pop-hero">
+          <div className="pop-hero-main">
+            <div className="pop-badge" aria-hidden="true">
               {planBadge}
             </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight m-0 break-words">
-                  {planDisplayName}
-                </h1>
-                <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-[#FDF2F6] text-[#B01B52] border border-[#F7D0DF]">
-                  {planCategory}
-                </span>
+            <div className="pop-heading">
+              <div className="pop-name-row">
+                <h1>{planDisplayName}</h1>
+                <span className="pop-tag">{planCategory}</span>
               </div>
-              <p className="text-xs text-slate-500 font-medium m-0">
-                Procedimento Operacional Padrão de Pronto-Socorro • Hospital Palmas Medical
-              </p>
+              <p>Pronto-Socorro, Pacotes de Urgência & Elegibilidade · Hospital Palmas Medical</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            {onOpenAiWithPrompt && (
-              <button
-                type="button"
-                onClick={() => onOpenAiWithPrompt(`Como funciona o atendimento de Pronto-Socorro no convênio ${planDisplayName}? Quais os códigos de pacote de consulta, exames de urgência liberados e regras de token?`)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#B01B52] hover:bg-[#971444] text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
-              >
-                <Sparkles className="w-4 h-4 text-white" />
-                <span>Auditar com IA</span>
-              </button>
-            )}
+          <div className="pop-hero-rule"></div>
 
-            {activeConvenioObj?.portalUrl && (
-              <a
-                href={activeConvenioObj.portalUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0E7B86] hover:bg-[#095962] text-white font-bold text-xs shadow-xs transition-all"
-              >
-                <ExternalLink className="w-4 h-4" />
-                <span>Portal da Operadora</span>
-              </a>
-            )}
-          </div>
-        </div>
-
-        {/* 3 Quick Overview Badges */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-100">
-          <div className="bg-[#F8FAFB] rounded-xl p-3 border border-slate-200/80 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#EBF7F8] text-[#0E7B86] flex items-center justify-center flex-shrink-0">
-              <Stethoscope className="w-4 h-4" />
+          {/* Stats Bar (Pronto-Socorro) */}
+          <div className="pop-stats">
+            <div className="pop-stat">
+              <span className="pop-stat-icon" aria-hidden="true">✚</span>
+              <div className="min-w-0">
+                <small>PACOTE PRONTO-SOCORRO</small>
+                <strong title={statPacote}>{statPacote}</strong>
+              </div>
             </div>
-            <div className="min-w-0">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight">Pacote PS / Consulta</span>
-              <span className="text-xs font-black text-slate-800 block break-words mt-0.5">
-                {selectedPlanId === 'SERVIR' ? '10101037 / 10101038' : (activeConvenioObj?.pacotePs || '10101039')}
-              </span>
+
+            <div className="pop-stat">
+              <span className="pop-stat-icon" aria-hidden="true">🧪</span>
+              <div className="min-w-0">
+                <small>EXAMES DE URGÊNCIA</small>
+                <strong title={statLab}>{statLab}</strong>
+              </div>
+            </div>
+
+            <div className="pop-stat">
+              <span className="pop-stat-icon" aria-hidden="true">⚡</span>
+              <div className="min-w-0">
+                <small>RADIOLOGIA & IMAGEM</small>
+                <strong title={statImagem}>{statImagem}</strong>
+              </div>
             </div>
           </div>
+        </header>
 
-          <div className="bg-[#F8FAFB] rounded-xl p-3 border border-slate-200/80 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#FDF2F6] text-[#B01B52] flex items-center justify-center flex-shrink-0">
-              <TestTube2 className="w-4 h-4" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight">Laboratório de Urgência</span>
-              <span className="text-xs font-black text-slate-800 block break-words mt-0.5">
-                {selectedPlanId === 'SERVIR' ? 'Incluso no Pacote' : (activeConvenioObj?.labUrgencia || 'Conforme POP')}
-              </span>
-            </div>
-          </div>
-
-          <div className="bg-[#F8FAFB] rounded-xl p-3 border border-slate-200/80 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#EBF7F8] text-[#0E7B86] flex items-center justify-center flex-shrink-0">
-              <ScanLine className="w-4 h-4" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight">Radiologia & Imagem</span>
-              <span className="text-xs font-black text-slate-800 block break-words mt-0.5">
-                {selectedPlanId === 'SERVIR' ? 'RX e RM Inclusos no Pacote' : (activeConvenioObj?.imagemUrgencia || 'Solicitar Autorização')}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Banner Especial CASSI e ORIZON no PS */}
-      {selectedPlanId === 'CASSI' && (
-        <div className="bg-[#EBF7F8] border-2 border-[#0E7B86] rounded-2xl p-5 shadow-sm space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#0E7B86] text-white flex items-center justify-center font-black text-sm">
+        {/* ========================================================= */}
+        {/* BANNER OPERACIONAL EXCLUSIVO SERVIR NO PRONTO-SOCORRO */}
+        {/* ========================================================= */}
+        {isServir && (
+          <div className="bg-[#FDF2F6] border-2 border-[#B01B52] rounded-2xl p-5 my-5 shadow-sm space-y-2.5">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#B01B52] text-white flex items-center justify-center font-black text-base flex-shrink-0 mt-0.5 shadow-xs">
                 !
               </div>
-              <div>
-                <h3 className="text-base font-black text-[#095962] m-0">
-                  PORTAL DA CASSI É O ORIZON • PRONTO-SOCORRO &amp; INTERNAÇÃO
+              <div className="space-y-1">
+                <h3 className="text-sm sm:text-base font-black text-[#87143E] m-0">
+                  REGRA DE EXAMES NO PRONTO-SOCORRO: RX E RM INCLUSOS NO PACOTE
                 </h3>
-                <p className="text-xs text-slate-600 m-0 font-medium">
-                  Tanto no Pronto-Socorro como na Internação, utilize o autenticador Orizon (Polimed) para elegibilidade, consultas e exames.
+                <p className="text-xs sm:text-sm text-slate-800 m-0 font-medium leading-relaxed">
+                  No SERVIR <strong>NÃO precisa pegar autorização para RX e RM</strong> pois o pacote já está incluso.
+                </p>
+                <p className="text-xs sm:text-sm text-[#B01B52] m-0 font-black leading-relaxed">
+                  ⚠️ OBRIGATÓRIO: PEGAR ASSINATURA NA GUIA E COLOCAR A CAPA JUNTOS.
+                </p>
+                <p className="text-[11px] text-slate-500 m-0 font-medium">
+                  * Esta orientação aplica-se exclusivamente ao POPS de Pronto-Socorro.
                 </p>
               </div>
             </div>
-
-            <a
-              href="https://www.polimed.com.br/autenticadorOrizon/loginAutenticador"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0E7B86] hover:bg-[#095962] text-white rounded-xl text-xs font-bold transition-all shadow-xs w-fit"
-            >
-              <span>Abrir Portal Orizon</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
           </div>
+        )}
 
-          <div className="bg-white/90 border border-[#C4E5E8] rounded-xl p-3.5 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div>
-              <span className="font-bold text-slate-400 block text-[10px] uppercase">Código Prestador</span>
-              <span className="font-mono font-black text-slate-900 text-sm">2120820</span>
-            </div>
-            <div>
-              <span className="font-bold text-slate-400 block text-[10px] uppercase">Usuário Medical (CNPJ)</span>
-              <span className="font-mono font-black text-slate-900 text-sm">12955953000192</span>
-            </div>
-            <div>
-              <span className="font-bold text-slate-400 block text-[10px] uppercase">Senha Medical</span>
-              <span className="font-mono font-black text-[#B01B52] text-sm">Hpm2025hpm@</span>
-            </div>
-          </div>
-        </div>
-      )}
+        {/* ========================================================= */}
+        {/* BANNER ESPECIAL CASSI NO PRONTO-SOCORRO */}
+        {/* ========================================================= */}
+        {isCassi && (
+          <div className="bg-[#EBF7F8] border-2 border-[#0E7B86] rounded-2xl p-5 my-5 shadow-sm space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-xl bg-[#0E7B86] text-white flex items-center justify-center font-black text-sm">
+                  !
+                </span>
+                <div>
+                  <h3 className="text-base font-black text-[#095962] m-0">
+                    PORTAL DA CASSI É O ORIZON • PRONTO-SOCORRO
+                  </h3>
+                  <p className="text-xs text-slate-600 m-0 font-medium">
+                    Tanto no Pronto-Socorro como na Internação, utilize o autenticador Orizon (Polimed) para elegibilidade, consultas e exames.
+                  </p>
+                </div>
+              </div>
 
-      {/* Banner Especial SERVIR no PS */}
-      {selectedPlanId === 'SERVIR' && (
-        <div className="bg-[#FDF2F6] border-2 border-[#B01B52] rounded-2xl p-5 shadow-sm space-y-2.5">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[#B01B52] text-white flex items-center justify-center font-black text-sm flex-shrink-0 mt-0.5">
-              !
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-sm sm:text-base font-black text-[#87143E] m-0">
-                REGRA DE EXAMES NO PRONTO-SOCORRO: RX E RM INCLUSOS NO PACOTE
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-800 m-0 font-medium leading-relaxed">
-                No SERVIR <strong>NÃO precisa pegar autorização para RX e RM</strong> pois o pacote já está incluso.
-              </p>
-              <p className="text-xs sm:text-sm text-[#B01B52] m-0 font-black leading-relaxed">
-                ⚠️ OBRIGATÓRIO: PEGAR ASSINATURA NA GUIA E COLOCAR A CAPA JUNTOS.
-              </p>
-              <p className="text-[11px] text-slate-500 m-0 font-medium">
-                * Esta orientação aplica-se exclusivamente ao POPS de Pronto-Socorro.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* SUB-TABS */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden">
-        {/* Horizontal Navigation Tab Bar */}
-        <div className="flex border-b border-slate-200 bg-slate-50/60 overflow-x-auto">
-          {[
-            { id: 'atendimento' as PsSubTab, label: 'Pacote & Atendimento PS', icon: Stethoscope },
-            { id: 'exames' as PsSubTab, label: 'Exames Liberados na Urgência', icon: TestTube2 },
-            { id: 'token' as PsSubTab, label: 'Validação de Token & Elegibilidade', icon: KeyRound },
-            { id: 'contatos' as PsSubTab, label: 'Portal, Acessos & Contatos', icon: Globe }
-          ].map(tab => {
-            const Icon = tab.icon;
-            const isActive = activeSubTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveSubTab(tab.id)}
-                className={`flex items-center gap-2 px-5 py-3.5 text-xs font-black transition-all border-b-2 whitespace-nowrap cursor-pointer ${
-                  isActive
-                    ? 'border-[#B01B52] text-[#B01B52] bg-white shadow-2xs'
-                    : 'border-transparent text-slate-500 hover:text-[#0E7B86] hover:bg-[#EBF7F8]/40'
-                }`}
+              <a
+                href="https://www.polimed.com.br/autenticadorOrizon/loginAutenticador"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0E7B86] hover:bg-[#095962] text-white rounded-xl text-xs font-bold transition-all shadow-xs w-fit"
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-[#B01B52]' : 'text-slate-400'}`} />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
+                <span>Acessar Portal Orizon</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
 
-        {/* Tab Content Area */}
-        <div className="p-6 space-y-6">
+            <div className="bg-white/90 border border-[#C4E5E8] rounded-xl p-3.5 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div>
+                <span className="font-bold text-slate-400 block text-[10px] uppercase">Código Prestador</span>
+                <span className="font-mono font-black text-slate-900 text-sm">2120820</span>
+              </div>
+              <div>
+                <span className="font-bold text-slate-400 block text-[10px] uppercase">Usuário Medical (CNPJ)</span>
+                <span className="font-mono font-black text-slate-900 text-sm">12955953000192</span>
+              </div>
+              <div>
+                <span className="font-bold text-slate-400 block text-[10px] uppercase">Senha do Autorizador</span>
+                <span className="font-mono font-black text-[#0E7B86] text-sm">cassi@2025</span>
+              </div>
+            </div>
+          </div>
+        )}
 
-          {/* ========================================================= */}
-          {/* ABA 1: PACOTE & ATENDIMENTO PS */}
-          {/* ========================================================= */}
-          {activeSubTab === 'atendimento' && (
-            <div className="space-y-6">
-              {activeConvenioObj?.criticalNotes && activeConvenioObj.criticalNotes.length > 0 && (
-                <div className="bg-[#FDF2F6] border border-[#F7D0DF] rounded-2xl p-5 space-y-3">
-                  <div className="flex items-center gap-2 text-[#B01B52] font-black text-sm">
-                    <AlertTriangle className="w-5 h-5 text-[#B01B52] flex-shrink-0" />
-                    <span>Avisos Críticos de Atendimento • {planDisplayName}</span>
-                  </div>
-                  <ul className="space-y-2 text-xs sm:text-sm text-slate-800 font-medium pl-1 m-0 leading-relaxed">
-                    {activeConvenioObj.criticalNotes.map((note, idx) => (
-                      <li key={idx} className="flex items-start gap-2 break-words">
-                        <span className="text-[#B01B52] font-black flex-shrink-0">•</span>
-                        <span className="leading-relaxed">{note}</span>
-                      </li>
-                    ))}
-                  </ul>
+        {/* ========================================================= */}
+        {/* WORKSPACE OPERACIONAL PRINCIPAL (IDÊNTICO AO INTERNAÇÃO) */}
+        {/* ========================================================= */}
+        <section className="pop-workspace" aria-label="Espaço de Diretrizes do Pronto-Socorro">
+          <div className="pop-workspace-head">
+            <span className="pop-eyebrow">CENTRAL OPERACIONAL • PRONTO-SOCORRO 24H</span>
+            <h2>Diretrizes de Atendimento • {planDisplayName}</h2>
+            <p className="pop-subtext">
+              Protocolos de abertura de ficha de urgência, pacotes contratuais, exames laboratoriais/imagem e elegibilidade.
+            </p>
+
+            <div className="pop-toolbar">
+              <div className="pop-tabs" role="tablist">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === 'atendimento'}
+                  onClick={() => setActiveTab('atendimento')}
+                  className="pop-tab"
+                >
+                  Pacote & Atendimento PS
+                  <span className="pop-count">({counts.atendimento})</span>
+                </button>
+
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === 'exames'}
+                  onClick={() => setActiveTab('exames')}
+                  className="pop-tab"
+                >
+                  Exames Liberados na Urgência
+                  <span className="pop-count">({counts.exames})</span>
+                </button>
+
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === 'token'}
+                  onClick={() => setActiveTab('token')}
+                  className="pop-tab"
+                >
+                  Validação de Token & Elegibilidade
+                  <span className="pop-count">({counts.token})</span>
+                </button>
+
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === 'portal'}
+                  onClick={() => setActiveTab('portal')}
+                  className="pop-tab"
+                >
+                  Portal, Acessos & Contatos
+                  <span className="pop-count">({counts.portal})</span>
+                </button>
+              </div>
+
+              <div className="pop-actions">
+                <div className="pop-search">
+                  <Search className="w-3.5 h-3.5 text-slate-400" />
+                  <input
+                    type="search"
+                    value={query}
+                    onChange={e => setQuery(e.target.value)}
+                    placeholder="Filtrar nesta visualização..."
+                    aria-label="Filtrar diretrizes"
+                  />
                 </div>
-              )}
 
-              {/* Case 1: SERVIR */}
-              {selectedPlanId === 'SERVIR' ? (
-                <div className="space-y-5">
-                  {SERVIR_DATA['Pronto-Socorro']?.map((block, bIdx) => (
-                    <div key={bIdx} className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <h3 className="font-extrabold text-base text-slate-900 flex items-center gap-2 m-0">
-                          <span className="text-[#0E7B86] font-bold">{block.icon || '•'}</span>
-                          <span>{block.title}</span>
-                        </h3>
-                        {block.warning && (
-                          <span className="px-2.5 py-1 rounded-lg text-xs font-black uppercase bg-[#FDF2F6] text-[#B01B52] border border-[#F7D0DF]">
-                            Atenção
-                          </span>
-                        )}
-                      </div>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="pop-print"
+                  title="Imprimir Protocolos do PS"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Imprimir POP</span>
+                </button>
+              </div>
+            </div>
+          </div>
 
-                      {block.info && (
-                        <p className="text-xs sm:text-sm text-slate-700 bg-white p-3.5 rounded-xl border border-slate-200/80 m-0 leading-relaxed">
-                          {block.info}
-                        </p>
-                      )}
+          {/* Aviso rápido */}
+          <div className="pop-notice">
+            <Info className="w-4 h-4 text-[#176d82] flex-shrink-0" />
+            <span>
+              <b>Diretriz de Urgência:</b> Todos os atendimentos no Pronto-Socorro exigem confirmação biométrica ou token quando exigido pela operadora, e colheita obrigatória da assinatura do paciente ou responsável na guia física TISS.
+            </span>
+          </div>
 
-                      {block.alerts && block.alerts.length > 0 && (
-                        <div className="bg-[#FDF2F6] border border-[#F7D0DF] rounded-xl p-3.5 text-xs sm:text-sm text-slate-800 space-y-1.5">
-                          {block.alerts.map((al, aIdx) => (
-                            <div key={aIdx} className="flex items-start gap-2 break-words">
-                              <Info className="w-4 h-4 text-[#B01B52] mt-0.5 flex-shrink-0" />
-                              <span className="leading-relaxed font-medium">{al}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+          <div className="pop-list-head">
+            <div>
+              <h3>
+                {activeTab === 'atendimento' && 'Pacote e Procedimentos de Urgência'}
+                {activeTab === 'exames' && 'Exames de Urgência (Laboratório & Imagem)'}
+                {activeTab === 'token' && 'Regras de Token & Validação Biométrica'}
+                {activeTab === 'portal' && 'Acessos e Canais de Contato com a Operadora'}
+              </h3>
+              <p>
+                {activeTab === 'atendimento' && `Relação contratual de consultas e procedimentos autorizados para ${planDisplayName}.`}
+                {activeTab === 'exames' && `Diretrizes para realização de exames laboratoriais, radiografias e tomografias.`}
+                {activeTab === 'token' && `Procedimentos no balcão de recepção para liberação e validação de elegibilidade.`}
+                {activeTab === 'portal' && `Links diretos, credenciais de autorização e ramais da operadora.`}
+              </p>
+            </div>
+          </div>
 
-                      {block.rows && block.rows.length > 0 && (
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left text-xs sm:text-sm border-collapse">
-                            <thead>
-                              <tr className="border-b border-slate-200 text-slate-400 font-bold">
-                                <th className="py-2.5 px-3 w-36">Código TUSS</th>
-                                <th className="py-2.5 px-3">Descrição do Procedimento</th>
-                                <th className="py-2.5 px-3 text-right w-36">Ações</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-200 font-medium">
-                              {block.rows.map((row, rIdx) => (
-                                <tr key={rIdx} className="hover:bg-white transition-colors">
-                                  <td className="py-3 px-3 font-mono font-bold text-[#0E7B86] whitespace-nowrap">
-                                    {row[0]}
-                                  </td>
-                                  <td className="py-3 px-3 text-slate-800 break-words leading-relaxed">
-                                    {row[1]}
-                                  </td>
-                                  <td className="py-3 px-3 text-right">
-                                    <div className="flex items-center justify-end gap-2">
-                                      <button
-                                        type="button"
-                                        onClick={() => copyToClipboard(row[0])}
-                                        className="p-2 rounded-xl bg-slate-100 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86] transition-colors cursor-pointer"
-                                        title="Copiar Código"
-                                      >
-                                        {copiedText === row[0] ? <Check className="w-4 h-4 text-[#0E7B86]" /> : <Copy className="w-4 h-4" />}
-                                      </button>
-                                      {onGeneratePreGuia && (
-                                        <button
-                                          type="button"
-                                          onClick={() => onGeneratePreGuia('SERVIR', row[0], row[1])}
-                                          className="px-2.5 py-1.5 rounded-xl bg-[#FDF2F6] hover:bg-[#FCE7EF] text-[#B01B52] font-bold text-xs transition-colors cursor-pointer"
-                                        >
-                                          Pré-Guia
-                                        </button>
-                                      )}
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
+          {/* ========================================================= */}
+          {/* CONTEÚDO DA ABA 1: PACOTE & ATENDIMENTO PS */}
+          {/* ========================================================= */}
+          {activeTab === 'atendimento' && (
+            <div className="pop-cards">
+              {/* Caso Especial SERVIR */}
+              {isServir ? (
+                SERVIR_DATA['Pronto-Socorro']?.map((block, bIdx) => (
+                  <div key={bIdx} className="pop-card">
+                    <div className="pop-cardtop">
+                      <span className="pop-code">
+                        <Ambulance className="w-3.5 h-3.5 text-[#0E7B86]" />
+                        <span>SERVIR-PS-0{bIdx + 1}</span>
+                      </span>
+                      <span className="pop-category urgencia">
+                        {block.title.includes('Pacotes') ? 'PACOTE PS' : 'PROCEDIMENTO'}
+                      </span>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                /* Case 2: Other Convenios */
-                <div className="space-y-6">
-                  <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-4">
-                    <h3 className="font-extrabold text-base text-slate-900 m-0">
-                      Fluxo de Acolhimento & Triagem no Pronto-Socorro
-                    </h3>
 
-                    {activeConvenioObj?.sections?.ps?.steps && activeConvenioObj.sections.ps.steps.length > 0 && (
-                      <div className="space-y-3">
-                        <span className="text-xs font-extrabold uppercase text-slate-400 tracking-wider block">
-                          Passo a Passo Operacional:
-                        </span>
-                        <div className="space-y-2.5">
-                          {activeConvenioObj.sections.ps.steps.map((step, sIdx) => (
-                            <div key={sIdx} className="flex items-start gap-3.5 bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs">
-                              <div className="w-7 h-7 rounded-full bg-[#0E7B86] text-white font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
-                                {sIdx + 1}
-                              </div>
-                              <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium m-0 flex-1 break-words">
-                                {step}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
+                    <h4>{block.title}</h4>
+
+                    {block.info && (
+                      <p className="text-xs sm:text-sm text-slate-700 bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 m-0 leading-relaxed font-medium">
+                        {block.info}
+                      </p>
+                    )}
+
+                    {block.alerts && block.alerts.length > 0 && (
+                      <div className="bg-[#FDF2F6] border border-[#F7D0DF] rounded-xl p-3.5 text-xs text-slate-800 space-y-1.5 mt-3">
+                        {block.alerts.map((al, aIdx) => (
+                          <div key={aIdx} className="flex items-start gap-2 break-words">
+                            <Info className="w-4 h-4 text-[#B01B52] mt-0.5 flex-shrink-0" />
+                            <span className="leading-relaxed font-bold text-[#87143E]">{al}</span>
+                          </div>
+                        ))}
                       </div>
                     )}
 
-                    {activeConvenioObj?.sections?.ps?.textItems && activeConvenioObj.sections.ps.textItems.length > 0 && (
-                      <div className="space-y-3 pt-2">
-                        <span className="text-xs font-extrabold uppercase text-[#0E7B86] tracking-wider block">
-                          Diretrizes de Atendimento:
-                        </span>
-                        <div className="space-y-2">
-                          {activeConvenioObj.sections.ps.textItems.map((item, tIdx) => (
-                            <div key={tIdx} className="flex items-start gap-2.5 bg-[#EBF7F8]/60 p-3.5 rounded-xl border border-[#C4E5E8] text-xs sm:text-sm text-slate-800 font-medium">
-                              <CheckCircle2 className="w-4 h-4 text-[#0E7B86] flex-shrink-0 mt-0.5" />
-                              <span className="break-words leading-relaxed">{item}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {activeConvenioObj?.sections?.ps?.codes && activeConvenioObj.sections.ps.codes.length > 0 && (
-                      <div className="space-y-3 pt-2">
-                        <span className="text-xs font-extrabold uppercase text-slate-400 tracking-wider block">
-                          Códigos de Consulta e Procedimentos:
-                        </span>
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left text-xs sm:text-sm border-collapse bg-white rounded-xl overflow-hidden border border-slate-200">
-                            <thead>
-                              <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-bold">
-                                <th className="py-2.5 px-3.5 w-36">Código TUSS</th>
-                                <th className="py-2.5 px-3.5">Descrição</th>
-                                <th className="py-2.5 px-3.5 text-right w-36">Ações</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-200 font-medium">
-                              {activeConvenioObj.sections.ps.codes.map((c, cIdx) => (
-                                <tr key={cIdx} className="hover:bg-slate-50 transition-colors">
-                                  <td className="py-3 px-3.5 font-mono font-bold text-[#0E7B86] whitespace-nowrap">
-                                    {c.code}
-                                  </td>
-                                  <td className="py-3 px-3.5 text-slate-800 break-words leading-relaxed">
-                                    {c.label}
-                                  </td>
-                                  <td className="py-3 px-3.5 text-right">
+                    {block.rows && block.rows.length > 0 && (
+                      <div className="overflow-x-auto mt-4">
+                        <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                          <thead>
+                            <tr className="border-b border-slate-200 text-slate-400 font-bold">
+                              <th className="py-2.5 px-3 w-36">Código TUSS</th>
+                              <th className="py-2.5 px-3">Descrição do Procedimento</th>
+                              <th className="py-2.5 px-3 text-right w-28">Ações</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 font-medium">
+                            {block.rows.map((row, rIdx) => (
+                              <tr key={rIdx} className="hover:bg-slate-50/80 transition-colors">
+                                <td className="py-3 px-3 font-mono font-bold text-[#0E7B86] whitespace-nowrap">
+                                  {row[0]}
+                                </td>
+                                <td className="py-3 px-3 text-slate-800 break-words leading-relaxed font-bold">
+                                  {row[1]}
+                                </td>
+                                <td className="py-3 px-3 text-right">
+                                  <div className="flex items-center justify-end gap-2">
                                     <button
                                       type="button"
-                                      onClick={() => copyToClipboard(c.code)}
-                                      className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86] transition-colors cursor-pointer"
+                                      onClick={() => copyCodeToClipboard(row[0])}
+                                      className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] text-slate-600 hover:text-[#0E7B86] transition-colors cursor-pointer"
                                       title="Copiar Código"
                                     >
-                                      {copiedText === c.code ? <Check className="w-4 h-4 text-[#0E7B86]" /> : <Copy className="w-4 h-4" />}
+                                      {copiedCode === row[0] ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                                     </button>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                                    {onGeneratePreGuia && (
+                                      <button
+                                        type="button"
+                                        onClick={() => onGeneratePreGuia('SERVIR', row[0], row[1])}
+                                        className="px-2.5 py-1 rounded-lg bg-[#FDF2F6] hover:bg-[#FCE7EF] text-[#B01B52] font-bold text-xs transition-colors cursor-pointer"
+                                      >
+                                        Pré-Guia
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                /* Demais Convênios */
+                <>
+                  {/* Card 1: Consulta & Pacote PS */}
+                  <div className="pop-card">
+                    <div className="pop-cardtop">
+                      <span className="pop-code">
+                        <Ambulance className="w-3.5 h-3.5 text-[#0E7B86]" />
+                        <span>{activeConvenioObj?.pacotePs ? activeConvenioObj.pacotePs.split(' ')[0] : '10101039'}</span>
+                      </span>
+                      <span className="pop-category urgencia">PACOTE CONSULTA PS</span>
+                    </div>
+
+                    <h4>Atendimento Médico de Urgência & Emergência</h4>
+
+                    <div className="pop-detail-grid">
+                      <div className="pop-detail">
+                        <b>Código Principal</b>
+                        <span className="font-mono font-black text-[#0E7B86]">
+                          {activeConvenioObj?.pacotePs || '10101039 - Consulta em Pronto-Socorro'}
+                        </span>
+                      </div>
+                      <div className="pop-detail">
+                        <b>Tipo de Cobertura</b>
+                        <span className="font-semibold text-slate-800">
+                          {activeConvenioObj?.category || 'Atendimento de Urgência 24h'}
+                        </span>
+                      </div>
+                      <div className="pop-detail">
+                        <b>Carência & Elegibilidade</b>
+                        <span className="font-semibold text-slate-800">
+                          {activeConvenioObj?.elegibilidadeRules || 'Validação obrigatória no portal/biometria'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {activeConvenioObj?.criticalNotes && activeConvenioObj.criticalNotes.length > 0 && (
+                      <div className="bg-[#FDF2F6] border border-[#F7D0DF] rounded-xl p-3.5 text-xs text-slate-800 space-y-1.5 mt-4">
+                        <strong className="text-[#87143E] block uppercase tracking-wider text-[11px]">
+                          Avisos Importantes de Atendimento:
+                        </strong>
+                        {activeConvenioObj.criticalNotes.map((note, nIdx) => (
+                          <div key={nIdx} className="flex items-start gap-2">
+                            <span className="text-[#B01B52] font-black">•</span>
+                            <span className="leading-relaxed font-medium">{note}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Card 2: Procedimentos Liberados na Urgência */}
+                  {activeConvenioObj?.sections?.ps?.procedures && activeConvenioObj.sections.ps.procedures.length > 0 && (
+                    <div className="pop-card">
+                      <div className="pop-cardtop">
+                        <span className="pop-code">
+                          <Stethoscope className="w-3.5 h-3.5 text-[#0E7B86]" />
+                          <span>PROCEDIMENTOS-PS</span>
+                        </span>
+                        <span className="pop-category urgencia">URGÊNCIA AMBULATORIAL</span>
+                      </div>
+
+                      <h4>Procedimentos de Urgência Amparados</h4>
+
+                      <div className="overflow-x-auto mt-3">
+                        <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                          <thead>
+                            <tr className="border-b border-slate-200 text-slate-400 font-bold">
+                              <th className="py-2.5 px-3 w-36">Código TUSS</th>
+                              <th className="py-2.5 px-3">Descrição do Procedimento</th>
+                              <th className="py-2.5 px-3 text-right w-28">Ações</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 font-medium">
+                            {activeConvenioObj.sections.ps.procedures.map((proc, pIdx) => (
+                              <tr key={pIdx} className="hover:bg-slate-50/80 transition-colors">
+                                <td className="py-3 px-3 font-mono font-bold text-[#0E7B86] whitespace-nowrap">
+                                  {proc.code}
+                                </td>
+                                <td className="py-3 px-3 text-slate-800 break-words leading-relaxed font-semibold">
+                                  {proc.desc}
+                                </td>
+                                <td className="py-3 px-3 text-right">
+                                  <button
+                                    type="button"
+                                    onClick={() => copyCodeToClipboard(proc.code)}
+                                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] text-slate-600 hover:text-[#0E7B86] transition-colors cursor-pointer"
+                                    title="Copiar Código"
+                                  >
+                                    {copiedCode === proc.code ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Card 3: Regras e Textos de Pronto-Socorro */}
+                  {activeConvenioObj?.sections?.ps?.textItems && activeConvenioObj.sections.ps.textItems.length > 0 && (
+                    <div className="pop-card">
+                      <div className="pop-cardtop">
+                        <span className="pop-code">
+                          <FileText className="w-3.5 h-3.5 text-[#0E7B86]" />
+                          <span>NORMAS-OPERACIONAIS</span>
+                        </span>
+                        <span className="pop-category">REGRAS DO PS</span>
+                      </div>
+
+                      <h4>Orientações e Normas do Pronto-Socorro</h4>
+
+                      <ul className="space-y-2 text-xs sm:text-sm text-slate-700 m-0 mt-3 pl-1 font-medium leading-relaxed">
+                        {activeConvenioObj.sections.ps.textItems.map((item, iIdx) => (
+                          <li key={iIdx} className="flex items-start gap-2.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#0E7B86] mt-2 flex-shrink-0" />
+                            <span className="leading-relaxed">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* CONTEÚDO DA ABA 2: EXAMES LIBERADOS NA URGÊNCIA */}
+          {/* ========================================================= */}
+          {activeTab === 'exames' && (
+            <div className="pop-cards">
+              {/* Card 1: Laboratório */}
+              <div className="pop-card">
+                <div className="pop-cardtop">
+                  <span className="pop-code">
+                    <TestTube2 className="w-3.5 h-3.5 text-[#0E7B86]" />
+                    <span>LAB-URGENCIA</span>
+                  </span>
+                  <span className="pop-category urgencia">EXAMES LABORATORIAIS</span>
+                </div>
+
+                <h4>Exames Laboratoriais de Urgência no PS</h4>
+
+                <div className="pop-detail-grid">
+                  <div className="pop-detail">
+                    <b>Regra de Liberação</b>
+                    <span className="font-bold text-slate-900">
+                      {isServir ? 'Incluso no pacote' : (activeConvenioObj?.labUrgencia || 'Conforme pedido do médico assistente')}
+                    </span>
+                  </div>
+                  <div className="pop-detail">
+                    <b>Exames Comuns</b>
+                    <span className="text-slate-700">
+                      Hemograma, PCR, Ureia, Creatinina, Eletrólitos, Gasometria, Troponina e EAS.
+                    </span>
+                  </div>
+                  <div className="pop-detail">
+                    <b>Validação</b>
+                    <span className="text-slate-700">
+                      Carimbo e assinatura do médico na guia de urgência.
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2: Imagem (RX e RM) */}
+              <div className="pop-card">
+                <div className="pop-cardtop">
+                  <span className="pop-code">
+                    <Scan className="w-3.5 h-3.5 text-[#0E7B86]" />
+                    <span>IMAGEM-URGENCIA</span>
+                  </span>
+                  <span className="pop-category">RADIOLOGIA & IMAGEM</span>
+                </div>
+
+                <h4>Exames de Radiologia, Ultrassom e Tomografia</h4>
+
+                <div className="pop-detail-grid">
+                  <div className="pop-detail">
+                    <b>Status Contratual</b>
+                    <span className="font-black text-[#0E7B86]">
+                      {isServir ? 'RX e RM Inclusos no Pacote (Sem autorização)' : (activeConvenioObj?.imagemUrgencia || 'Solicitar Autorização')}
+                    </span>
+                  </div>
+                  <div className="pop-detail">
+                    <b>Diretriz Operacional</b>
+                    <span className="text-slate-700 font-medium">
+                      {isServir 
+                        ? 'Não precisa pegar autorização para RX e RM pois o pacote está incluso. Pegar assinatura na guia e colocar a capa juntos.'
+                        : 'Radiografias e Tomografias liberadas amparadas pelo pedido médico do PS.'}
+                    </span>
+                  </div>
+                  <div className="pop-detail">
+                    <b>Requisito Mandatório</b>
+                    <span className="font-bold text-slate-900">
+                      {isServir ? 'Assinatura na Guia + Capa Juntos' : 'Laudo do médico assistente'}
+                    </span>
+                  </div>
+                </div>
+
+                {isServir && (
+                  <div className="bg-[#FDF2F6] border border-[#F7D0DF] rounded-xl p-3.5 text-xs text-slate-800 mt-4 flex items-center gap-2 font-bold text-[#87143E]">
+                    <AlertTriangle className="w-4 h-4 text-[#B01B52] flex-shrink-0" />
+                    <span>Aviso Obrigatório SERVIR: NÃO precisa autorizar RX e RM no portal. Obrigatório colher assinatura na guia e anexar a capa do atendimento.</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Passo a Passo se houver */}
+              {activeConvenioObj?.sections?.exames?.steps && activeConvenioObj.sections.exames.steps.length > 0 && (
+                <div className="pop-card">
+                  <div className="pop-cardtop">
+                    <span className="pop-code">
+                      <FileText className="w-3.5 h-3.5 text-[#0E7B86]" />
+                      <span>PASSO-A-PASSO</span>
+                    </span>
+                    <span className="pop-category urgencia">SOLICITAÇÃO DE EXAMES</span>
+                  </div>
+
+                  <h4>Fluxo de Solicitação de Exames no Autorizador</h4>
+
+                  <div className="space-y-3 mt-3">
+                    {activeConvenioObj.sections.exames.steps.map((step, sIdx) => (
+                      <div key={sIdx} className="flex items-start gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
+                        <div className="w-6 h-6 rounded-full bg-[#0E7B86] text-white font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
+                          {sIdx + 1}
                         </div>
+                        <p className="text-xs sm:text-sm text-slate-800 m-0 leading-relaxed font-medium">
+                          {step}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* CONTEÚDO DA ABA 3: VALIDAÇÃO DE TOKEN & ELEGIBILIDADE */}
+          {/* ========================================================= */}
+          {activeTab === 'token' && (
+            <div className="pop-cards">
+              <div className="pop-card">
+                <div className="pop-cardtop">
+                  <span className="pop-code">
+                    <KeyRound className="w-3.5 h-3.5 text-[#0E7B86]" />
+                    <span>TOKEN-VALIDACAO</span>
+                  </span>
+                  <span className="pop-category urgencia">BALCÃO DO PS</span>
+                </div>
+
+                <h4>Validação Biométrica e Token no Pronto-Socorro</h4>
+
+                <div className="pop-detail-grid">
+                  <div className="pop-detail">
+                    <b>Exigência de Token</b>
+                    <span className="font-bold text-slate-900">
+                      {activeConvenioObj?.sections?.token?.steps ? 'Obrigatório no Atendimento' : 'Conforme sistema da operadora'}
+                    </span>
+                  </div>
+                  <div className="pop-detail">
+                    <b>Biometria Facial</b>
+                    <span className="text-slate-700 font-medium">
+                      Obrigatório realizar conferência documental com foto do paciente.
+                    </span>
+                  </div>
+                  <div className="pop-detail">
+                    <b>Contingência</b>
+                    <span className="text-slate-700 font-medium">
+                      {activeConvenioObj?.sections?.token?.contingency || 'Em caso de instabilidade, contatar central de autorização da operadora.'}
+                    </span>
+                  </div>
+                </div>
+
+                {activeConvenioObj?.sections?.token?.steps && (
+                  <div className="space-y-3 mt-4 pt-3 border-t border-slate-100">
+                    <span className="text-xs font-black uppercase text-slate-400 tracking-wider block">
+                      Passo a Passo no Balcão de Recepção:
+                    </span>
+                    {activeConvenioObj.sections.token.steps.map((st, idx) => (
+                      <div key={idx} className="flex items-start gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200/80 text-xs text-slate-800 font-medium">
+                        <span className="w-5 h-5 rounded-full bg-[#0E7B86] text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">
+                          {idx + 1}
+                        </span>
+                        <span className="leading-relaxed">{st}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* CONTEÚDO DA ABA 4: PORTAL, ACESSOS & CONTATOS */}
+          {/* ========================================================= */}
+          {activeTab === 'portal' && (
+            <div className="pop-cards">
+              {/* Card de Credenciais do Portal */}
+              {matchingCredentials.length > 0 ? (
+                matchingCredentials.map((cred, cIdx) => (
+                  <div key={cIdx} className="pop-card">
+                    <div className="pop-cardtop">
+                      <span className="pop-code">
+                        <Globe className="w-3.5 h-3.5 text-[#0E7B86]" />
+                        <span>PORTAL-ACESSO</span>
+                      </span>
+                      <span className="pop-category urgencia">LOGIN & SENHA</span>
+                    </div>
+
+                    <h4>{cred.siteName}</h4>
+
+                    <div className="pop-detail-grid">
+                      <div className="pop-detail">
+                        <b>Endereço do Portal</b>
+                        <a
+                          href={cred.portalUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-bold text-[#0E7B86] hover:underline flex items-center gap-1 mt-1 truncate"
+                        >
+                          <span className="truncate">{cred.portalUrl}</span>
+                          <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                        </a>
+                      </div>
+
+                      <div className="pop-detail">
+                        <div className="flex items-center justify-between mb-1">
+                          <b>Login de Acesso</b>
+                          <button
+                            type="button"
+                            onClick={() => copyCredField(cred.id, 'login', cred.login)}
+                            className="text-[10px] font-bold text-[#0E7B86] hover:underline flex items-center gap-1 cursor-pointer"
+                          >
+                            {copiedCredential?.id === cred.id && copiedCredential?.field === 'login' ? (
+                              <Check className="w-3 h-3 text-emerald-600" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                            <span>Copiar</span>
+                          </button>
+                        </div>
+                        <span className="font-mono font-black text-slate-900 text-xs">
+                          {cred.login}
+                        </span>
+                      </div>
+
+                      <div className="pop-detail">
+                        <div className="flex items-center justify-between mb-1">
+                          <b>Senha de Acesso</b>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => togglePasswordReveal(cred.id)}
+                              className="text-[10px] font-bold text-slate-500 hover:text-slate-800 flex items-center gap-0.5 cursor-pointer"
+                            >
+                              {revealedPasswords[cred.id] ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                              <span>{revealedPasswords[cred.id] ? 'Ocultar' : 'Ver'}</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => copyCredField(cred.id, 'senha', cred.senha)}
+                              className="text-[10px] font-bold text-[#0E7B86] hover:underline flex items-center gap-1 cursor-pointer"
+                            >
+                              {copiedCredential?.id === cred.id && copiedCredential?.field === 'senha' ? (
+                                <Check className="w-3 h-3 text-emerald-600" />
+                              ) : (
+                                <Copy className="w-3 h-3" />
+                              )}
+                              <span>Copiar</span>
+                            </button>
+                          </div>
+                        </div>
+                        <span className="font-mono font-black text-[#0E7B86] text-xs">
+                          {revealedPasswords[cred.id] ? cred.senha : '••••••••••••'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {cred.notes && (
+                      <p className="text-xs text-slate-600 font-medium mt-3 m-0 bg-slate-50 p-2.5 rounded-lg border border-slate-200/80">
+                        {cred.notes}
+                      </p>
+                    )}
+                  </div>
+                ))
+              ) : (
+                /* Fallback Portal SERVIR ou Geral */
+                <div className="pop-card">
+                  <div className="pop-cardtop">
+                    <span className="pop-code">
+                      <Globe className="w-3.5 h-3.5 text-[#0E7B86]" />
+                      <span>PORTAL-OPERADORA</span>
+                    </span>
+                    <span className="pop-category urgencia">ACESSO WEB</span>
+                  </div>
+
+                  <h4>
+                    {isServir ? 'Portal do Prestador SERVIR (Fácil Informática)' : `Portal de Autorizações • ${planDisplayName}`}
+                  </h4>
+
+                  <div className="pop-detail-grid">
+                    <div className="pop-detail">
+                      <b>Portal Autorizador</b>
+                      <a
+                        href={isServir ? 'https://servir.facilinformatica.com.br' : (activeConvenioObj?.portalUrl || '#')}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-bold text-[#0E7B86] hover:underline flex items-center gap-1 mt-1 truncate"
+                      >
+                        <span className="truncate">
+                          {isServir ? 'https://servir.facilinformatica.com.br' : (activeConvenioObj?.portalUrl || 'Verificar portal')}
+                        </span>
+                        <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                      </a>
+                    </div>
+
+                    <div className="pop-detail">
+                      <b>Usuário / CNPJ</b>
+                      <span className="font-mono font-black text-slate-900 text-xs">
+                        12955953000192 (Palmas Medical)
+                      </span>
+                    </div>
+
+                    <div className="pop-detail">
+                      <b>Senha Padrão</b>
+                      <span className="font-mono font-black text-[#0E7B86] text-xs">
+                        {isServir ? 'Medical@2025' : 'Hpm2025hpm@'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Card de Contatos Telefônicos */}
+              {activeConvenioObj?.contact && (
+                <div className="pop-card">
+                  <div className="pop-cardtop">
+                    <span className="pop-code">
+                      <Phone className="w-3.5 h-3.5 text-[#0E7B86]" />
+                      <span>CANAIS-SUPORTE</span>
+                    </span>
+                    <span className="pop-category">TELEFONES & E-MAILS</span>
+                  </div>
+
+                  <h4>Canais de Atendimento ao Prestador</h4>
+
+                  <div className="pop-detail-grid">
+                    {activeConvenioObj.contact.phone && (
+                      <div className="pop-detail">
+                        <b>Central Telefônica</b>
+                        <span className="font-bold text-slate-900">{activeConvenioObj.contact.phone}</span>
+                      </div>
+                    )}
+                    {activeConvenioObj.contact.support0800 && (
+                      <div className="pop-detail">
+                        <b>Suporte 0800</b>
+                        <span className="font-bold text-slate-900">{activeConvenioObj.contact.support0800}</span>
+                      </div>
+                    )}
+                    {activeConvenioObj.contact.email && (
+                      <div className="pop-detail">
+                        <b>E-mail de Autorização</b>
+                        <span className="font-bold text-[#0E7B86]">{activeConvenioObj.contact.email}</span>
                       </div>
                     )}
                   </div>
@@ -686,282 +1706,12 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
             </div>
           )}
 
-          {/* ========================================================= */}
-          {/* ABA 2: EXAMES LIBERADOS NA URGÊNCIA */}
-          {/* ========================================================= */}
-          {activeSubTab === 'exames' && (
-            <div className="space-y-6">
-              <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-extrabold text-base text-slate-900 m-0">
-                    Diretrizes de Exames de Urgência no Pronto-Socorro
-                  </h3>
-                  <span className="text-xs font-bold text-[#0E7B86] bg-[#EBF7F8] border border-[#C4E5E8] px-2.5 py-1 rounded-lg">
-                    {planDisplayName}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                  <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-1">
-                    <span className="text-xs font-bold uppercase text-[#0E7B86]">Exames Laboratoriais</span>
-                    <p className="text-sm font-black text-slate-800 m-0">
-                      {selectedPlanId === 'SERVIR' ? 'Incluso no Pacote PS' : (activeConvenioObj?.labUrgencia || 'Autorização no Portal')}
-                    </p>
-                    <p className="text-xs text-slate-500 m-0 leading-relaxed">
-                      Hemograma, PCR, Gasometria, Troponina, Ureia, Creatinina, Eletrólitos e EAS.
-                    </p>
-                  </div>
-
-                  <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
-                    <span className="text-xs font-bold uppercase text-[#B01B52]">Exames de Imagem</span>
-                    <p className="text-sm font-black text-slate-800 m-0">
-                      {selectedPlanId === 'SERVIR' ? 'RX e RM Inclusos no Pacote (Sem autorização)' : (activeConvenioObj?.imagemUrgencia || 'Solicitar Autorização')}
-                    </p>
-                    <p className="text-xs text-slate-600 m-0 leading-relaxed font-medium">
-                      {selectedPlanId === 'SERVIR'
-                        ? 'Não precisa pegar autorização para RX e RM pois o pacote está incluso. Pegar assinatura na guia e colocar a capa juntos.'
-                        : 'Radiografias simples e Tomografias de urgência conforme laudo do médico assistente.'}
-                    </p>
-                    {selectedPlanId === 'SERVIR' && (
-                      <div className="mt-1 pt-2 border-t border-slate-100 flex items-center gap-1.5 text-xs font-black text-[#B01B52]">
-                        <span>⚠️ Obrigatório: Pegar assinatura na guia e anexar a capa juntos.</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {activeConvenioObj?.sections?.exames?.steps && activeConvenioObj.sections.exames.steps.length > 0 && (
-                  <div className="space-y-3 pt-2">
-                    <span className="text-xs font-extrabold uppercase text-slate-400 tracking-wider block">
-                      Passo a Passo para Solicitação de Exames:
-                    </span>
-                    <div className="space-y-2.5">
-                      {activeConvenioObj.sections.exames.steps.map((step, sIdx) => (
-                        <div key={sIdx} className="flex items-start gap-3.5 bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs">
-                          <div className="w-7 h-7 rounded-full bg-[#0E7B86] text-white font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
-                            {sIdx + 1}
-                          </div>
-                          <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium m-0 flex-1 break-words">
-                            {step}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {activeConvenioObj?.sections?.exames?.codes && activeConvenioObj.sections.exames.codes.length > 0 && (
-                  <div className="space-y-3 pt-2">
-                    <span className="text-xs font-extrabold uppercase text-slate-400 tracking-wider block">
-                      Tabela de Códigos de Exames de Urgência:
-                    </span>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs sm:text-sm border-collapse bg-white rounded-xl overflow-hidden border border-slate-200">
-                        <thead>
-                          <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-bold">
-                            <th className="py-2.5 px-3.5 w-36">Código TUSS</th>
-                            <th className="py-2.5 px-3.5">Descrição do Procedimento</th>
-                            <th className="py-2.5 px-3.5 text-right w-36">Ações</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200 font-medium">
-                          {activeConvenioObj.sections.exames.codes.map((c, cIdx) => (
-                            <tr key={cIdx} className="hover:bg-slate-50 transition-colors">
-                              <td className="py-3 px-3.5 font-mono font-bold text-[#0E7B86] whitespace-nowrap">
-                                {c.code}
-                              </td>
-                              <td className="py-3 px-3.5 text-slate-800 break-words leading-relaxed">
-                                {c.label}
-                              </td>
-                              <td className="py-3 px-3.5 text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => copyToClipboard(c.code)}
-                                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86] transition-colors cursor-pointer"
-                                    title="Copiar Código"
-                                  >
-                                    {copiedText === c.code ? <Check className="w-4 h-4 text-[#0E7B86]" /> : <Copy className="w-4 h-4" />}
-                                  </button>
-                                  {onGeneratePreGuia && (
-                                    <button
-                                      type="button"
-                                      onClick={() => onGeneratePreGuia(planDisplayName, c.code, c.label)}
-                                      className="px-2.5 py-1.5 rounded-xl bg-[#FDF2F6] hover:bg-[#FCE7EF] text-[#B01B52] font-bold text-xs transition-colors cursor-pointer"
-                                    >
-                                      Pré-Guia
-                                    </button>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ========================================================= */}
-          {/* ABA 3: VALIDAÇÃO DE TOKEN & ELEGIBILIDADE */}
-          {/* ========================================================= */}
-          {activeSubTab === 'token' && (
-            <div className="space-y-6">
-              <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-extrabold text-base text-slate-900 m-0">
-                    Regras de Elegibilidade, Token e Biometria
-                  </h3>
-                  <span className="text-xs font-bold text-[#0E7B86] bg-[#EBF7F8] border border-[#C4E5E8] px-2.5 py-1 rounded-lg">
-                    {planDisplayName}
-                  </span>
-                </div>
-
-                <div className="bg-[#EBF7F8] border border-[#C4E5E8] rounded-xl p-4 flex items-start gap-3">
-                  <KeyRound className="w-5 h-5 text-[#0E7B86] mt-0.5 flex-shrink-0" />
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-black text-[#0E7B86] m-0">Atenção ao Token do Beneficiário</h4>
-                    <p className="text-xs sm:text-sm text-slate-800 m-0 leading-relaxed">
-                      Caso o plano exija validação por token, o código de 6 dígitos deve ser gerado pelo paciente no aplicativo móvel da operadora no momento do acolhimento. A ausência de validação de token acarreta glosa imediata do atendimento.
-                    </p>
-                  </div>
-                </div>
-
-                {activeConvenioObj?.sections?.elegibilidade?.steps && activeConvenioObj.sections.elegibilidade.steps.length > 0 && (
-                  <div className="space-y-3 pt-2">
-                    <span className="text-xs font-extrabold uppercase text-slate-400 tracking-wider block">
-                      Passo a Passo no Portal da Operadora:
-                    </span>
-                    <div className="space-y-2.5">
-                      {activeConvenioObj.sections.elegibilidade.steps.map((step, sIdx) => (
-                        <div key={sIdx} className="flex items-start gap-3.5 bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs">
-                          <div className="w-7 h-7 rounded-full bg-[#0E7B86] text-white font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
-                            {sIdx + 1}
-                          </div>
-                          <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium m-0 flex-1 break-words">
-                            {step}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="bg-white p-4 rounded-xl border border-slate-200 flex items-start gap-3">
-                  <FileText className="w-5 h-5 text-[#B01B52] mt-0.5 flex-shrink-0" />
-                  <div className="space-y-1">
-                    <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider m-0">
-                      Obrigatoriedade de Assinatura na Guia Física
-                    </h4>
-                    <p className="text-xs sm:text-sm text-slate-600 m-0 leading-relaxed">
-                      Imprimir a Guia TISS após a liberação do atendimento e colher obrigatoriamente a assinatura do paciente ou responsável legal no campo 57. Anexar ao prontuário médico para envio ao faturamento.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ========================================================= */}
-          {/* ABA 4: PORTAL, ACESSOS & CONTATOS */}
-          {/* ========================================================= */}
-          {activeSubTab === 'contatos' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-5 h-5 text-[#0E7B86]" />
-                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 m-0">
-                      Acessos ao Portal Autorizador
-                    </h3>
-                  </div>
-
-                  {activeConvenioObj?.accessCredentials && activeConvenioObj.accessCredentials.length > 0 ? (
-                    <div className="space-y-2.5">
-                      {activeConvenioObj.accessCredentials.map((cred, idx) => (
-                        <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm gap-2">
-                          <span className="font-bold text-slate-500">{cred[0]}:</span>
-                          <div className="flex items-center gap-2 font-mono font-bold text-slate-900 break-all">
-                            {cred[1].startsWith('http') ? (
-                              <a
-                                href={cred[1]}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-[#0E7B86] hover:underline flex items-center gap-1 font-sans text-xs font-bold"
-                              >
-                                <span>Acessar Portal</span>
-                                <ExternalLink className="w-3.5 h-3.5" />
-                              </a>
-                            ) : (
-                              <span>{cred[1]}</span>
-                            )}
-                            {!cred[1].startsWith('http') && (
-                              <button
-                                type="button"
-                                onClick={() => copyToClipboard(cred[1])}
-                                className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] text-slate-600 transition-colors cursor-pointer"
-                                title="Copiar"
-                              >
-                                {copiedText === cred[1] ? <Check className="w-3.5 h-3.5 text-[#0E7B86]" /> : <Copy className="w-3.5 h-3.5" />}
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-6 text-center text-xs text-slate-400 bg-white rounded-xl border border-slate-200">
-                      Consulte o setor de Faturamento ou TI para as credenciais institucionais deste convênio.
-                    </div>
-                  )}
-                </div>
-
-                <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-5 h-5 text-[#B01B52]" />
-                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 m-0">
-                      Contatos & Telefones de Suporte
-                    </h3>
-                  </div>
-
-                  {activeConvenioObj?.contacts && activeConvenioObj.contacts.length > 0 ? (
-                    <div className="space-y-2.5">
-                      {activeConvenioObj.contacts.map((contact, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-3.5 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm gap-2">
-                          <div className="flex items-center gap-2.5 text-slate-800 font-medium break-all">
-                            {contact.includes('@') ? (
-                              <Mail className="w-4 h-4 text-[#0E7B86] flex-shrink-0" />
-                            ) : (
-                              <Phone className="w-4 h-4 text-[#B01B52] flex-shrink-0" />
-                            )}
-                            <span className="leading-relaxed">{contact}</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => copyToClipboard(contact)}
-                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] text-slate-600 transition-colors flex-shrink-0 cursor-pointer"
-                            title="Copiar Contato"
-                          >
-                            {copiedText === contact ? <Check className="w-3.5 h-3.5 text-[#0E7B86]" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-6 text-center text-xs text-slate-400 bg-white rounded-xl border border-slate-200">
-                      Consulte a lista geral de ramais ou o setor de auditoria do hospital.
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-        </div>
-      </div>
+          {/* Rodapé institucional */}
+          <footer className="pop-footer-note">
+            <strong>Hospital Palmas Medical • Urgência & Emergência 24 Horas:</strong> Todas as regras são atualizadas de acordo com as diretrizes contratuais vigentes. Em caso de dúvidas no plantão, consulte a supervisão de recepção.
+          </footer>
+        </section>
+      </main>
     </div>
   );
 };

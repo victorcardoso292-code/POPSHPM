@@ -7,7 +7,6 @@ import { PORTAIS_CREDENCIAIS, PORTAIS_RULES, PortalCredential } from '../data/po
 interface PopsInternacaoViewerProps {
   onOpenAiWithPrompt?: (prompt: string) => void;
   onGeneratePreGuia?: (convenio: string, code?: string, desc?: string) => void;
-  onNavigateToPortais?: () => void;
   initialPlanId?: string;
 }
 
@@ -16,7 +15,6 @@ type PopActiveTab = 'clinica' | 'uti' | 'todos' | 'cirurgias' | 'portal';
 export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
   onOpenAiWithPrompt,
   onGeneratePreGuia,
-  onNavigateToPortais,
   initialPlanId
 }) => {
   const [selectedPlanId, setSelectedPlanId] = useState<string>(initialPlanId || '');
@@ -1627,15 +1625,6 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                       </div>
                     </div>
 
-                    {onNavigateToPortais && (
-                      <button
-                        type="button"
-                        onClick={onNavigateToPortais}
-                        className="text-xs font-bold text-[#0E7B86] hover:underline flex items-center gap-1 cursor-pointer"
-                      >
-                        Ver todos os convênios →
-                      </button>
-                    )}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

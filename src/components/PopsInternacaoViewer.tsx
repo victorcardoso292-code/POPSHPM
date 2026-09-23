@@ -1,26 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { 
-  Building2, 
-  Search, 
-  ExternalLink, 
-  AlertTriangle, 
-  CheckCircle2, 
-  Copy, 
-  Check, 
-  Sparkles, 
-  Phone, 
-  Mail, 
-  FileText, 
-  ShieldCheck, 
-  Info,
-  ArrowRight,
-  Bed,
-  Activity,
-  Scissors,
-  Calendar,
-  ChevronLeft,
-  Globe
-} from 'lucide-react';
+import { ExternalLink, Globe, Printer, FileText } from 'lucide-react';
 import { SERVIR_DATA, CONVENIOS_MASTER_LIST } from '../data/popsData';
 import { TABELA_DIARIAS_DATA, ALL_DIARIAS_ITEMS, DiariaItem, ConvenioDiariasRules } from '../data/diariasData';
 
@@ -30,36 +9,43 @@ interface PopsInternacaoViewerProps {
   initialPlanId?: string;
 }
 
-type InternacaoSubTab = 'clinica' | 'uti' | 'cirurgias' | 'contatos';
+type PopActiveTab = 'clinica' | 'uti' | 'todos' | 'cirurgias' | 'portal';
 
 export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
   onOpenAiWithPrompt,
   onGeneratePreGuia,
   initialPlanId
 }) => {
-  const [selectedPlanId, setSelectedPlanId] = useState<string>(initialPlanId || '');
-  const [viewMode, setViewMode] = useState<'grid' | 'details'>(initialPlanId ? 'details' : 'grid');
+  const [selectedPlanId, setSelectedPlanId] = useState<string>(initialPlanId || 'ASSEFAZ');
+  const [viewMode, setViewMode] = useState<'grid' | 'details'>('details');
+  const [activeTab, setActiveTab] = useState<PopActiveTab>('clinica');
+  const [query, setQuery] = useState<string>('');
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [planSearch, setPlanSearch] = useState<string>('');
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('Todos');
-  const [activeSubTab, setActiveSubTab] = useState<InternacaoSubTab>('clinica');
-  const [copiedText, setCopiedText] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialPlanId) {
       setSelectedPlanId(initialPlanId);
       setViewMode('details');
-      setActiveSubTab('clinica');
+      setActiveTab('clinica');
+      setQuery('');
     }
   }, [initialPlanId]);
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedText(text);
-    setTimeout(() => setCopiedText(null), 2000);
+  const copyCodeToClipboard = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(code);
+      setTimeout(() => setCopiedCode(null), 1300);
+    } catch {
+      // Fallback
+    }
   };
 
   const planCategories = ['Todos', 'Autogestão', 'Seguradora', 'Privado', 'Militar', 'Estadual'];
 
+  // Busca regras oficiais da planilha do convênio selecionado
   const planDiariasRules = useMemo(() => {
     if (!selectedPlanId) return null;
     const norm = selectedPlanId.toUpperCase().trim();
@@ -85,14 +71,72 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
       (norm.includes('CONAB') && r.convenioId === 'CONAB') ||
       (norm.includes('TRE') && r.convenioId === 'TRE') ||
       (norm.includes('E-VIDA') && r.convenioId === 'E-VIDA') ||
-      (norm.includes('FUSEX') && r.convenioId === 'FUSEX')
+      (norm.includes('FUSEX') && r.convenioId === 'FUSEX') ||
+      (norm.includes('SUL') && r.convenioId === 'SUL AMÉRICA')
     ) || null;
   }, [selectedPlanId]);
 
+  // Objeto de dados complementares do convênio
+  const activeConvenioObj = useMemo(() => {
+    if (!selectedPlanId) return null;
+    if (selectedPlanId === 'SERVIR') return null;
+    return CONVENIOS_MASTER_LIST.find(c => 
+      c.id.toUpperCase() === selectedPlanId.toUpperCase() ||
+      c.name.toUpperCase().includes(selectedPlanId.toUpperCase())
+    ) || null;
+  }, [selectedPlanId]);
+
+  // Lista com todos os convênios disponíveis
+  const allPlansList = useMemo(() => {
+    const plans: { id: string; name: string; category: string; badge: string; count: number }[] = [];
+
+    TABELA_DIARIAS_DATA.forEach(d => {
+      plans.push({
+        id: d.convenioId,
+        name: d.convenioName,
+        category: d.category,
+        badge: d.convenioId === 'ASSEFAZ' ? 'AF' : d.badge,
+        count: d.itens.length
+      });
+    });
+
+    CONVENIOS_MASTER_LIST.forEach(c => {
+      const exists = plans.some(p => p.id.toUpperCase() === c.id.toUpperCase() || p.name.toUpperCase() === c.name.toUpperCase());
+      if (!exists) {
+        plans.push({
+          id: c.id,
+          name: c.name,
+          category: c.category,
+          badge: c.badge,
+          count: 0
+        });
+      }
+    });
+
+    return plans.sort((a, b) => a.name.localeCompare(b.name));
+  }, []);
+
+  const filteredPlansForGrid = useMemo(() => {
+    return allPlansList.filter(p => {
+      const matchCat = activeCategoryFilter === 'Todos' || 
+        (activeCategoryFilter === 'Autogestão' && p.category.toLowerCase().includes('autogest')) ||
+        (activeCategoryFilter === 'Militar' && p.category.toLowerCase().includes('militar')) ||
+        (activeCategoryFilter === 'Seguradora' && p.category.toLowerCase().includes('seguradora')) ||
+        (activeCategoryFilter === 'Privado' && p.category.toLowerCase().includes('privad')) ||
+        (activeCategoryFilter === 'Estadual' && p.category.toLowerCase().includes('estadual'));
+
+      const matchSearch = !planSearch || 
+        p.name.toLowerCase().includes(planSearch.toLowerCase()) ||
+        p.id.toLowerCase().includes(planSearch.toLowerCase());
+
+      return matchCat && matchSearch;
+    });
+  }, [allPlansList, activeCategoryFilter, planSearch]);
+
   // Helper para identificar leitos e diárias de UTI
   const isUtiItem = (item: DiariaItem) => {
-    const normTipo = item.tipo.toUpperCase();
-    const normAcomodacao = item.acomodacao.toUpperCase();
+    const normTipo = (item.tipo || '').toUpperCase();
+    const normAcomodacao = (item.acomodacao || '').toUpperCase();
     return (
       normTipo === 'UTI' ||
       normAcomodacao.includes('UTI') ||
@@ -101,101 +145,90 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
     );
   };
 
-  // Diárias exclusivas de Internação Clínica (Apartamento, Enfermaria, Berçário, Hospital Dia)
+  const allItems = useMemo(() => {
+    if (!planDiariasRules) return [];
+    return planDiariasRules.itens;
+  }, [planDiariasRules]);
+
   const clinicaDiarias = useMemo(() => {
-    if (!planDiariasRules) return [];
-    return planDiariasRules.itens.filter(i => !isUtiItem(i));
-  }, [planDiariasRules]);
+    return allItems.filter(i => !isUtiItem(i));
+  }, [allItems]);
 
-  // Diárias exclusivas de UTI & Cuidados Intensivos
   const utiDiarias = useMemo(() => {
-    if (!planDiariasRules) return [];
-    return planDiariasRules.itens.filter(i => isUtiItem(i));
-  }, [planDiariasRules]);
+    return allItems.filter(i => isUtiItem(i));
+  }, [allItems]);
 
-  const allPlansList = useMemo(() => {
-    const plans: { id: string; name: string; category: string; badge: string }[] = [
-      ...CONVENIOS_MASTER_LIST.map(c => ({
-        id: c.id,
-        name: c.name,
-        category: c.category,
-        badge: c.badge
-      })),
-      { 
-        id: 'SERVIR', 
-        name: 'SERVIR (Plano de Saúde TO)', 
-        category: 'Estadual', 
-        badge: 'SE' 
-      }
-    ];
+  const itemsWithTogether = useMemo(() => {
+    return allItems.filter(i => i.solicitarJunto && i.solicitarJunto.trim().length > 0);
+  }, [allItems]);
 
-    // Inclui convênios da tabela de diárias não mapeados na lista base
-    TABELA_DIARIAS_DATA.forEach(d => {
-      const exists = plans.some(p => 
-        p.id.toUpperCase() === d.convenioId.toUpperCase() ||
-        (p.id === 'CAPESESP' && d.convenioId === 'CAPESAUDE') ||
-        (p.id === 'SAÚDE CAIXA' && d.convenioId === 'SAÚDE CAIXA') ||
-        (p.id === 'PRO TOCANTINS' && d.convenioId === 'PRO TOCANTINS') ||
-        (p.id === 'PRO SOCIAL' && d.convenioId === 'PRO SOCIAL') ||
-        (p.id === 'POSTAL SAÚDE' && d.convenioId === 'POSTAL SAÚDE') ||
-        (p.id === 'GAMASAÚDE' && d.convenioId === 'GAMASAÚDE')
-      );
-      if (!exists) {
-        plans.push({
-          id: d.convenioId,
-          name: d.convenioName,
-          category: d.category,
-          badge: d.badge
-        });
-      }
-    });
+  // Filtragem dos cartões baseado na aba ativa e no termo de busca
+  const filteredCards = useMemo(() => {
+    let baseList = allItems;
+    if (activeTab === 'clinica') {
+      baseList = clinicaDiarias;
+    } else if (activeTab === 'uti') {
+      baseList = utiDiarias;
+    }
 
-    return plans.sort((a, b) => a.name.localeCompare(b.name));
-  }, []);
+    const q = query.toLowerCase().trim();
+    if (!q) return baseList;
 
-  const filteredPlans = useMemo(() => {
-    return allPlansList.filter(p => {
-      const matchCat = activeCategoryFilter === 'Todos' || 
-        (activeCategoryFilter === 'Autogestão' && p.category.toLowerCase().includes('autogest')) ||
-        (activeCategoryFilter === 'Militar' && p.category.toLowerCase().includes('militar')) ||
-        p.category === activeCategoryFilter;
-      const matchSearch = p.name.toLowerCase().includes(planSearch.toLowerCase()) || 
-        p.id.toLowerCase().includes(planSearch.toLowerCase()) ||
-        p.category.toLowerCase().includes(planSearch.toLowerCase());
-      return matchCat && matchSearch;
-    });
-  }, [allPlansList, planSearch, activeCategoryFilter]);
+    return baseList.filter(item => 
+      (item.acomodacao || '').toLowerCase().includes(q) ||
+      (item.code || '').toLowerCase().includes(q) ||
+      (item.solicitarJunto || '').toLowerCase().includes(q)
+    );
+  }, [allItems, clinicaDiarias, utiDiarias, activeTab, query]);
 
-  const activeConvenioObj = useMemo(() => {
-    if (selectedPlanId === 'SERVIR') return null;
-    return CONVENIOS_MASTER_LIST.find(c => c.id === selectedPlanId) || null;
-  }, [selectedPlanId]);
+  // Informações de apresentação do convênio ativo
+  const planDisplayName = planDiariasRules?.convenioName || activeConvenioObj?.name || (selectedPlanId === 'SERVIR' ? 'SERVIR' : selectedPlanId);
+  const planCategory = planDiariasRules?.category || activeConvenioObj?.category || 'Autogestão';
+  const planBadge = selectedPlanId.toUpperCase() === 'ASSEFAZ' ? 'AF' : (planDiariasRules?.badge || activeConvenioObj?.badge || selectedPlanId.slice(0, 2).toUpperCase());
+
+  // Título e subtítulo do cabeçalho da listagem conforme a aba
+  const headings = {
+    clinica: {
+      title: 'Internação clínica',
+      subtitle: 'Enfermaria, apartamento, berçário, isolamento e hospital dia.'
+    },
+    uti: {
+      title: 'UTI',
+      subtitle: 'Diárias e taxa de isolamento para UTI.'
+    },
+    todos: {
+      title: 'Todas as diárias',
+      subtitle: `Relação completa do convênio ${planDisplayName}.`
+    },
+    cirurgias: {
+      title: 'Cirurgias, OPME & Pré-Guia',
+      subtitle: `Área reservada para os procedimentos cirúrgicos de ${planDisplayName}.`
+    },
+    portal: {
+      title: 'Portal, Acessos & Contatos',
+      subtitle: `Área reservada para os acessos e contatos de ${planDisplayName}.`
+    }
+  };
 
   const handleSelectPlan = (planId: string) => {
     setSelectedPlanId(planId);
     setViewMode('details');
-    setActiveSubTab('clinica');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleBackToGrid = () => {
-    setViewMode('grid');
+    setActiveTab('clinica');
+    setQuery('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // ==========================================
-  // VIEW 1: SELEÇÃO DE CONVÊNIOS (GRID)
+  // VIEW 1: SELETOR DE CONVÊNIOS EM GRID
   // ==========================================
   if (viewMode === 'grid') {
     return (
-      <div className="space-y-6">
-        {/* Header Banner */}
+      <div className="space-y-6 max-w-7xl mx-auto pb-16">
         <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs">
           <div className="max-w-3xl space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-widest text-[#B01B52] bg-[#FDF2F6] border border-[#F7D0DF] px-3 py-1 rounded-full flex items-center gap-1.5">
-                <Building2 className="w-3.5 h-3.5 text-[#B01B52]" />
-                POPs • Internação & UTI
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]">
+                Central de POPS Internação
               </span>
               <span className="text-xs text-slate-400 font-medium hidden sm:inline">Hospital Palmas Medical</span>
             </div>
@@ -203,11 +236,10 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
               Escolha o Convênio do Paciente Internado
             </h2>
             <p className="text-sm text-slate-600 leading-relaxed m-0">
-              Clique no convênio desejado para acessar os códigos de diárias, regras de acomodação (enfermaria/apartamento), pareceres médicos e leitos de UTI cadastrados na tabela oficial.
+              Selecione o convênio para abrir o guia de consulta com códigos de diárias, regras de acomodação (enfermaria/apartamento), vínculos de cobrança e leitos de UTI.
             </p>
           </div>
 
-          {/* Filter pills & search */}
           <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
               {planCategories.map(cat => (
@@ -217,7 +249,7 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                   onClick={() => setActiveCategoryFilter(cat)}
                   className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                     activeCategoryFilter === cat
-                      ? 'bg-[#B01B52] text-white shadow-xs'
+                      ? 'bg-[#A7194D] text-white shadow-xs'
                       : 'bg-slate-100 hover:bg-[#EBF7F8] text-slate-600 hover:text-[#0E7B86]'
                   }`}
                 >
@@ -227,978 +259,1276 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
             </div>
 
             <div className="relative w-full md:w-80">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="search"
                 placeholder="Buscar convênio para internação..."
                 value={planSearch}
                 onChange={e => setPlanSearch(e.target.value)}
-                className="w-full pl-9.5 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0E7B86] focus:bg-white text-slate-900 placeholder:text-slate-400"
+                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0E7B86] focus:bg-white text-slate-900 placeholder:text-slate-400"
               />
             </div>
           </div>
         </div>
 
-        {/* Counter of available plans */}
-        <div className="flex items-center justify-between px-1">
-          <span className="text-xs font-black uppercase tracking-wider text-slate-400">
-            Convênios Disponíveis para Internação ({filteredPlans.length})
-          </span>
-          <span className="text-xs text-slate-500">
-            Clique no convênio para ver seus respectivos códigos e regras
-          </span>
-        </div>
-
-        {/* Plan Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredPlans.map(plan => {
-            const planRules = TABELA_DIARIAS_DATA.find(r => 
-              r.convenioId.toUpperCase() === plan.id.toUpperCase() ||
-              r.convenioName.toUpperCase() === plan.name.toUpperCase()
-            );
-
-            return (
-              <button
-                key={plan.id}
-                type="button"
-                onClick={() => handleSelectPlan(plan.id)}
-                className="w-full text-left bg-white border border-slate-200 hover:border-[#B01B52] hover:shadow-md rounded-2xl p-5 transition-all duration-150 cursor-pointer group flex flex-col justify-between gap-4"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-[#B01B52] text-white font-black text-sm flex items-center justify-center flex-shrink-0 shadow-xs tracking-wider">
-                      {plan.badge}
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8] transition-colors">
-                        {plan.category}
-                      </span>
-                      {planRules && (
-                        <span className="text-[10px] text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded">
-                          {planRules.itens.length} diárias
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="font-black text-slate-900 text-base tracking-tight leading-snug group-hover:text-[#B01B52] transition-colors m-0 break-words">
-                      {plan.name}
-                    </h3>
-                    <p className="text-xs text-slate-500 font-medium mt-1 m-0">
-                      Diárias clínicas, acomodação, pareceres e leitos de UTI
-                    </p>
-                  </div>
-
-                  {planRules?.criticalRule && (
-                    <div className="bg-[#FDF2F6] border border-[#F7D0DF] rounded-lg px-2.5 py-1 text-[11px] text-[#B01B52] font-black flex items-center gap-1.5">
-                      <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
-                      <span className="truncate">{planRules.criticalRule}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <span className="font-bold text-[#B01B52] group-hover:underline flex items-center gap-1">
-                    Ver Diárias & Regras do Plano
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                  </span>
-                  <span className="text-[11px] text-slate-400 font-medium">Internação</span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {filteredPlans.length === 0 && (
-          <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center space-y-3">
-            <Info className="w-8 h-8 text-slate-400 mx-auto" />
-            <p className="text-sm font-bold text-slate-700 m-0">Nenhum convênio encontrado com esse termo.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredPlansForGrid.map(plan => (
             <button
+              key={plan.id}
               type="button"
-              onClick={() => { setPlanSearch(''); setActiveCategoryFilter('Todos'); }}
-              className="text-xs font-bold text-[#B01B52] hover:underline cursor-pointer"
+              onClick={() => handleSelectPlan(plan.id)}
+              className="bg-white border border-slate-200/90 hover:border-[#BFDEE7] hover:shadow-md rounded-2xl p-5 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between group space-y-4"
             >
-              Limpar filtros e exibir todos
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="w-12 h-12 rounded-xl bg-[#A7194D] text-white font-black text-sm flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                    {plan.badge}
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]">
+                      {plan.category}
+                    </span>
+                    {plan.count > 0 && (
+                      <span className="text-[10px] text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded">
+                        {plan.count} diárias
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-black text-slate-900 text-base tracking-tight leading-snug group-hover:text-[#A7194D] transition-colors m-0 break-words">
+                    {plan.name}
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium mt-1 m-0">
+                    Diárias clínicas, acomodação, vínculos e leitos de UTI
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span className="font-bold text-[#A7194D] group-hover:underline flex items-center gap-1">
+                  Abrir Modelo de Internação →
+                </span>
+                <span className="text-[11px] text-slate-400 font-medium">Internação</span>
+              </div>
             </button>
-          </div>
-        )}
+          ))}
+        </div>
       </div>
     );
   }
 
   // ==========================================
-  // VIEW 2: PÁGINA EXCLUSIVA DO CONVÊNIO ESCOLHIDO
+  // VIEW 2: MODELO SOLICITADO PELO USUÁRIO
+  // (100% IDÊNTICO ÀS CAPTURAS DE TELA ENVIADAS)
   // ==========================================
-  const planDisplayName = activeConvenioObj?.name || planDiariasRules?.convenioName || (selectedPlanId === 'SERVIR' ? 'SERVIR (Plano de Saúde TO)' : selectedPlanId);
-  const planCategory = activeConvenioObj?.category || planDiariasRules?.category || 'Convênio';
-  const planBadge = activeConvenioObj?.badge || planDiariasRules?.badge || (selectedPlanId === 'SERVIR' ? 'SE' : selectedPlanId.slice(0, 2));
+  const isSpecialTab = activeTab === 'cirurgias' || activeTab === 'portal';
+
+  const specificNotice = planDiariasRules?.criticalRule
+    ? `Aviso de acomodação: ${planDiariasRules.criticalRule}`
+    : planDiariasRules?.urgenciaRegra
+    ? `Regra de urgência: ${planDiariasRules.urgenciaRegra}`
+    : `As demais orientações não constam na parte da ${planDisplayName} da planilha.`;
 
   return (
-    <div className="space-y-6">
-      {/* Top Navigation Strip */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={handleBackToGrid}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#EBF7F8] hover:bg-[#D8ECEE] text-[#0E7B86] font-bold text-xs transition-all cursor-pointer w-fit"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          <span>← Voltar para a lista de convênios</span>
-        </button>
+    <div className="pop-root">
+      <style>{`
+        .pop-root {
+          font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          text-rendering: optimizeLegibility;
+          color: #172b43;
+          background: #f3f7fa;
+          font-synthesis: none;
+          margin: -1.5rem;
+          padding: 1.5rem;
+          min-height: calc(100vh - 80px);
+        }
+        .pop-shell {
+          max-width: 1220px;
+          margin: auto;
+          padding: 10px 10px 70px;
+        }
+        .pop-topline {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin: 0 0 15px;
+          color: #64768a;
+          font-size: 13px;
+          font-weight: 500;
+          letter-spacing: -0.01em;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        .pop-crumb {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          flex-wrap: wrap;
+        }
+        .pop-crumb button.crumb-btn {
+          background: none;
+          border: 0;
+          color: #64768a;
+          cursor: pointer;
+          padding: 0;
+          font: inherit;
+          font-weight: 500;
+        }
+        .pop-crumb button.crumb-btn:hover {
+          color: #a7194d;
+          text-decoration: underline;
+        }
+        .pop-crumb span.active-crumb {
+          color: #1b354c;
+          font-weight: 800;
+        }
+        .pop-top-actions {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .pop-plan-select {
+          padding: 6px 12px;
+          border: 1px solid #d8e5ec;
+          border-radius: 20px;
+          background: white;
+          color: #1b354c;
+          font-size: 12px;
+          font-weight: 700;
+          font-family: inherit;
+          outline: none;
+          cursor: pointer;
+        }
+        .pop-preview {
+          padding: 5px 12px;
+          border: 1px solid #d8e5ec;
+          border-radius: 30px;
+          background: white;
+          font-size: 12px;
+          font-weight: 600;
+          color: #475569;
+          white-space: nowrap;
+        }
+        .pop-hero, .pop-workspace {
+          background: #fff;
+          border: 1px solid #dae5ed;
+          box-shadow: 0 5px 18px #182f4b09;
+          border-radius: 20px;
+        }
+        .pop-hero {
+          padding: 28px 30px 23px;
+        }
+        .pop-hero-main {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+        .pop-badge {
+          display: grid;
+          place-items: center;
+          flex: 0 0 56px;
+          width: 56px;
+          height: 56px;
+          border-radius: 16px;
+          background: #a7194d;
+          color: #fff;
+          font-size: 20px;
+          font-weight: 850;
+          letter-spacing: -0.02em;
+          box-shadow: 0 4px 9px #a7194d25;
+        }
+        .pop-heading {
+          min-width: 0;
+          flex: 1;
+        }
+        .pop-name-row {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+        .pop-heading h1 {
+          margin: 0;
+          color: #0c2541;
+          letter-spacing: -0.04em;
+          font-size: 26px;
+          font-weight: 850;
+          line-height: 1.2;
+        }
+        .pop-tag {
+          padding: 4px 10px;
+          border-radius: 7px;
+          background: #e8f8fa;
+          border: 1px solid #bee6ec;
+          color: #14758a;
+          font-weight: 750;
+          font-size: 12px;
+          letter-spacing: 0.01em;
+        }
+        .pop-heading p {
+          margin: 5px 0 0;
+          color: #516780;
+          font-size: 13px;
+          font-weight: 500;
+          letter-spacing: -0.01em;
+        }
+        .pop-hero-rule {
+          height: 1px;
+          background: #edf1f5;
+          margin: 23px 0 16px;
+        }
+        .pop-stats {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+        }
+        .pop-stat {
+          display: flex;
+          gap: 12px;
+          align-items: center;
+          border: 1px solid #dde8f0;
+          background: #fbfdff;
+          border-radius: 13px;
+          padding: 13px;
+        }
+        .pop-stat-icon {
+          display: grid;
+          place-items: center;
+          width: 36px;
+          height: 36px;
+          flex: 0 0 36px;
+          border-radius: 10px;
+          background: #eaf7fb;
+          color: #08768d;
+          font-size: 18px;
+        }
+        .pop-stat:nth-child(2) .pop-stat-icon {
+          background: #fff0f5;
+          color: #b01b51;
+        }
+        .pop-stat:nth-child(3) .pop-stat-icon {
+          background: #eef5fa;
+          color: #245b7d;
+        }
+        .pop-stat small {
+          display: block;
+          color: #687b91;
+          font-size: 10.5px;
+          font-weight: 850;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+        }
+        .pop-stat strong {
+          display: block;
+          margin-top: 3px;
+          font-size: 13.5px;
+          line-height: 1.25;
+          color: #0c2541;
+          font-weight: 800;
+          letter-spacing: -0.015em;
+        }
+        .pop-workspace {
+          margin-top: 20px;
+          overflow: hidden;
+        }
+        .pop-workspace-head {
+          padding: 24px 26px 0;
+        }
+        .pop-eyebrow {
+          color: #ac2354;
+          font-size: 11px;
+          font-weight: 850;
+          letter-spacing: .12em;
+          text-transform: uppercase;
+        }
+        .pop-workspace h2 {
+          margin: 5px 0 4px;
+          color: #122a46;
+          font-size: 22px;
+          letter-spacing: -.035em;
+          font-weight: 800;
+          line-height: 1.25;
+        }
+        .pop-subtext {
+          font-size: 13px;
+          color: #708196;
+          margin: 0 0 18px;
+          font-weight: 500;
+          letter-spacing: -0.01em;
+        }
+        .pop-toolbar {
+          display: flex;
+          gap: 12px;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+        .pop-tabs {
+          display: flex;
+          gap: 4px;
+          padding: 4px;
+          max-width: 100%;
+          overflow-x: auto;
+          background: #f1f6f9;
+          border: 1px solid #e5edf3;
+          border-radius: 11px;
+        }
+        .pop-tab {
+          border: 0;
+          background: transparent;
+          border-radius: 8px;
+          padding: 9px 14px;
+          color: #607387;
+          font-weight: 750;
+          font-size: 13px;
+          font-family: inherit;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          white-space: nowrap;
+          letter-spacing: -0.01em;
+        }
+        .pop-tab[aria-selected="true"] {
+          color: #a7194d;
+          background: #fff;
+          font-weight: 800;
+          box-shadow: 0 2px 7px #182f4b16;
+        }
+        .pop-count {
+          font-size: 11px;
+          font-weight: 750;
+          opacity: .75;
+          margin-left: 5px;
+        }
+        .pop-actions {
+          display: flex;
+          gap: 9px;
+          align-items: center;
+        }
+        .pop-search {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          border: 1px solid #dce6ed;
+          border-radius: 9px;
+          padding: 0 12px;
+          background: white;
+          color: #6b8190;
+        }
+        .pop-search input {
+          width: 210px;
+          height: 38px;
+          border: 0;
+          outline: 0;
+          color: #203951;
+          background: transparent;
+          font-size: 13px;
+          font-family: inherit;
+          font-weight: 500;
+        }
+        .pop-search input::placeholder {
+          color: #94a3b8;
+        }
+        .pop-print {
+          border: 1px solid #dce6ed;
+          color: #234459;
+          background: white;
+          border-radius: 9px;
+          padding: 9px 12px;
+          font-size: 13px;
+          font-family: inherit;
+          font-weight: 700;
+          letter-spacing: -0.01em;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          transition: background .15s;
+        }
+        .pop-print:hover {
+          background: #f8fafc;
+        }
+        .pop-notice {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin: 21px 26px 0;
+          padding: 12px 15px;
+          border-radius: 11px;
+          background: #f1f9fb;
+          color: #245568;
+          font-size: 12px;
+          font-weight: 500;
+          line-height: 1.5;
+          border: 1px solid #d8ecf2;
+          letter-spacing: -0.01em;
+        }
+        .pop-notice b {
+          color: #176d82;
+          font-weight: 750;
+        }
+        .pop-list-head {
+          padding: 22px 26px 12px;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          gap: 14px;
+        }
+        .pop-list-head h3 {
+          font-size: 15px;
+          margin: 0 0 3px;
+          color: #1b354c;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+        }
+        .pop-list-head p {
+          font-size: 12px;
+          color: #708196;
+          margin: 0;
+          font-weight: 500;
+        }
+        .pop-results {
+          font-size: 12px;
+          color: #708196;
+          white-space: nowrap;
+          font-weight: 600;
+        }
+        .pop-cards {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 16px;
+          padding: 0 26px 27px;
+        }
+        .pop-card {
+          border: 1px solid #e0e9ef;
+          border-radius: 13px;
+          padding: 18px 20px 17px;
+          transition: border-color .2s, box-shadow .2s;
+          min-width: 0;
+          background: #fff;
+        }
+        .pop-card:hover {
+          border-color: #bfdee7;
+          box-shadow: 0 4px 12px #182f4b06;
+        }
+        .pop-cardtop {
+          display: flex;
+          justify-content: space-between;
+          gap: 7px;
+          align-items: center;
+        }
+        .pop-code {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: #eef5f9;
+          border: 1px solid #dceaf0;
+          color: #225570;
+          border-radius: 7px;
+          padding: 5px 9px;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+          font-size: 12.5px;
+          font-weight: 750;
+          letter-spacing: 0.02em;
+        }
+        .pop-copy {
+          border: 0;
+          background: none;
+          color: #8c9cad;
+          font-size: 14px;
+          padding: 2px 4px;
+          cursor: pointer;
+          transition: color .15s;
+        }
+        .pop-copy:hover {
+          color: #a7194d;
+        }
+        .pop-category {
+          color: #8b5670;
+          background: #fff2f6;
+          font-size: 10px;
+          font-weight: 850;
+          padding: 5px 8px;
+          border-radius: 6px;
+          white-space: nowrap;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
+        .pop-category.uti {
+          color: #385884;
+          background: #eff5ff;
+        }
+        .pop-card h4 {
+          font-size: 14.5px;
+          line-height: 1.45;
+          margin: 12px 0 12px;
+          color: #1b304a;
+          font-weight: 800;
+          letter-spacing: -0.015em;
+          text-transform: uppercase;
+        }
+        .pop-joint {
+          border-top: 1px solid #e9eef3;
+          padding-top: 12px;
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+        .pop-joint .label {
+          font-size: 11px;
+          font-weight: 850;
+          color: #667a8d;
+          letter-spacing: .04em;
+          text-transform: uppercase;
+        }
+        .pop-joint .value {
+          font-size: 12px;
+          font-weight: 750;
+          color: #1d6d80;
+          background: #eaf8f9;
+          padding: 4px 8px;
+          border-radius: 6px;
+          border: 1px solid #bee6ec;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+          letter-spacing: 0.01em;
+        }
+        .pop-joint .empty {
+          font-size: 12px;
+          color: #91a0aa;
+          font-weight: 500;
+        }
+        .pop-detail-grid {
+          display: grid;
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          gap: 9px;
+          margin-top: 13px;
+        }
+        .pop-detail {
+          background: #f8fafc;
+          border: 1px solid #e9eff4;
+          border-radius: 8px;
+          padding: 10px 12px;
+          min-width: 0;
+        }
+        .pop-detail b {
+          display: block;
+          color: #637b90;
+          font-size: 11px;
+          letter-spacing: .02em;
+          margin-bottom: 4px;
+          font-weight: 750;
+        }
+        .pop-detail span {
+          display: block;
+          font-size: 11px;
+          line-height: 1.45;
+          color: #283e52;
+          font-weight: 500;
+          overflow-wrap: anywhere;
+        }
+        .pop-detail .missing {
+          color: #8292a1;
+          font-style: italic;
+          font-weight: 400;
+        }
+        .pop-empty-state {
+          text-align: center;
+          color: #6d8091;
+          padding: 50px 20px;
+          font-size: 13px;
+        }
+        .pop-module {
+          margin: 0 26px 27px;
+          padding: 22px;
+          border: 1px solid #e1eaf0;
+          border-radius: 13px;
+          background: linear-gradient(135deg, #fff, #f9fcfd);
+        }
+        .pop-module h4 {
+          font-size: 17px;
+          color: #19344d;
+          margin: 0 0 8px;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+        }
+        .pop-module p {
+          font-size: 13px;
+          color: #6b7e8e;
+          line-height: 1.55;
+          margin: 0 0 18px;
+          font-weight: 500;
+        }
+        .pop-module-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 11px;
+        }
+        .pop-module-item {
+          padding: 16px;
+          border-radius: 10px;
+          border: 1px solid #e3eaf0;
+          background: #fff;
+        }
+        .pop-module-item strong {
+          font-size: 13px;
+          color: #28435b;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-bottom: 6px;
+          font-weight: 800;
+          letter-spacing: -0.01em;
+        }
+        .pop-module-item span {
+          font-size: 12px;
+          color: #77899a;
+          line-height: 1.45;
+          display: block;
+          font-weight: 500;
+        }
+        .pop-module-item i {
+          font-style: normal;
+          color: #b02056;
+          margin-right: 4px;
+        }
+        .pop-footer-note {
+          padding: 13px 26px;
+          border-top: 1px solid #e9eef3;
+          color: #6d8192;
+          background: #fcfdfe;
+          font-size: 11.5px;
+          line-height: 1.5;
+          font-weight: 500;
+        }
+        .pop-footer-note strong {
+          color: #38566d;
+          font-weight: 750;
+        }
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400 font-medium hidden md:inline">Trocar Convênio:</span>
-          <select
-            value={selectedPlanId}
-            onChange={e => handleSelectPlan(e.target.value)}
-            className="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0E7B86] cursor-pointer"
-          >
-            {allPlansList.map(p => (
-              <option key={p.id} value={p.id}>
-                {p.name} ({p.category})
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+        /* Bloco Diretrizes de Centro Cirúrgico, OPME e Guia de Internação */
+        .pop-guidelines-box {
+          margin: 10px 26px 26px;
+          padding: 22px;
+          border: 1px solid #dae5ed;
+          border-radius: 16px;
+          background: #fff;
+          box-shadow: 0 2px 10px rgba(18, 42, 70, 0.03);
+        }
+        .pop-guidelines-head {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 16px;
+          flex-wrap: wrap;
+        }
+        .pop-guidelines-head h3 {
+          font-size: 16px;
+          font-weight: 850;
+          color: #122a46;
+          margin: 0;
+          letter-spacing: -0.02em;
+        }
+        .pop-guidelines-badge {
+          display: inline-flex;
+          align-items: center;
+          padding: 4px 12px;
+          border-radius: 8px;
+          background: #f0fafb;
+          border: 1px solid #bee6ec;
+          color: #0e7b86;
+          font-size: 12px;
+          font-weight: 800;
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+        }
+        .pop-guidelines-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 14px;
+        }
+        .pop-guidelines-card {
+          padding: 16px;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          background: #fff;
+        }
+        .pop-guidelines-card small.teal {
+          color: #0e7b86;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          margin-bottom: 4px;
+          display: block;
+        }
+        .pop-guidelines-card small.berry {
+          color: #b01b52;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          margin-bottom: 4px;
+          display: block;
+        }
+        .pop-guidelines-card strong {
+          color: #0f172a;
+          font-size: 14px;
+          font-weight: 800;
+          letter-spacing: -0.01em;
+          margin-bottom: 5px;
+          display: block;
+        }
+        .pop-guidelines-card p {
+          color: #64748b;
+          font-size: 12px;
+          line-height: 1.5;
+          margin: 0;
+          font-weight: 500;
+        }
+        .pop-guidelines-banner {
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          padding: 16px;
+          margin-top: 14px;
+          background: #fff;
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+        }
+        .pop-guidelines-banner strong {
+          color: #0f172a;
+          font-size: 12.5px;
+          font-weight: 850;
+          letter-spacing: 0.02em;
+          display: block;
+          margin-bottom: 4px;
+          text-transform: uppercase;
+        }
+        .pop-guidelines-banner p {
+          color: #64748b;
+          font-size: 12px;
+          line-height: 1.5;
+          margin: 0;
+          font-weight: 500;
+        }
 
-      {/* Dedicated Plan Header Card */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs space-y-5">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex items-start sm:items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-[#B01B52] text-white font-black text-lg flex items-center justify-center flex-shrink-0 shadow-sm tracking-wider">
+        @media(max-width:960px){
+          .pop-detail-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+        @media(max-width:780px){
+          .pop-root {
+            margin: -1rem;
+            padding: 1rem;
+          }
+          .pop-shell {
+            padding: 10px 4px 45px;
+          }
+          .pop-hero {
+            padding: 20px 17px;
+          }
+          .pop-stats {
+            grid-template-columns: 1fr;
+          }
+          .pop-workspace-head {
+            padding: 20px 16px 0;
+          }
+          .pop-notice {
+            margin: 18px 16px 0;
+          }
+          .pop-cards {
+            padding: 0 16px 20px;
+          }
+          .pop-detail-grid {
+            grid-template-columns: 1fr;
+          }
+          .pop-module {
+            margin: 0 16px 20px;
+            padding: 16px;
+          }
+          .pop-module-grid {
+            grid-template-columns: 1fr;
+          }
+          .pop-list-head {
+            padding: 20px 16px 12px;
+          }
+          .pop-tabs {
+            width: 100%;
+            overflow: auto;
+          }
+          .pop-actions, .pop-search {
+            flex: 1;
+          }
+          .pop-search input {
+            width: 100%;
+          }
+          .pop-topline {
+            font-size: 11px;
+          }
+          .pop-hero-main {
+            align-items: flex-start;
+          }
+          .pop-heading p {
+            line-height: 1.4;
+          }
+          .pop-heading h1 {
+            font-size: 23px;
+          }
+          .pop-guidelines-box {
+            margin: 10px 16px 20px;
+            padding: 16px;
+          }
+          .pop-guidelines-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media print {
+          body {
+            background: #fff !important;
+          }
+          .pop-root {
+            margin: 0;
+            padding: 0;
+            background: #fff;
+          }
+          .pop-shell {
+            max-width: none;
+            padding: 0;
+          }
+          .pop-topline, .pop-actions, .pop-tabs, .pop-copy, .no-print {
+            display: none !important;
+          }
+          .pop-hero, .pop-workspace {
+            border: 0;
+            box-shadow: none;
+          }
+          .pop-hero {
+            padding: 10px 0;
+          }
+          .pop-workspace {
+            margin: 0;
+          }
+          .pop-cards {
+            padding: 0;
+          }
+          .pop-card {
+            break-inside: avoid;
+          }
+          .pop-notice {
+            margin: 12px 0;
+          }
+          .pop-workspace-head, .pop-list-head {
+            padding-left: 0;
+          }
+          .pop-footer-note {
+            padding-left: 0;
+          }
+        }
+      `}</style>
+
+      <main className="pop-shell">
+        {/* Topline Navigation & Plan Switcher */}
+        <nav className="pop-topline" aria-label="Localização">
+          <div className="pop-crumb">
+            <button 
+              type="button" 
+              className="crumb-btn"
+              onClick={() => setViewMode('grid')}
+            >
+              Central de Autorizações
+            </button>
+            <span>›</span>
+            <button 
+              type="button" 
+              className="crumb-btn"
+              onClick={() => setViewMode('grid')}
+            >
+              Convênios
+            </button>
+            <span>›</span>
+            <span className="active-crumb">{planDisplayName}</span>
+          </div>
+
+          <div className="pop-top-actions">
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              className="pop-preview hover:border-[#a7194d] hover:text-[#a7194d] transition-colors cursor-pointer"
+            >
+              ← Todos os Convênios
+            </button>
+
+            <select
+              value={selectedPlanId}
+              onChange={e => handleSelectPlan(e.target.value)}
+              className="pop-plan-select"
+              title="Trocar Convênio"
+            >
+              {allPlansList.map(p => (
+                <option key={p.id} value={p.id}>
+                  {p.name} ({p.category})
+                </option>
+              ))}
+            </select>
+
+            <span className="pop-preview">Modelo de página</span>
+          </div>
+        </nav>
+
+        {/* Hero Section */}
+        <header className="pop-hero">
+          <div className="pop-hero-main">
+            <div className="pop-badge" aria-hidden="true">
               {planBadge}
             </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight m-0 break-words">
-                  {planDisplayName}
-                </h1>
-                <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]">
-                  {planCategory}
-                </span>
+            <div className="pop-heading">
+              <div className="pop-name-row">
+                <h1>{planDisplayName}</h1>
+                <span className="pop-tag">{planCategory}</span>
               </div>
-              <p className="text-xs text-slate-500 font-medium m-0">
-                Procedimento Operacional Padrão de Internação & UTI • Hospital Palmas Medical
-              </p>
+              <p>Diárias de internação e UTI · Hospital Palmas Medical</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            {onOpenAiWithPrompt && (
-              <button
-                type="button"
-                onClick={() => onOpenAiWithPrompt(`Como funciona a internação clínica, diárias de enfermaria/apartamento, UTI e autorização cirúrgica no convênio ${planDisplayName}?`)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#B01B52] hover:bg-[#971444] text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
-              >
-                <Sparkles className="w-4 h-4 text-white" />
-                <span>Auditar com IA</span>
-              </button>
+          <div className="pop-hero-rule"></div>
+
+          {/* Stats Bar */}
+          <div className="pop-stats">
+            <div className="pop-stat">
+              <span className="pop-stat-icon" aria-hidden="true">▣</span>
+              <div>
+                <small>ITENS DA PLANILHA</small>
+                <strong>{allItems.length} diárias e taxas</strong>
+              </div>
+            </div>
+
+            <div className="pop-stat">
+              <span className="pop-stat-icon" aria-hidden="true">↗</span>
+              <div>
+                <small>SOLICITAR JUNTO</small>
+                <strong>{itemsWithTogether.length} itens com código vinculado</strong>
+              </div>
+            </div>
+
+            <div className="pop-stat">
+              <span className="pop-stat-icon" aria-hidden="true">+</span>
+              <div>
+                <small>UTI</small>
+                <strong>{utiDiarias.length} diárias e taxas</strong>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Workspace Section */}
+        <section className="pop-workspace" aria-labelledby="section-title">
+          <div className="pop-workspace-head">
+            <span className="pop-eyebrow">GUIA DE CONSULTA · INTERNAÇÃO</span>
+            <h2 id="section-title">Lista de diárias e acomodações</h2>
+            <p className="pop-subtext">Consulte o código da diária e veja o que solicitar junto, quando informado na planilha.</p>
+
+            {/* Toolbar: Tabs & Actions */}
+            <div className="pop-toolbar">
+              <div className="pop-tabs" role="tablist" aria-label="Tipo de diária">
+                <button
+                  type="button"
+                  className="pop-tab"
+                  role="tab"
+                  aria-selected={activeTab === 'clinica'}
+                  onClick={() => setActiveTab('clinica')}
+                >
+                  Internação clínica <span className="count">{clinicaDiarias.length}</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="pop-tab"
+                  role="tab"
+                  aria-selected={activeTab === 'uti'}
+                  onClick={() => setActiveTab('uti')}
+                >
+                  UTI <span className="count">{utiDiarias.length}</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="pop-tab"
+                  role="tab"
+                  aria-selected={activeTab === 'todos'}
+                  onClick={() => setActiveTab('todos')}
+                >
+                  Todos <span className="count">{allItems.length}</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="pop-tab"
+                  role="tab"
+                  aria-selected={activeTab === 'cirurgias'}
+                  onClick={() => setActiveTab('cirurgias')}
+                >
+                  ✂ &nbsp;Cirurgias, OPME &amp; Pré-Guia
+                </button>
+
+                <button
+                  type="button"
+                  className="pop-tab"
+                  role="tab"
+                  aria-selected={activeTab === 'portal'}
+                  onClick={() => setActiveTab('portal')}
+                >
+                  ◎ &nbsp;Portal, Acessos &amp; Contatos
+                </button>
+              </div>
+
+              <div className="pop-actions">
+                <label className="pop-search">
+                  <span aria-hidden="true">⌕</span>
+                  <input
+                    type="search"
+                    placeholder="Buscar código ou acomodação"
+                    aria-label="Buscar código ou acomodação"
+                    value={query}
+                    onChange={e => setQuery(e.target.value)}
+                  />
+                </label>
+
+                <button 
+                  type="button" 
+                  className="pop-print" 
+                  onClick={() => window.print()}
+                >
+                  ↑ &nbsp;Imprimir
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Notice Banner */}
+          {!isSpecialTab && (
+            <div className="pop-notice" id="notice">
+              <span aria-hidden="true">ⓘ</span>
+              <span>
+                <b>Leitura dos dados:</b> “Solicitar junto” aparece apenas quando preenchido para aquela diária. {specificNotice}
+              </span>
+            </div>
+          )}
+
+          {/* List Header */}
+          <div className="pop-list-head">
+            <div>
+              <h3 id="list-title">{headings[activeTab].title}</h3>
+              <p id="list-subtitle">{headings[activeTab].subtitle}</p>
+            </div>
+            {!isSpecialTab && (
+              <span className="pop-results" id="results">
+                {filteredCards.length} {filteredCards.length === 1 ? 'item' : 'itens'}
+              </span>
             )}
-
-            {activeConvenioObj?.portalUrl && (
-              <a
-                href={activeConvenioObj.portalUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0E7B86] hover:bg-[#095962] text-white font-bold text-xs shadow-xs transition-all"
-              >
-                <ExternalLink className="w-4 h-4" />
-                <span>Portal da Operadora</span>
-              </a>
-            )}
-          </div>
-        </div>
-
-        {/* 3 Quick Overview Badges */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-100">
-          <div className="bg-[#F8FAFB] rounded-xl p-3 border border-slate-200/80 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#EBF7F8] text-[#0E7B86] flex items-center justify-center flex-shrink-0">
-              <Bed className="w-4 h-4" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight">Diária de Quarto / Leito</span>
-              <span className="text-xs font-black text-slate-800 block break-words mt-0.5">
-                Enfermaria ou Apartamento
-              </span>
-            </div>
           </div>
 
-          <div className="bg-[#F8FAFB] rounded-xl p-3 border border-slate-200/80 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#FDF2F6] text-[#B01B52] flex items-center justify-center flex-shrink-0">
-              <Activity className="w-4 h-4" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight">UTI Adulto & Pediátrica</span>
-              <span className="text-xs font-black text-slate-800 block break-words mt-0.5">
-                Parecer Intensivista Obrigatório
-              </span>
-            </div>
-          </div>
+          {/* Cards Grid (quando ativa é clinica, uti ou todos) */}
+          {!isSpecialTab && (
+            <div className="pop-cards" id="cards" aria-live="polite">
+              {filteredCards.length > 0 ? (
+                filteredCards.map(item => {
+                  const isUti = isUtiItem(item);
 
-          <div className="bg-[#F8FAFB] rounded-xl p-3 border border-slate-200/80 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#EBF7F8] text-[#0E7B86] flex items-center justify-center flex-shrink-0">
-              <Calendar className="w-4 h-4" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight">Prorrogação de Diária</span>
-              <span className="text-xs font-black text-slate-800 block break-words mt-0.5">
-                Laudo Médico Atualizado (24h-48h)
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+                  const getVal = (itemVal?: string, ruleVal?: string) => {
+                    if (itemVal && !itemVal.toLowerCase().includes('não informado')) return itemVal;
+                    if (ruleVal && !ruleVal.toLowerCase().includes('não informado')) return ruleVal;
+                    return null;
+                  };
 
-      {/* SUB-TABS */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden">
-        {/* Horizontal Navigation Tab Bar */}
-        <div className="flex border-b border-slate-200 bg-slate-50/60 overflow-x-auto">
-          {[
-            { 
-              id: 'clinica' as InternacaoSubTab, 
-              label: 'Internação Clínica (Enfermaria / Apto)', 
-              badgeCount: clinicaDiarias.length,
-              icon: Bed 
-            },
-            { 
-              id: 'uti' as InternacaoSubTab, 
-              label: 'UTI & Cuidados Intensivos', 
-              badgeCount: utiDiarias.length,
-              icon: Activity 
-            },
-            { 
-              id: 'cirurgias' as InternacaoSubTab, 
-              label: 'Cirurgias, OPME & Pré-Guia', 
-              icon: Scissors 
-            },
-            { 
-              id: 'contatos' as InternacaoSubTab, 
-              label: 'Portal, Acessos & Contatos', 
-              icon: Globe 
-            }
-          ].map(tab => {
-            const Icon = tab.icon;
-            const isActive = activeSubTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveSubTab(tab.id)}
-                className={`flex items-center gap-2 px-5 py-3.5 text-xs font-black transition-all border-b-2 whitespace-nowrap cursor-pointer ${
-                  isActive
-                    ? 'border-[#B01B52] text-[#B01B52] bg-white shadow-2xs'
-                    : 'border-transparent text-slate-500 hover:text-[#0E7B86] hover:bg-[#EBF7F8]/40'
-                }`}
-              >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-[#B01B52]' : 'text-slate-400'}`} />
-                <span>{tab.label}</span>
-                {tab.badgeCount !== undefined && tab.badgeCount > 0 && (
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                    isActive 
-                      ? 'bg-[#B01B52]/10 text-[#B01B52]' 
-                      : 'bg-slate-200 text-slate-600'
-                  }`}>
-                    {tab.badgeCount}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+                  const valParecer = getVal(item.parecer, planDiariasRules?.parecer);
+                  const valMatMed = getVal(item.matMed, planDiariasRules?.matMed);
+                  const valExLab = getVal(item.exLab, planDiariasRules?.exLab);
+                  const valExRad = getVal(item.exRad, planDiariasRules?.exRad);
+                  const valFisio = getVal(item.fisioIntern, planDiariasRules?.fisioIntern);
 
-        {/* Tab Content Area */}
-        <div className="p-6 space-y-6">
-
-          {/* ========================================================= */}
-          {/* ABA 1: INTERNAÇÃO CLÍNICA & DIÁRIAS (SEM UTI) */}
-          {/* ========================================================= */}
-          {activeSubTab === 'clinica' && (
-            <div className="space-y-6">
-              {/* Critical warning if available from Convenio Object */}
-              {activeConvenioObj?.criticalNotes && activeConvenioObj.criticalNotes.length > 0 && (
-                <div className="bg-[#FDF2F6] border border-[#F7D0DF] rounded-2xl p-5 space-y-3">
-                  <div className="flex items-center gap-2 text-[#B01B52] font-black text-sm">
-                    <AlertTriangle className="w-5 h-5 text-[#B01B52] flex-shrink-0" />
-                    <span>Avisos Críticos de Internação • {planDisplayName}</span>
-                  </div>
-                  <ul className="space-y-2 text-xs sm:text-sm text-slate-800 font-medium pl-1 m-0 leading-relaxed">
-                    {activeConvenioObj.criticalNotes.map((note, idx) => (
-                      <li key={idx} className="flex items-start gap-2 break-words">
-                        <span className="text-[#B01B52] font-black flex-shrink-0">•</span>
-                        <span className="leading-relaxed">{note}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Official Diárias Table from Tabela Oficial (SOMENTE LEITOS CLÍNICOS) */}
-              {planDiariasRules && (
-                <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-black uppercase tracking-wider text-[#0E7B86] bg-[#EBF7F8] px-2.5 py-0.5 rounded-full border border-[#C4E5E8] flex items-center gap-1.5">
-                          <Bed className="w-3.5 h-3.5 text-[#0E7B86]" />
-                          Diárias de Internação Clínica (Sem UTI)
+                  return (
+                    <article className="pop-card" key={item.id || item.code + item.acomodacao}>
+                      <div className="pop-cardtop">
+                        <span className="pop-code">
+                          {item.code}{' '}
+                          <button
+                            type="button"
+                            className="pop-copy"
+                            data-code={item.code}
+                            onClick={() => copyCodeToClipboard(item.code)}
+                            aria-label={`Copiar código ${item.code}`}
+                            title="Copiar código"
+                          >
+                            {copiedCode === item.code ? '✓' : '▢'}
+                          </button>
                         </span>
-                        <span className="text-xs text-slate-600 font-bold bg-slate-100 px-2 py-0.5 rounded-full">
-                          {clinicaDiarias.length} leitos clínicos
+                        <span className={`pop-category ${isUti ? 'uti' : ''}`}>
+                          {isUti ? 'UTI' : 'INTERNAÇÃO'}
                         </span>
                       </div>
-                      <h3 className="text-base sm:text-lg font-black text-slate-900 m-0">
-                        Códigos TUSS de Enfermaria, Apartamento & Hospital Dia
-                      </h3>
-                    </div>
 
-                    {planDiariasRules.criticalRule && !planDiariasRules.criticalRule.includes('UTI') && (
-                      <div className="bg-rose-50 border border-rose-200 rounded-xl px-3 py-1.5 text-xs text-rose-900 font-black flex items-center gap-2 max-w-md">
-                        <AlertTriangle className="w-4 h-4 text-rose-700 flex-shrink-0" />
-                        <span>{planDiariasRules.criticalRule}</span>
-                      </div>
-                    )}
-                  </div>
+                      <h4>{item.acomodacao}</h4>
 
-                  {/* Banner de separação: aviso e atalho para leitos de UTI */}
-                  {utiDiarias.length > 0 && (
-                    <div className="bg-[#EBF7F8]/70 border border-[#C4E5E8] rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-center gap-2">
-                        <Activity className="w-4 h-4 text-[#0E7B86] flex-shrink-0" />
-                        <span className="text-xs text-slate-800 font-medium">
-                          Este convênio possui <strong>{utiDiarias.length} diárias e pareceres de UTI</strong> separadas na aba exclusiva de UTI.
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setActiveSubTab('uti');
-                          window.scrollTo({ top: 300, behavior: 'smooth' });
-                        }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0E7B86] hover:bg-[#0B6670] text-white text-xs font-black transition-colors cursor-pointer w-fit shadow-xs"
-                      >
-                        <Activity className="w-3.5 h-3.5" />
-                        <span>Ver Diárias de UTI ({utiDiarias.length}) →</span>
-                      </button>
-                    </div>
-                  )}
-
-                  {planDiariasRules.urgenciaRegra && (
-                    <div className="bg-sky-50 border border-sky-200 rounded-xl p-3 text-xs text-sky-900 font-bold flex items-center gap-2">
-                      <Info className="w-4 h-4 text-sky-700 flex-shrink-0" />
-                      <span>{planDiariasRules.urgenciaRegra}</span>
-                    </div>
-                  )}
-
-                  {/* Diárias Clínicas Table */}
-                  {clinicaDiarias.length > 0 ? (
-                    <div className="overflow-x-auto rounded-xl border border-slate-200">
-                      <table className="w-full text-left text-xs border-collapse">
-                        <thead>
-                          <tr className="bg-slate-100/90 text-slate-600 font-black border-b border-slate-200 uppercase tracking-wider text-[11px]">
-                            <th className="py-3 px-3 min-w-[120px]">Código TUSS</th>
-                            <th className="py-3 px-3 min-w-[190px]">Acomodação Clínica</th>
-                            <th className="py-3 px-3 min-w-[130px]">Solicitar Junto</th>
-                            <th className="py-3 px-3 min-w-[110px]">Parecer</th>
-                            <th className="py-3 px-3 min-w-[130px]">Mat / Med</th>
-                            <th className="py-3 px-3 min-w-[100px]">Ex. Lab</th>
-                            <th className="py-3 px-3 min-w-[100px]">Ex. Rad</th>
-                            <th className="py-3 px-3 min-w-[130px]">Fisio</th>
-                            <th className="py-3 px-3 text-right min-w-[90px]">Ações</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200/80 font-medium">
-                          {clinicaDiarias.map((dItem, idx) => (
-                            <tr key={idx} className="hover:bg-[#F0F8F9]/50 transition-colors">
-                              <td className="py-3 px-3 align-top font-mono font-black text-slate-900">
-                                <button
-                                  type="button"
-                                  onClick={() => copyToClipboard(dItem.code)}
-                                  className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] hover:text-[#0E7B86] border border-slate-200 text-xs font-mono font-black text-slate-800 transition-colors cursor-pointer group"
-                                  title="Copiar código TUSS"
-                                >
-                                  <span>{dItem.code}</span>
-                                  {copiedText === dItem.code ? <Check className="w-3 h-3 text-[#0E7B86]" /> : <Copy className="w-3 h-3 text-slate-400 group-hover:text-[#0E7B86]" />}
-                                </button>
-                              </td>
-                              <td className="py-3 px-3 align-top">
-                                <span className="font-bold text-slate-900 block leading-snug">{dItem.acomodacao}</span>
-                                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                                  <span className="px-2 py-0.5 text-[10px] font-extrabold bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8] rounded">
-                                    {dItem.tipo}
-                                  </span>
-                                  {dItem.observacoes && (
-                                    <span className="text-[11px] text-[#B01B52] font-semibold bg-[#FDF2F6] px-1.5 py-0.5 rounded border border-[#F7D0DF]">
-                                      {dItem.observacoes}
-                                    </span>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="py-3 px-3 align-top">
-                                {dItem.solicitarJunto ? (
-                                  <span className="bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8] rounded-md px-2 py-0.5 font-mono font-bold text-[11px] inline-block">
-                                    {dItem.solicitarJunto}
-                                  </span>
-                                ) : <span className="text-slate-300 font-medium">—</span>}
-                              </td>
-                              <td className="py-3 px-3 align-top">
-                                {dItem.parecer ? (
-                                  <span className={`px-2 py-0.5 rounded text-[11px] font-bold inline-block ${
-                                    dItem.parecer.toLowerCase().includes('não precisa')
-                                      ? 'bg-slate-100 text-slate-600'
-                                      : 'bg-amber-50 text-amber-800 border border-amber-200'
-                                  }`}>
-                                    {dItem.parecer}
-                                  </span>
-                                ) : <span className="text-slate-300 font-medium">—</span>}
-                              </td>
-                              <td className="py-3 px-3 align-top text-[11px] text-slate-700">
-                                {dItem.matMed || '—'}
-                              </td>
-                              <td className="py-3 px-3 align-top">
-                                {dItem.exLab ? (
-                                  <span className={`px-2 py-0.5 rounded text-[11px] font-bold inline-block ${
-                                    dItem.exLab.toLowerCase().includes('não') || dItem.exLab.toLowerCase().includes('incluso')
-                                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                                      : 'bg-rose-50 text-rose-800 border border-rose-200'
-                                  }`}>
-                                    {dItem.exLab}
-                                  </span>
-                                ) : <span className="text-slate-300 font-medium">—</span>}
-                              </td>
-                              <td className="py-3 px-3 align-top">
-                                {dItem.exRad ? (
-                                  <span className={`px-2 py-0.5 rounded text-[11px] font-bold inline-block ${
-                                    dItem.exRad.toLowerCase().includes('não') || dItem.exRad.toLowerCase().includes('incluso')
-                                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                                      : 'bg-amber-50 text-amber-800 border border-amber-200'
-                                  }`}>
-                                    {dItem.exRad}
-                                  </span>
-                                ) : <span className="text-slate-300 font-medium">—</span>}
-                              </td>
-                              <td className="py-3 px-3 align-top text-[11px] text-slate-700">
-                                {dItem.fisioIntern || '—'}
-                              </td>
-                              <td className="py-3 px-3 align-top text-right">
-                                <div className="flex items-center justify-end gap-1.5">
-                                  {onGeneratePreGuia && dItem.code !== 'TEXTO LIVRE' && !dItem.code.startsWith('OPÇÃO') && (
-                                    <button
-                                      type="button"
-                                      onClick={() => onGeneratePreGuia(planDiariasRules.convenioId, dItem.code, dItem.acomodacao)}
-                                      className="px-2 py-1 rounded-lg bg-[#FDF2F6] hover:bg-[#FCE7EF] text-[#B01B52] font-black text-[10px] transition-colors cursor-pointer"
-                                    >
-                                      Pré-Guia
-                                    </button>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center text-xs text-slate-600">
-                      Nenhuma diária clínica exclusiva cadastrada. Verifique a aba de UTI para leitos intensivos.
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* SERVIR Case (if SERVIR is selected, also keep its specific guide) */}
-              {selectedPlanId === 'SERVIR' && SERVIR_DATA['Internação'] && (
-                <div className="space-y-5">
-                  {SERVIR_DATA['Internação'].map((block, bIdx) => (
-                    <div key={bIdx} className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <h3 className="font-extrabold text-base text-slate-900 flex items-center gap-2 m-0">
-                          <span className="text-[#0E7B86] font-bold">{block.icon || '•'}</span>
-                          <span>{block.title}</span>
-                        </h3>
-                        {block.warning && (
-                          <span className="px-2.5 py-1 rounded-lg text-xs font-black uppercase bg-[#FDF2F6] text-[#B01B52] border border-[#F7D0DF]">
-                            Importante
-                          </span>
+                      <div className="pop-joint">
+                        <span className="label">SOLICITAR JUNTO</span>
+                        {item.solicitarJunto ? (
+                          <span className="value">{item.solicitarJunto}</span>
+                        ) : (
+                          <span className="empty">Não informado na planilha</span>
                         )}
                       </div>
 
-                      {block.info && (
-                        <p className="text-xs sm:text-sm text-slate-700 bg-white p-3.5 rounded-xl border border-slate-200/80 m-0 leading-relaxed">
-                          {block.info}
-                        </p>
-                      )}
-
-                      {block.alerts && block.alerts.length > 0 && (
-                        <div className="bg-[#FDF2F6] border border-[#F7D0DF] rounded-xl p-3.5 text-xs sm:text-sm text-slate-800 space-y-1.5">
-                          {block.alerts.map((al, aIdx) => (
-                            <div key={aIdx} className="flex items-start gap-2 break-words">
-                              <Info className="w-4 h-4 text-[#B01B52] mt-0.5 flex-shrink-0" />
-                              <span className="leading-relaxed font-medium">{al}</span>
-                            </div>
-                          ))}
+                      <div className="pop-detail-grid">
+                        <div className="pop-detail">
+                          <b>Parecer</b>
+                          <span className={valParecer ? '' : 'missing'}>
+                            {valParecer || 'Não informado na planilha'}
+                          </span>
                         </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
 
-              {/* Convenio Steps & Guidelines */}
-              {selectedPlanId !== 'SERVIR' && (
-                <div className="space-y-6">
-                  <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-4">
-                    <h3 className="font-extrabold text-base text-slate-900 m-0">
-                      Fluxo de Solicitação & Autorização de Internação
-                    </h3>
+                        <div className="pop-detail">
+                          <b>Mat / Med</b>
+                          <span className={valMatMed ? '' : 'missing'}>
+                            {valMatMed || 'Não informado na planilha'}
+                          </span>
+                        </div>
 
-                    {activeConvenioObj?.sections?.internacao?.steps && activeConvenioObj.sections.internacao.steps.length > 0 && (
-                      <div className="space-y-3">
-                        <span className="text-xs font-extrabold uppercase text-slate-400 tracking-wider block">
-                          Passo a Passo no Portal Operacional:
-                        </span>
-                        <div className="space-y-2.5">
-                          {activeConvenioObj.sections.internacao.steps.map((step, sIdx) => (
-                            <div key={sIdx} className="flex items-start gap-3.5 bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs">
-                              <div className="w-7 h-7 rounded-full bg-[#0E7B86] text-white font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
-                                {sIdx + 1}
-                              </div>
-                              <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium m-0 flex-1 break-words">
-                                {step}
-                              </p>
-                            </div>
-                          ))}
+                        <div className="pop-detail">
+                          <b>Ex. Lab</b>
+                          <span className={valExLab ? '' : 'missing'}>
+                            {valExLab || 'Não informado na planilha'}
+                          </span>
+                        </div>
+
+                        <div className="pop-detail">
+                          <b>Ex. Rad</b>
+                          <span className={valExRad ? '' : 'missing'}>
+                            {valExRad || 'Não informado na planilha'}
+                          </span>
+                        </div>
+
+                        <div className="pop-detail">
+                          <b>Fisio</b>
+                          <span className={valFisio ? '' : 'missing'}>
+                            {valFisio || 'Não informado na planilha'}
+                          </span>
                         </div>
                       </div>
-                    )}
-
-                    {activeConvenioObj?.sections?.internacao?.textItems && activeConvenioObj.sections.internacao.textItems.length > 0 && (
-                      <div className="space-y-3 pt-2">
-                        <span className="text-xs font-extrabold uppercase text-[#0E7B86] tracking-wider block">
-                          Diretrizes de Diárias & Acomodação:
-                        </span>
-                        <div className="space-y-2">
-                          {activeConvenioObj.sections.internacao.textItems.map((item, tIdx) => (
-                            <div key={tIdx} className="flex items-start gap-2.5 bg-[#EBF7F8]/60 p-3.5 rounded-xl border border-[#C4E5E8] text-xs sm:text-sm text-slate-800 font-medium">
-                              <CheckCircle2 className="w-4 h-4 text-[#0E7B86] flex-shrink-0 mt-0.5" />
-                              <span className="break-words leading-relaxed">{item}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                    </article>
+                  );
+                })
+              ) : (
+                <p className="pop-empty-state">
+                  Nenhum item encontrado para esta busca no convênio {planDisplayName}.
+                </p>
               )}
             </div>
           )}
 
-          {/* ========================================================= */}
-          {/* ABA 2: UTI & CUIDADOS INTENSIVOS (EXCLUSIVO UTI) */}
-          {/* ========================================================= */}
-          {activeSubTab === 'uti' && (
+          {/* Módulo Especial: Cirurgias, OPME & Pré-Guia */}
+          {activeTab === 'cirurgias' && (
             <div className="space-y-6">
-              {/* Official Diárias Table from Tabela Oficial (SOMENTE LEITOS DE UTI) */}
-              {planDiariasRules && (
-                <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-black uppercase tracking-wider text-[#B01B52] bg-[#FDF2F6] px-2.5 py-0.5 rounded-full border border-[#F7D0DF] flex items-center gap-1.5">
-                          <Activity className="w-3.5 h-3.5 text-[#B01B52]" />
-                          Diárias de UTI & Cuidados Intensivos
-                        </span>
-                        <span className="text-xs text-slate-600 font-bold bg-slate-100 px-2 py-0.5 rounded-full">
-                          {utiDiarias.length} leitos de UTI mapeados
-                        </span>
-                      </div>
-                      <h3 className="text-base sm:text-lg font-black text-slate-900 m-0">
-                        Códigos TUSS de UTI (Adulto, Coronariana, Pediátrica & Isolamento)
-                      </h3>
-                    </div>
+              {/* Diretrizes de Centro Cirúrgico, OPME e Guia de Internação (Exclusivo desta aba) */}
+              <div className="pop-guidelines-box">
+                <div className="pop-guidelines-head">
+                  <h3>Diretrizes de Centro Cirúrgico, OPME e Guia de Internação</h3>
+                  <span className="pop-guidelines-badge">{planDisplayName.toUpperCase()}</span>
+                </div>
 
-                    {planDiariasRules.criticalRule && (
-                      <div className="bg-rose-50 border border-rose-200 rounded-xl px-3 py-1.5 text-xs text-rose-900 font-black flex items-center gap-2 max-w-md">
-                        <AlertTriangle className="w-4 h-4 text-rose-700 flex-shrink-0" />
-                        <span>{planDiariasRules.criticalRule}</span>
-                      </div>
-                    )}
+                <div className="pop-guidelines-grid">
+                  <div className="pop-guidelines-card">
+                    <small className="teal">OPME &amp; MATERIAIS ESPECIAIS</small>
+                    <strong>Cotação de 3 Fornecedores</strong>
+                    <p>Exigência de 3 orçamentos no portal para órteses, próteses e materiais especiais não padronizados.</p>
                   </div>
 
-                  {/* Banner para voltar para diárias clínicas se necessário */}
-                  {clinicaDiarias.length > 0 && (
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-center gap-2">
-                        <Bed className="w-4 h-4 text-slate-600 flex-shrink-0" />
-                        <span className="text-xs text-slate-700 font-medium">
-                          Para consultar leitos de enfermaria, apartamento ou berçário ({clinicaDiarias.length} leitos), acesse a aba de internação clínica.
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setActiveSubTab('clinica');
-                          window.scrollTo({ top: 300, behavior: 'smooth' });
-                        }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs font-black transition-colors cursor-pointer w-fit shadow-2xs"
-                      >
-                        <Bed className="w-3.5 h-3.5 text-[#0E7B86]" />
-                        <span>← Ver Diárias Clínicas ({clinicaDiarias.length})</span>
-                      </button>
-                    </div>
-                  )}
+                  <div className="pop-guidelines-card">
+                    <small className="berry">PRORROGAÇÃO DE DIÁRIAS</small>
+                    <strong>Solicitação c/ 24h de Antecedência</strong>
+                    <p>Anexar boletim médico e evolução clínica antes do vencimento do período autorizado.</p>
+                  </div>
+                </div>
 
-                  {/* Diárias de UTI Table */}
-                  {utiDiarias.length > 0 ? (
-                    <div className="overflow-x-auto rounded-xl border border-slate-200">
-                      <table className="w-full text-left text-xs border-collapse">
-                        <thead>
-                          <tr className="bg-slate-100/90 text-slate-600 font-black border-b border-slate-200 uppercase tracking-wider text-[11px]">
-                            <th className="py-3 px-3 min-w-[120px]">Código TUSS</th>
-                            <th className="py-3 px-3 min-w-[190px]">Leito UTI / Acomodação</th>
-                            <th className="py-3 px-3 min-w-[130px]">Solicitar Junto</th>
-                            <th className="py-3 px-3 min-w-[110px]">Parecer</th>
-                            <th className="py-3 px-3 min-w-[130px]">Mat / Med</th>
-                            <th className="py-3 px-3 min-w-[100px]">Ex. Lab</th>
-                            <th className="py-3 px-3 min-w-[100px]">Ex. Rad</th>
-                            <th className="py-3 px-3 min-w-[130px]">Fisio</th>
-                            <th className="py-3 px-3 text-right min-w-[90px]">Ações</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200/80 font-medium">
-                          {utiDiarias.map((uItem, idx) => (
-                            <tr key={idx} className="hover:bg-[#FDF2F6]/40 transition-colors">
-                              <td className="py-3 px-3 align-top font-mono font-black text-slate-900">
-                                <button
-                                  type="button"
-                                  onClick={() => copyToClipboard(uItem.code)}
-                                  className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 hover:bg-[#FDF2F6] hover:text-[#B01B52] border border-slate-200 text-xs font-mono font-black text-slate-800 transition-colors cursor-pointer group"
-                                  title="Copiar código TUSS"
-                                >
-                                  <span>{uItem.code}</span>
-                                  {copiedText === uItem.code ? <Check className="w-3 h-3 text-[#B01B52]" /> : <Copy className="w-3 h-3 text-slate-400 group-hover:text-[#B01B52]" />}
-                                </button>
-                              </td>
-                              <td className="py-3 px-3 align-top">
-                                <span className="font-bold text-slate-900 block leading-snug">{uItem.acomodacao}</span>
-                                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                                  <span className="px-2 py-0.5 text-[10px] font-extrabold bg-[#FDF2F6] text-[#B01B52] border border-[#F7D0DF] rounded">
-                                    {uItem.tipo}
-                                  </span>
-                                  {uItem.observacoes && (
-                                    <span className="text-[11px] text-[#B01B52] font-semibold bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
-                                      {uItem.observacoes}
-                                    </span>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="py-3 px-3 align-top">
-                                {uItem.solicitarJunto ? (
-                                  <span className="bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8] rounded-md px-2 py-0.5 font-mono font-bold text-[11px] inline-block">
-                                    {uItem.solicitarJunto}
-                                  </span>
-                                ) : <span className="text-slate-300 font-medium">—</span>}
-                              </td>
-                              <td className="py-3 px-3 align-top">
-                                {uItem.parecer ? (
-                                  <span className={`px-2 py-0.5 rounded text-[11px] font-bold inline-block ${
-                                    uItem.parecer.toLowerCase().includes('não precisa')
-                                      ? 'bg-slate-100 text-slate-600'
-                                      : 'bg-amber-50 text-amber-800 border border-amber-200'
-                                  }`}>
-                                    {uItem.parecer}
-                                  </span>
-                                ) : <span className="text-slate-300 font-medium">—</span>}
-                              </td>
-                              <td className="py-3 px-3 align-top text-[11px] text-slate-700">
-                                {uItem.matMed || '—'}
-                              </td>
-                              <td className="py-3 px-3 align-top">
-                                {uItem.exLab ? (
-                                  <span className={`px-2 py-0.5 rounded text-[11px] font-bold inline-block ${
-                                    uItem.exLab.toLowerCase().includes('não') || uItem.exLab.toLowerCase().includes('incluso')
-                                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                                      : 'bg-rose-50 text-rose-800 border border-rose-200'
-                                  }`}>
-                                    {uItem.exLab}
-                                  </span>
-                                ) : <span className="text-slate-300 font-medium">—</span>}
-                              </td>
-                              <td className="py-3 px-3 align-top">
-                                {uItem.exRad ? (
-                                  <span className={`px-2 py-0.5 rounded text-[11px] font-bold inline-block ${
-                                    uItem.exRad.toLowerCase().includes('não') || uItem.exRad.toLowerCase().includes('incluso')
-                                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                                      : 'bg-amber-50 text-amber-800 border border-amber-200'
-                                  }`}>
-                                    {uItem.exRad}
-                                  </span>
-                                ) : <span className="text-slate-300 font-medium">—</span>}
-                              </td>
-                              <td className="py-3 px-3 align-top text-[11px] text-slate-700">
-                                {uItem.fisioIntern || '—'}
-                              </td>
-                              <td className="py-3 px-3 align-top text-right">
-                                <div className="flex items-center justify-end gap-1.5">
-                                  {onGeneratePreGuia && uItem.code !== 'TEXTO LIVRE' && !uItem.code.startsWith('OPÇÃO') && (
-                                    <button
-                                      type="button"
-                                      onClick={() => onGeneratePreGuia(planDiariasRules.convenioId, uItem.code, uItem.acomodacao)}
-                                      className="px-2 py-1 rounded-lg bg-[#FDF2F6] hover:bg-[#FCE7EF] text-[#B01B52] font-black text-[10px] transition-colors cursor-pointer"
-                                    >
-                                      Pré-Guia
-                                    </button>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center text-xs text-slate-600">
-                      Nenhum leito específico de UTI tabelado individualmente para este convênio. O faturamento segue a tabela padrão do hospital.
-                    </div>
+                <div className="pop-guidelines-banner">
+                  <FileText className="w-5 h-5 text-[#b01b52] flex-shrink-0 mt-0.5" />
+                  <div>
+                    <strong>GERAÇÃO DE PRÉ-GUIA &amp; CHECKLIST DE FATURAMENTO</strong>
+                    <p>Toda cirurgia com internação deve ter a pré-guia emitida e conferida antes do procedimento eletivo ou em até 24 horas no pós-operatório de urgência.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Módulo Especial: Portal, Acessos & Contatos */}
+          {activeTab === 'portal' && (
+            <div className="pop-module">
+              <h4>Portal, Acessos &amp; Contatos</h4>
+              <p>
+                Canais oficiais de autorização, portal da operadora e suporte prestador do convênio {planDisplayName}.
+              </p>
+
+              <div className="pop-module-grid">
+                <div className="pop-module-item">
+                  <strong><i>◇</i>Portal da operadora</strong>
+                  <span>
+                    {activeConvenioObj?.portalUrl
+                      ? 'Acesso direto ao portal eletrônico oficial da operadora.'
+                      : 'Acesso pelo sistema autorizador web ou TISS contratado.'}
+                  </span>
+                  {activeConvenioObj?.portalUrl && (
+                    <a
+                      href={activeConvenioObj.portalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0E7B86] text-white rounded-lg text-xs font-bold hover:bg-[#095962] transition-colors"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      Acessar Portal da Operadora ↗
+                    </a>
                   )}
                 </div>
-              )}
 
-              {/* Protocolo de Parecer Intensivista & Visitas */}
-              <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-extrabold text-base text-slate-900 m-0">
-                    Regras de Admissão, Diária e Parecer de UTI
-                  </h3>
-                  <span className="text-xs font-bold text-[#0E7B86] bg-[#EBF7F8] border border-[#C4E5E8] px-2.5 py-1 rounded-lg">
-                    {planDisplayName}
+                <div className="pop-module-item">
+                  <strong><i>◇</i>Central de Autorizações</strong>
+                  <span>
+                    {activeConvenioObj?.contacts && activeConvenioObj.contacts.length > 0
+                      ? activeConvenioObj.contacts.filter(c => !c.includes('@')).join(' • ')
+                      : 'Central de Atendimento ao Prestador e Urgência 24h.'}
                   </span>
                 </div>
 
-                <div className="bg-[#EBF7F8] border border-[#C4E5E8] rounded-xl p-4 flex items-start gap-3">
-                  <Activity className="w-5 h-5 text-[#0E7B86] mt-0.5 flex-shrink-0" />
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-black text-[#0E7B86] m-0">Protocolo de Parecer Intensivista & Visitas</h4>
-                    <p className="text-xs sm:text-sm text-slate-800 m-0 leading-relaxed">
-                      Toda admissão em UTI requer a inserção imediata do parecer médico fundamentado e o laudo de internação no portal do convênio em até 24 horas. Diárias de UTI sem laudo de justificativa clínica geram glosa integral do leito.
-                    </p>
-                  </div>
-                </div>
-
-                {activeConvenioObj?.sections?.uti?.steps && activeConvenioObj.sections.uti.steps.length > 0 && (
-                  <div className="space-y-3 pt-2">
-                    <span className="text-xs font-extrabold uppercase text-slate-400 tracking-wider block">
-                      Fluxo de Liberação da UTI:
-                    </span>
-                    <div className="space-y-2.5">
-                      {activeConvenioObj.sections.uti.steps.map((step, sIdx) => (
-                        <div key={sIdx} className="flex items-start gap-3.5 bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs">
-                          <div className="w-7 h-7 rounded-full bg-[#0E7B86] text-white font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
-                            {sIdx + 1}
-                          </div>
-                          <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium m-0 flex-1 break-words">
-                            {step}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {activeConvenioObj?.sections?.uti?.codes && activeConvenioObj.sections.uti.codes.length > 0 && (
-                  <div className="space-y-3 pt-2">
-                    <span className="text-xs font-extrabold uppercase text-slate-400 tracking-wider block">
-                      Outros Códigos de UTI Registrados:
-                    </span>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs sm:text-sm border-collapse bg-white rounded-xl overflow-hidden border border-slate-200">
-                        <thead>
-                          <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-bold">
-                            <th className="py-2.5 px-3.5 w-36">Código TUSS</th>
-                            <th className="py-2.5 px-3.5">Descrição</th>
-                            <th className="py-2.5 px-3.5 text-right w-36">Ações</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200 font-medium">
-                          {activeConvenioObj.sections.uti.codes.map((c, cIdx) => (
-                            <tr key={cIdx} className="hover:bg-slate-50 transition-colors">
-                              <td className="py-3 px-3.5 font-mono font-bold text-[#0E7B86] whitespace-nowrap">
-                                {c.code}
-                              </td>
-                              <td className="py-3 px-3.5 text-slate-800 break-words leading-relaxed">
-                                {c.label}
-                              </td>
-                              <td className="py-3 px-3.5 text-right">
-                                <button
-                                  type="button"
-                                  onClick={() => copyToClipboard(c.code)}
-                                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86] transition-colors cursor-pointer"
-                                  title="Copiar Código"
-                                >
-                                  {copiedText === c.code ? <Check className="w-4 h-4 text-[#0E7B86]" /> : <Copy className="w-4 h-4 text-slate-400 group-hover:text-[#0E7B86]" />}
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ========================================================= */}
-          {/* ABA 3: CIRURGIAS, OPME & PRÉ-GUIA */}
-          {/* ========================================================= */}
-          {activeSubTab === 'cirurgias' && (
-            <div className="space-y-6">
-              <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-extrabold text-base text-slate-900 m-0">
-                    Diretrizes de Centro Cirúrgico, OPME e Guia de Internação
-                  </h3>
-                  <span className="text-xs font-bold text-[#0E7B86] bg-[#EBF7F8] border border-[#C4E5E8] px-2.5 py-1 rounded-lg">
-                    {planDisplayName}
+                <div className="pop-module-item">
+                  <strong><i>◇</i>E-mail &amp; Auditoria Concorrente</strong>
+                  <span>
+                    {activeConvenioObj?.contacts && activeConvenioObj.contacts.some(c => c.includes('@'))
+                      ? activeConvenioObj.contacts.filter(c => c.includes('@')).join(' • ')
+                      : 'Envio de laudos médicos para prorrogação de internação e relatórios de UTI.'}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                  <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-1">
-                    <span className="text-xs font-bold uppercase text-[#0E7B86]">OPME & Materiais Especiais</span>
-                    <p className="text-sm font-black text-slate-800 m-0">
-                      Cotação de 3 Fornecedores
-                    </p>
-                    <p className="text-xs text-slate-500 m-0 leading-relaxed">
-                      Exigência de 3 orçamentos no portal para órteses, próteses e materiais especiais não padronizados.
-                    </p>
-                  </div>
-
-                  <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-1">
-                    <span className="text-xs font-bold uppercase text-[#B01B52]">Prorrogação de Diárias</span>
-                    <p className="text-sm font-black text-slate-800 m-0">
-                      Solicitação c/ 24h de Antecedência
-                    </p>
-                    <p className="text-xs text-slate-500 m-0 leading-relaxed">
-                      Anexar boletim médico e evolução clínica antes do vencimento do período autorizado.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-white p-4 rounded-xl border border-slate-200 flex items-start gap-3">
-                  <FileText className="w-5 h-5 text-[#B01B52] mt-0.5 flex-shrink-0" />
-                  <div className="space-y-1">
-                    <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider m-0">
-                      Geração de Pré-Guia & Checklist de Faturamento
-                    </h4>
-                    <p className="text-xs sm:text-sm text-slate-600 m-0 leading-relaxed">
-                      Toda cirurgia com internação deve ter a pré-guia emitida e conferida antes do procedimento eletivo ou em até 24 horas no pós-operatório de urgência.
-                    </p>
-                  </div>
+                <div className="pop-module-item">
+                  <strong><i>◇</i>Prazos e Prorrogações</strong>
+                  <span>
+                    Prorrogações de leito e UTI devem ser enviadas com 24h a 48h de antecedência com relatório do médico assistente e intensivista.
+                  </span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* ========================================================= */}
-          {/* ABA 4: PORTAL, ACESSOS & CONTATOS */}
-          {/* ========================================================= */}
-          {activeSubTab === 'contatos' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-5 h-5 text-[#0E7B86]" />
-                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 m-0">
-                      Acessos ao Portal Autorizador
-                    </h3>
-                  </div>
-
-                  {activeConvenioObj?.accessCredentials && activeConvenioObj.accessCredentials.length > 0 ? (
-                    <div className="space-y-2.5">
-                      {activeConvenioObj.accessCredentials.map((cred, idx) => (
-                        <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm gap-2">
-                          <span className="font-bold text-slate-500">{cred[0]}:</span>
-                          <div className="flex items-center gap-2 font-mono font-bold text-slate-900 break-all">
-                            {cred[1].startsWith('http') ? (
-                              <a
-                                href={cred[1]}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-[#0E7B86] hover:underline flex items-center gap-1 font-sans text-xs font-bold"
-                              >
-                                <span>Acessar Portal</span>
-                                <ExternalLink className="w-3.5 h-3.5" />
-                              </a>
-                            ) : (
-                              <span>{cred[1]}</span>
-                            )}
-                            {!cred[1].startsWith('http') && (
-                              <button
-                                type="button"
-                                onClick={() => copyToClipboard(cred[1])}
-                                className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] text-slate-600 transition-colors cursor-pointer"
-                                title="Copiar"
-                              >
-                                {copiedText === cred[1] ? <Check className="w-3.5 h-3.5 text-[#0E7B86]" /> : <Copy className="w-3.5 h-3.5" />}
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-6 text-center text-xs text-slate-400 bg-white rounded-xl border border-slate-200">
-                      Consulte o setor de Faturamento de Internação ou Auditoria Médica.
-                    </div>
-                  )}
-                </div>
-
-                <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-5 h-5 text-[#B01B52]" />
-                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 m-0">
-                      Contatos & Auditoria Concorrente
-                    </h3>
-                  </div>
-
-                  {activeConvenioObj?.contacts && activeConvenioObj.contacts.length > 0 ? (
-                    <div className="space-y-2.5">
-                      {activeConvenioObj.contacts.map((contact, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-3.5 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm gap-2">
-                          <div className="flex items-center gap-2.5 text-slate-800 font-medium break-all">
-                            {contact.includes('@') ? (
-                              <Mail className="w-4 h-4 text-[#0E7B86] flex-shrink-0" />
-                            ) : (
-                              <Phone className="w-4 h-4 text-[#B01B52] flex-shrink-0" />
-                            )}
-                            <span className="leading-relaxed">{contact}</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => copyToClipboard(contact)}
-                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] text-slate-600 transition-colors flex-shrink-0 cursor-pointer"
-                            title="Copiar Contato"
-                          >
-                            {copiedText === contact ? <Check className="w-3.5 h-3.5 text-[#0E7B86]" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-6 text-center text-xs text-slate-400 bg-white rounded-xl border border-slate-200">
-                      Consulte a lista geral de ramais do hospital.
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-        </div>
-      </div>
+          {/* Rodapé Oficial da Tabela */}
+          <div className="pop-footer-note">
+            <strong>Fonte:</strong> TABELA DE DIÁRIAS CORRETA2(1).xlsx · Se uma informação não aparece na planilha, ela não foi presumida neste modelo.
+          </div>
+        </section>
+      </main>
     </div>
   );
 };

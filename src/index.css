@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+@layer base {
+  body, html {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+}
+
 :root {
   --color-medical-berry: #B01B52;
   --color-medical-berry-hover: #971444;

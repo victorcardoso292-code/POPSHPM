@@ -1,8 +1,6 @@
 import React from 'react';
 import { 
   Building2, 
-  Lock, 
-  Unlock, 
   Calculator,
   Search,
   Sparkles,
@@ -15,23 +13,22 @@ import { AppMode } from '../types';
 interface HeaderProps {
   activeMode: AppMode;
   onSelectMode: (mode: AppMode) => void;
-  isMaster: boolean;
-  onOpenMaster: () => void;
-  onLogoutMaster: () => void;
+  isMaster?: boolean;
+  onOpenMaster?: () => void;
+  onLogoutMaster?: () => void;
   globalSearch: string;
   onSearchChange: (val: string) => void;
   selectedExamsCount: number;
   onOpenUniversalSearch?: () => void;
   onOpenSmartDrawer?: () => void;
   onLogoutSystem?: () => void;
+  isDarkMode?: boolean;
+  onToggleDarkMode?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   activeMode,
   onSelectMode,
-  isMaster,
-  onOpenMaster,
-  onLogoutMaster,
   globalSearch,
   onSearchChange,
   selectedExamsCount,
@@ -149,32 +146,6 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <Calculator className="w-3.5 h-3.5" />
                 <span>{selectedExamsCount} Exame{selectedExamsCount > 1 ? 's' : ''}</span>
-              </button>
-            )}
-
-            {/* Master Access Status */}
-            {isMaster ? (
-              <div className="flex items-center gap-1.5 bg-[#EBF7F8] border border-[#0E7B86]/40 rounded-xl px-2.5 py-1.5 text-xs text-[#0E7B86] font-semibold shadow-2xs">
-                <Unlock className="w-3.5 h-3.5 text-[#0E7B86]" />
-                <span className="hidden sm:inline font-bold">Master Ativo</span>
-                <button
-                  type="button"
-                  onClick={onLogoutMaster}
-                  className="ml-1 text-[10px] bg-[#B01B52] hover:bg-[#971444] text-white px-1.5 py-0.5 rounded font-bold cursor-pointer"
-                  title="Sair do modo Master"
-                >
-                  Sair
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={onOpenMaster}
-                className="flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-700 font-medium transition-colors cursor-pointer"
-                title="Acesso Master para gerenciar valores e regras"
-              >
-                <Lock className="w-3.5 h-3.5 text-[#0E7B86]" />
-                <span className="hidden sm:inline">Acesso Master</span>
               </button>
             )}
 

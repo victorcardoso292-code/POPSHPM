@@ -56,6 +56,37 @@ export default function App() {
   // Selected exams in calculation cart
   const [selectedExams, setSelectedExams] = useState<{ [key: string]: SelectedExamItem }>({});
 
+  // Dark Mode state with persistence in localStorage
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('theme_dark_mode');
+      if (saved !== null) {
+        return saved === 'true';
+      }
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      if (isDarkMode) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme_dark_mode', 'true');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme_dark_mode', 'false');
+      }
+    } catch {
+      // ignore storage issues
+    }
+  }, [isDarkMode]);
+
+  const handleToggleDarkMode = () => {
+    setIsDarkMode(prev => !prev);
+  };
+
   // Dynamic parameters passed to AI or Pre-guia
   const [aiInitialPrompt, setAiInitialPrompt] = useState<string>('');
   const [preGuiaPrefill, setPreGuiaPrefill] = useState<{ convenio?: string; code?: string; desc?: string }>({});
@@ -225,6 +256,8 @@ export default function App() {
           onOpenUniversalSearch={() => setIsUniversalSearchOpen(true)}
           onOpenSmartDrawer={() => setIsSmartDrawerOpen(true)}
           onLogoutSystem={handleLogoutSystem}
+          isDarkMode={isDarkMode}
+          onToggleDarkMode={handleToggleDarkMode}
         />
       </div>
 
@@ -240,6 +273,8 @@ export default function App() {
             onLogoutMaster={handleLogoutMaster}
             selectedExamsCount={selectedCount}
             onLogoutSystem={handleLogoutSystem}
+            isDarkMode={isDarkMode}
+            onToggleDarkMode={handleToggleDarkMode}
           />
         </div>
 

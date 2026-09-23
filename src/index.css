@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   body, html {
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -18,6 +20,153 @@
   --color-medical-teal-hover: #095962;
   --color-medical-teal-light: #EBF7F8;
   --color-medical-teal-ice: #D8ECEE;
+}
+
+/* ==========================================================================
+   TEMA ESCURO PROFISSIONAL (DARK MODE) • PLANTÃO HOSPITALAR
+   ========================================================================== */
+html.dark {
+  color-scheme: dark;
+  background-color: #0b1120;
+  color: #f1f5f9;
+}
+
+html.dark body {
+  background-color: #0b1120 !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark #root {
+  background-color: #0b1120 !important;
+  color: #f1f5f9 !important;
+}
+
+/* Superfícies brancas transformam-se em cinza escuro hospitalar de alto contraste */
+html.dark .bg-white {
+  background-color: #131d31 !important;
+  color: #f1f5f9;
+}
+
+html.dark .bg-slate-50,
+html.dark .bg-slate-50\/60,
+html.dark .bg-slate-50\/80 {
+  background-color: #0e1726 !important;
+}
+
+html.dark .bg-slate-100 {
+  background-color: #1e293b !important;
+}
+
+html.dark .bg-slate-200 {
+  background-color: #334155 !important;
+}
+
+/* Bordas em modo escuro */
+html.dark .border-slate-200,
+html.dark .border-slate-200\/80,
+html.dark .border-slate-200\/90,
+html.dark .border-slate-300 {
+  border-color: #24344d !important;
+}
+
+html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #24344d !important;
+}
+
+/* Tipografia em modo escuro */
+html.dark .text-slate-900,
+html.dark .text-slate-800 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-700,
+html.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-slate-500,
+html.dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+/* Cabeçalho, Rodapé e Barra Lateral */
+html.dark header {
+  background-color: #0f172a !important;
+  border-bottom-color: #24344d !important;
+}
+
+html.dark footer {
+  background-color: #0b1120 !important;
+  border-top-color: #24344d !important;
+}
+
+html.dark aside {
+  background-color: #0e1726 !important;
+  border-color: #24344d !important;
+}
+
+/* Inputs, Selects e Textareas */
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #162032 !important;
+  color: #f8fafc !important;
+  border-color: #2e415e !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Hover de linhas de tabela e botões */
+html.dark tr.hover\:bg-slate-50:hover,
+html.dark tr.hover\:bg-slate-50\/80:hover,
+html.dark tr.hover\:bg-slate-100:hover,
+html.dark tr.hover\:bg-white:hover {
+  background-color: #1a273e !important;
+}
+
+html.dark .hover\:bg-slate-100:hover {
+  background-color: #1e293b !important;
+}
+
+html.dark .hover\:bg-slate-50:hover {
+  background-color: #182338 !important;
+}
+
+/* Caixas e destaques específicos */
+html.dark .bg-\[\#F4F8F9\] {
+  background-color: #0b1120 !important;
+}
+
+html.dark .bg-\[\#F8FAFB\] {
+  background-color: #141f33 !important;
+}
+
+html.dark .bg-\[\#EBF7F8\] {
+  background-color: #0c2b33 !important;
+  color: #5eead4 !important;
+}
+
+html.dark .bg-\[\#FDF2F6\] {
+  background-color: #331221 !important;
+  color: #f472b6 !important;
+}
+
+html.dark .border-\[\#F7D0DF\] {
+  border-color: #611e3c !important;
+}
+
+html.dark .border-\[\#C4E5E8\] {
+  border-color: #155562 !important;
+}
+
+/* Modais e Drawers */
+html.dark .shadow-2xl,
+html.dark .shadow-xl {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
 }
 
 /* ==========================================================================

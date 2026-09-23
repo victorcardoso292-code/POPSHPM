@@ -31,10 +31,11 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
 
   const categories = [
     { id: 'todos', label: 'Todos os Ramais' },
+    { id: 'hst', label: 'Unidade HST' },
     { id: 'uti', label: 'UTIs' },
     { id: 'atendimento', label: 'Recepções & PS' },
-    { id: 'farmacia', label: 'Farmácias' },
     { id: 'internacao', label: 'Internação' },
+    { id: 'farmacia', label: 'Farmácias' },
     { id: 'apoio', label: 'Apoio Diagnóstico & CC' },
     { id: 'administracao', label: 'Administração & TI' }
   ];
@@ -42,7 +43,11 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
   const filteredExtensions = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
     return HOSPITAL_EXTENSIONS.filter(ext => {
-      const matchCat = selectedCat === 'todos' || ext.category === selectedCat;
+      const matchCat = 
+        selectedCat === 'todos' || 
+        (selectedCat === 'hst' 
+          ? (ext.sector.toUpperCase().includes('HST') || (ext.building && ext.building.toUpperCase().includes('HST'))) 
+          : ext.category === selectedCat);
       const matchSearch = ext.sector.toLowerCase().includes(q) || 
                           ext.number.includes(q) || 
                           (ext.building && ext.building.toLowerCase().includes(q));
@@ -91,8 +96,10 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
           <span className="text-[11px] text-slate-400 font-semibold">1-clique para copiar</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
           {[
+            { sector: 'PA - HST', num: '8359', tag: 'HST • PA' },
+            { sector: 'Internação HST', num: '8300', tag: 'HST • INT' },
             { sector: 'UTI Geral', num: '8010', tag: 'UTI' },
             { sector: 'Recepção PS', num: '8020', tag: 'PS' },
             { sector: 'Enfermagem PS', num: '8025', tag: 'PS' },
@@ -167,16 +174,26 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
       {/* Extensions Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
         {filteredExtensions.map((ext, idx) => {
+          const isHst = ext.sector.toUpperCase().includes('HST') || (ext.building && ext.building.toUpperCase().includes('HST'));
           return (
             <div
               key={idx}
-              className="bg-white border border-slate-200 hover:border-teal-400 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-3"
+              className={`bg-white border rounded-2xl p-4 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-3 ${
+                isHst ? 'border-amber-300 hover:border-amber-500 bg-gradient-to-br from-white to-amber-50/20' : 'border-slate-200 hover:border-[#0E7B86]'
+              }`}
             >
               <div className="space-y-1">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-[10px] uppercase font-black tracking-wider text-slate-400">
-                    {ext.category.toUpperCase()}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {isHst && (
+                      <span className="text-[10px] font-black uppercase text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300">
+                        Unidade HST
+                      </span>
+                    )}
+                    <span className="text-[10px] uppercase font-black tracking-wider text-slate-400">
+                      {(ext.category || 'geral').toUpperCase()}
+                    </span>
+                  </div>
                   <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                 </div>
                 <h3 className="text-sm font-black text-slate-900 m-0 leading-tight">
@@ -193,7 +210,11 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
               <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-slate-400 font-bold">Ramal:</span>
-                  <span className="font-mono text-base font-black text-teal-800 bg-teal-50 px-2 py-0.5 rounded-lg border border-teal-200">
+                  <span className={`font-mono text-base font-black px-2 py-0.5 rounded-lg border ${
+                    isHst 
+                      ? 'text-amber-900 bg-amber-50 border-amber-300' 
+                      : 'text-teal-800 bg-teal-50 border-teal-200'
+                  }`}>
                     {ext.number}
                   </span>
                 </div>
@@ -213,7 +234,11 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
                   </button>
                   <a
                     href={`tel:${ext.number}`}
-                    className="p-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-700 transition-colors"
+                    className={`p-1.5 rounded-lg transition-colors ${
+                      isHst 
+                        ? 'bg-amber-50 hover:bg-amber-100 text-amber-800' 
+                        : 'bg-teal-50 hover:bg-teal-100 text-teal-700'
+                    }`}
                     title="Ligar para o ramal"
                   >
                     <Phone className="w-4 h-4" />

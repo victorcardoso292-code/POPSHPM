@@ -1,6 +1,8 @@
 import { HospitalExtension, HospitalReportType } from '../types';
 
 export const HOSPITAL_EXTENSIONS: HospitalExtension[] = [
+  { sector: 'PA - HST', number: '8359', building: 'Hospital Santa Thereza • Pronto Atendimento', category: 'atendimento' },
+  { sector: 'INTERNAÇÃO HST', number: '8300', building: 'Hospital Santa Thereza • Posto de Internação', category: 'internacao' },
   { sector: 'UTI NEO', number: '1887', building: 'Bloco Crítico / 3º Andar', category: 'uti' },
   { sector: 'UTI A', number: '1894', building: 'Bloco Crítico / 3º Andar', category: 'uti' },
   { sector: 'UTI B', number: '1893', building: 'Bloco Crítico / 3º Andar', category: 'uti' },

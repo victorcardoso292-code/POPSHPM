@@ -246,16 +246,16 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
           </div>
 
           <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
               {planCategories.map(cat => (
                 <button
                   key={cat}
                   type="button"
                   onClick={() => setActiveCategoryFilter(cat)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                  className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
                     activeCategoryFilter === cat
                       ? 'bg-[#0E7B86] text-white shadow-xs'
-                      : 'bg-slate-100 hover:bg-[#EBF7F8] text-slate-600 hover:text-[#0E7B86]'
+                      : 'bg-slate-100 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86]'
                   }`}
                 >
                   {cat}
@@ -269,50 +269,50 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                 placeholder="Buscar convênio do Pronto-Socorro..."
                 value={planSearch}
                 onChange={e => setPlanSearch(e.target.value)}
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0E7B86] focus:bg-white text-slate-900 placeholder:text-slate-400"
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#0E7B86] focus:bg-white text-slate-900 placeholder:text-slate-400"
               />
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {filteredPlansForGrid.map(plan => (
             <button
               key={plan.id}
               type="button"
               onClick={() => handleSelectPlan(plan.id)}
-              className="bg-white border border-slate-200/90 hover:border-[#BFDEE7] hover:shadow-md rounded-2xl p-5 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between group space-y-4"
+              className="bg-white border-1.5 border-slate-200/90 hover:border-[#0E7B86] hover:shadow-md rounded-2xl p-5 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between group space-y-4"
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="w-12 h-12 rounded-xl bg-[#0E7B86] text-white font-black text-sm flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                  <div className="w-14 h-14 rounded-2xl bg-[#0E7B86] text-white font-black text-base flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform">
                     {plan.badge}
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]">
+                    <span className="text-xs font-black px-2.5 py-1 rounded-full bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]">
                       {plan.category}
                     </span>
-                    <span className="text-[10px] text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded">
+                    <span className="text-xs text-slate-600 font-bold bg-slate-100 px-2.5 py-0.5 rounded">
                       PS 24h
                     </span>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-black text-slate-900 text-base tracking-tight leading-snug group-hover:text-[#0E7B86] transition-colors m-0 break-words">
+                  <h3 className="font-black text-slate-900 text-lg tracking-tight leading-snug group-hover:text-[#0E7B86] transition-colors m-0 break-words">
                     {plan.name}
                   </h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1 m-0 line-clamp-2">
+                  <p className="text-sm text-slate-600 font-medium mt-1.5 m-0 line-clamp-2">
                     {plan.pacotePs || 'Consulta e procedimentos de emergência'}
                   </p>
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="font-bold text-[#0E7B86] group-hover:underline flex items-center gap-1">
+              <div className="pt-3.5 border-t border-slate-100 flex items-center justify-between text-sm">
+                <span className="font-black text-[#0E7B86] group-hover:underline flex items-center gap-1">
                   Abrir Modelo de Pronto-Socorro →
                 </span>
-                <span className="text-[11px] text-slate-400 font-medium">Urgência</span>
+                <span className="text-xs text-slate-500 font-bold">Urgência</span>
               </div>
             </button>
           ))}
@@ -355,97 +355,102 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
           max-width: 100%;
           width: 100%;
           margin: 0;
-          padding: 10px 4px 70px;
+          padding: 12px 6px 70px;
         }
         .pop-topline {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin: 0 0 15px;
-          color: #64768a;
-          font-size: 13px;
-          font-weight: 500;
+          margin: 0 0 16px;
+          color: #475569;
+          font-size: 14px;
+          font-weight: 600;
           letter-spacing: -0.01em;
           flex-wrap: wrap;
-          gap: 10px;
+          gap: 12px;
         }
         .pop-crumb {
           display: flex;
           align-items: center;
-          gap: 9px;
+          gap: 10px;
           flex-wrap: wrap;
         }
         .pop-crumb button.crumb-btn {
           background: none;
           border: 0;
-          color: #64768a;
+          color: #64748b;
           cursor: pointer;
           padding: 0;
           font: inherit;
-          font-weight: 500;
+          font-weight: 600;
         }
         .pop-crumb button.crumb-btn:hover {
           color: #0e7b86;
           text-decoration: underline;
         }
         .pop-crumb span.active-crumb {
-          color: #1b354c;
-          font-weight: 800;
+          color: #0f172a;
+          font-weight: 850;
         }
         .pop-top-actions {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 12px;
         }
         .pop-plan-select {
-          padding: 6px 12px;
-          border: 1px solid #d8e5ec;
+          padding: 8px 15px;
+          border: 1.5px solid #cbd5e1;
           border-radius: 20px;
           background: white;
-          color: #1b354c;
-          font-size: 12px;
-          font-weight: 700;
+          color: #0f172a;
+          font-size: 13.5px;
+          font-weight: 750;
           font-family: inherit;
           outline: none;
           cursor: pointer;
+          transition: border-color 0.2s;
+        }
+        .pop-plan-select:focus {
+          border-color: #0e7b86;
         }
         .pop-preview {
-          padding: 5px 12px;
-          border: 1px solid #d8e5ec;
+          padding: 7px 15px;
+          border: 1.5px solid #cbd5e1;
           border-radius: 30px;
           background: white;
-          font-size: 12px;
-          font-weight: 600;
-          color: #475569;
+          font-size: 13px;
+          font-weight: 700;
+          color: #334155;
           white-space: nowrap;
+          cursor: pointer;
         }
         .pop-hero, .pop-workspace {
           background: #fff;
-          border: 1px solid #dae5ed;
-          box-shadow: 0 5px 18px #182f4b09;
+          border: 1.5px solid #cbd5e1;
+          box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
           border-radius: 20px;
         }
         .pop-hero {
-          padding: 28px 30px 23px;
+          padding: 28px 32px 24px;
         }
         .pop-hero-main {
           display: flex;
           align-items: center;
-          gap: 16px;
+          gap: 18px;
         }
         .pop-badge {
           display: grid;
           place-items: center;
-          flex: 0 0 56px;
-          width: 56px;
-          height: 56px;
-          border-radius: 16px;
+          flex: 0 0 64px;
+          width: 64px;
+          height: 64px;
+          border-radius: 18px;
           background: #0e7b86;
           color: #fff;
-          font-size: 20px;
-          font-weight: 850;
+          font-size: 22px;
+          font-weight: 900;
           letter-spacing: -0.02em;
-          box-shadow: 0 4px 9px #0e7b8625;
+          box-shadow: 0 4px 12px rgba(14, 123, 134, 0.25);
         }
         .pop-heading {
           min-width: 0;
@@ -453,64 +458,65 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
         }
         .pop-name-row {
           display: flex;
-          gap: 10px;
+          gap: 12px;
           align-items: center;
           flex-wrap: wrap;
         }
         .pop-heading h1 {
           margin: 0;
-          color: #0c2541;
-          letter-spacing: -0.04em;
-          font-size: 26px;
-          font-weight: 850;
+          color: #0f172a;
+          letter-spacing: -0.035em;
+          font-size: 28px;
+          font-weight: 900;
           line-height: 1.2;
         }
         .pop-tag {
-          padding: 4px 10px;
-          border-radius: 7px;
+          padding: 5px 12px;
+          border-radius: 8px;
           background: #e8f8fa;
           border: 1px solid #bee6ec;
-          color: #14758a;
-          font-weight: 750;
-          font-size: 12px;
+          color: #0e7b86;
+          font-weight: 800;
+          font-size: 13px;
           letter-spacing: 0.01em;
         }
         .pop-heading p {
-          margin: 5px 0 0;
-          color: #516780;
-          font-size: 13px;
-          font-weight: 500;
+          margin: 6px 0 0;
+          color: #475569;
+          font-size: 15px;
+          font-weight: 550;
           letter-spacing: -0.01em;
+          line-height: 1.4;
         }
         .pop-hero-rule {
           height: 1px;
-          background: #edf1f5;
-          margin: 23px 0 16px;
+          background: #e2e8f0;
+          margin: 24px 0 18px;
         }
         .pop-stats {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 12px;
+          gap: 14px;
         }
         .pop-stat {
           display: flex;
-          gap: 12px;
+          gap: 14px;
           align-items: center;
-          border: 1px solid #dde8f0;
-          background: #fbfdff;
-          border-radius: 13px;
-          padding: 13px;
+          border: 1.5px solid #e2e8f0;
+          background: #f8fafc;
+          border-radius: 14px;
+          padding: 14px 16px;
         }
         .pop-stat-icon {
           display: grid;
           place-items: center;
-          width: 36px;
-          height: 36px;
-          flex: 0 0 36px;
-          border-radius: 10px;
-          background: #eaf7fb;
-          color: #08768d;
-          font-size: 18px;
+          width: 40px;
+          height: 40px;
+          flex: 0 0 40px;
+          border-radius: 12px;
+          background: #ebf7f8;
+          color: #0e7b86;
+          font-size: 20px;
         }
         .pop-stat:nth-child(2) .pop-stat-icon {
           background: #fff0f5;
@@ -522,78 +528,79 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
         }
         .pop-stat small {
           display: block;
-          color: #687b91;
-          font-size: 10.5px;
+          color: #475569;
+          font-size: 12px;
           font-weight: 850;
-          letter-spacing: .08em;
+          letter-spacing: .07em;
           text-transform: uppercase;
         }
         .pop-stat strong {
           display: block;
-          margin-top: 3px;
-          font-size: 13px;
-          line-height: 1.25;
-          color: #0c2541;
-          font-weight: 800;
+          margin-top: 4px;
+          font-size: 15px;
+          line-height: 1.3;
+          color: #0f172a;
+          font-weight: 850;
           letter-spacing: -0.015em;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
         .pop-workspace {
-          margin-top: 20px;
+          margin-top: 24px;
           overflow: hidden;
         }
         .pop-workspace-head {
-          padding: 24px 26px 0;
+          padding: 26px 28px 0;
         }
         .pop-eyebrow {
           color: #0e7b86;
-          font-size: 11px;
-          font-weight: 850;
+          font-size: 12px;
+          font-weight: 900;
           letter-spacing: .12em;
           text-transform: uppercase;
         }
         .pop-workspace h2 {
-          margin: 5px 0 4px;
-          color: #122a46;
-          font-size: 22px;
+          margin: 6px 0 5px;
+          color: #0f172a;
+          font-size: 24px;
           letter-spacing: -.035em;
-          font-weight: 800;
+          font-weight: 850;
           line-height: 1.25;
         }
         .pop-subtext {
-          font-size: 13px;
-          color: #708196;
-          margin: 0 0 18px;
+          font-size: 15px;
+          color: #64748b;
+          margin: 0 0 20px;
           font-weight: 500;
           letter-spacing: -0.01em;
+          line-height: 1.45;
         }
         .pop-toolbar {
           display: flex;
-          gap: 12px;
+          gap: 14px;
           justify-content: space-between;
           align-items: center;
           flex-wrap: wrap;
         }
         .pop-tabs {
           display: flex;
-          gap: 4px;
-          padding: 4px;
+          gap: 5px;
+          padding: 5px;
           max-width: 100%;
           overflow-x: auto;
-          background: #f1f6f9;
-          border: 1px solid #e5edf3;
-          border-radius: 11px;
+          background: #f1f5f9;
+          border: 1px solid #e2e8f0;
+          border-radius: 13px;
         }
         .pop-tab {
           border: 0;
           background: transparent;
-          border-radius: 8px;
-          padding: 9px 14px;
-          color: #607387;
+          border-radius: 9px;
+          padding: 10px 16px;
+          color: #475569;
           font-weight: 750;
-          font-size: 13px;
+          font-size: 14px;
           font-family: inherit;
           cursor: pointer;
           transition: all 0.15s ease;
@@ -603,58 +610,59 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
         .pop-tab[aria-selected="true"] {
           color: #0e7b86;
           background: #fff;
-          font-weight: 800;
-          box-shadow: 0 2px 7px #182f4b16;
+          font-weight: 850;
+          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
         }
         .pop-count {
-          font-size: 11px;
-          font-weight: 750;
-          opacity: .75;
-          margin-left: 5px;
+          font-size: 12px;
+          font-weight: 800;
+          opacity: .85;
+          margin-left: 6px;
         }
         .pop-actions {
           display: flex;
-          gap: 9px;
+          gap: 10px;
           align-items: center;
         }
         .pop-search {
           display: flex;
           align-items: center;
-          gap: 7px;
-          border: 1px solid #dce6ed;
-          border-radius: 9px;
-          padding: 0 12px;
+          gap: 8px;
+          border: 1.5px solid #cbd5e1;
+          border-radius: 11px;
+          padding: 0 14px;
           background: white;
-          color: #6b8190;
+          color: #64748b;
         }
         .pop-search input {
-          width: 210px;
-          height: 38px;
+          width: 230px;
+          height: 42px;
           border: 0;
           outline: 0;
-          color: #203951;
+          color: #0f172a;
           background: transparent;
-          font-size: 13px;
+          font-size: 14px;
           font-family: inherit;
-          font-weight: 500;
+          font-weight: 600;
         }
         .pop-search input::placeholder {
           color: #94a3b8;
+          font-weight: 500;
         }
         .pop-print {
-          border: 1px solid #dce6ed;
-          color: #234459;
+          border: 1.5px solid #cbd5e1;
+          color: #1e293b;
           background: white;
-          border-radius: 9px;
-          padding: 9px 12px;
-          font-size: 13px;
+          border-radius: 11px;
+          padding: 10px 15px;
+          font-size: 13.5px;
           font-family: inherit;
-          font-weight: 700;
+          font-weight: 750;
           letter-spacing: -0.01em;
           cursor: pointer;
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 7px;
           transition: background .15s;
         }
         .pop-print:hover {
@@ -663,92 +671,93 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
         .pop-notice {
           display: flex;
           align-items: center;
-          gap: 10px;
-          margin: 21px 26px 0;
-          padding: 12px 15px;
-          border-radius: 11px;
+          gap: 12px;
+          margin: 22px 28px 0;
+          padding: 14px 18px;
+          border-radius: 13px;
           background: #f1f9fb;
-          color: #245568;
-          font-size: 12px;
-          font-weight: 500;
-          line-height: 1.5;
-          border: 1px solid #d8ecf2;
+          color: #1e293b;
+          font-size: 14px;
+          font-weight: 550;
+          line-height: 1.55;
+          border: 1px solid #c4e5e8;
           letter-spacing: -0.01em;
         }
         .pop-notice b {
-          color: #176d82;
-          font-weight: 750;
+          color: #0e7b86;
+          font-weight: 850;
         }
         .pop-list-head {
-          padding: 22px 26px 12px;
+          padding: 24px 28px 14px;
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
-          gap: 14px;
+          gap: 16px;
         }
         .pop-list-head h3 {
-          font-size: 15px;
-          margin: 0 0 3px;
-          color: #1b354c;
-          font-weight: 800;
+          font-size: 18px;
+          margin: 0 0 4px;
+          color: #0f172a;
+          font-weight: 850;
           letter-spacing: -0.02em;
         }
         .pop-list-head p {
-          font-size: 12px;
-          color: #708196;
+          font-size: 14px;
+          color: #64748b;
           margin: 0;
           font-weight: 500;
+          line-height: 1.45;
         }
         .pop-results {
-          font-size: 12px;
-          color: #708196;
+          font-size: 13px;
+          color: #64748b;
           white-space: nowrap;
-          font-weight: 600;
+          font-weight: 700;
         }
         .pop-cards {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 16px;
-          padding: 0 26px 27px;
+          gap: 18px;
+          padding: 0 28px 30px;
         }
         .pop-card {
-          border: 1px solid #e0e9ef;
-          border-radius: 13px;
-          padding: 18px 20px 17px;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 16px;
+          padding: 22px 24px 20px;
           transition: border-color .2s, box-shadow .2s;
           min-width: 0;
           background: #fff;
         }
         .pop-card:hover {
-          border-color: #bfdee7;
-          box-shadow: 0 4px 12px #182f4b06;
+          border-color: #93c5fd;
+          box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
         }
         .pop-cardtop {
           display: flex;
           justify-content: space-between;
-          gap: 7px;
+          gap: 10px;
           align-items: center;
         }
         .pop-code {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          background: #eef5f9;
-          border: 1px solid #dceaf0;
-          color: #225570;
-          border-radius: 7px;
-          padding: 5px 9px;
+          gap: 8px;
+          background: #f0f7f8;
+          border: 1.5px solid #c4e5e8;
+          color: #0e7b86;
+          border-radius: 9px;
+          padding: 7px 12px;
           font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-          font-size: 12.5px;
-          font-weight: 750;
+          font-size: 14px;
+          font-weight: 850;
           letter-spacing: 0.02em;
         }
         .pop-copy {
           border: 0;
           background: none;
-          color: #8c9cad;
-          font-size: 14px;
-          padding: 2px 4px;
+          color: #94a3b8;
+          font-size: 15px;
+          padding: 3px 5px;
           cursor: pointer;
           transition: color .15s;
         }
@@ -759,10 +768,10 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
           color: #0e7b86;
           background: #ebf7f8;
           border: 1px solid #c4e5e8;
-          font-size: 10px;
+          font-size: 11.5px;
           font-weight: 850;
-          padding: 5px 8px;
-          border-radius: 6px;
+          padding: 6px 10px;
+          border-radius: 7px;
           white-space: nowrap;
           text-transform: uppercase;
           letter-spacing: 0.04em;
@@ -773,55 +782,56 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
           border: 1px solid #c4e5e8;
         }
         .pop-card h4 {
-          font-size: 14.5px;
-          line-height: 1.45;
-          margin: 12px 0 10px;
-          color: #1b304a;
-          font-weight: 800;
+          font-size: 17px;
+          line-height: 1.4;
+          margin: 14px 0 12px;
+          color: #0f172a;
+          font-weight: 850;
           letter-spacing: -0.015em;
           text-transform: uppercase;
         }
         .pop-detail-grid {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 9px;
-          margin-top: 13px;
+          gap: 12px;
+          margin-top: 15px;
         }
         .pop-detail {
           background: #f8fafc;
-          border: 1px solid #e9eff4;
-          border-radius: 8px;
-          padding: 10px 12px;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 11px;
+          padding: 12px 15px;
           min-width: 0;
         }
         .pop-detail b {
           display: block;
-          color: #637b90;
-          font-size: 11px;
+          color: #475569;
+          font-size: 12.5px;
           letter-spacing: .02em;
-          margin-bottom: 4px;
-          font-weight: 750;
+          margin-bottom: 5px;
+          font-weight: 800;
+          text-transform: uppercase;
         }
         .pop-detail span {
           display: block;
-          font-size: 11px;
-          line-height: 1.45;
-          color: #283e52;
-          font-weight: 500;
+          font-size: 14px;
+          line-height: 1.55;
+          color: #0f172a;
+          font-weight: 600;
           overflow-wrap: anywhere;
         }
         .pop-footer-note {
-          padding: 13px 26px;
-          border-top: 1px solid #e9eef3;
-          color: #6d8192;
-          background: #fcfdfe;
-          font-size: 11.5px;
-          line-height: 1.5;
+          padding: 16px 28px;
+          border-top: 1px solid #e2e8f0;
+          color: #64748b;
+          background: #f8fafc;
+          font-size: 13.5px;
+          line-height: 1.6;
           font-weight: 500;
         }
         .pop-footer-note strong {
-          color: #38566d;
-          font-weight: 750;
+          color: #1e293b;
+          font-weight: 800;
         }
 
         @media(max-width:960px){
@@ -966,22 +976,22 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
         {/* BANNER OPERACIONAL EXCLUSIVO SERVIR NO PRONTO-SOCORRO */}
         {/* ========================================================= */}
         {isServir && (
-          <div className="bg-[#FDF2F6] border-2 border-[#B01B52] rounded-2xl p-5 my-5 shadow-sm space-y-2.5">
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#B01B52] text-white flex items-center justify-center font-black text-base flex-shrink-0 mt-0.5 shadow-xs">
+          <div className="bg-[#FDF2F6] border-2 border-[#B01B52] rounded-2xl p-6 my-5 shadow-sm space-y-3">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-[#B01B52] text-white flex items-center justify-center font-black text-lg flex-shrink-0 mt-0.5 shadow-xs">
                 !
               </div>
-              <div className="space-y-1">
-                <h3 className="text-sm sm:text-base font-black text-[#87143E] m-0">
+              <div className="space-y-1.5">
+                <h3 className="text-base sm:text-lg font-black text-[#87143E] m-0">
                   REGRA DE EXAMES NO PRONTO-SOCORRO: RX E RM INCLUSOS NO PACOTE
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-800 m-0 font-medium leading-relaxed">
-                  No SERVIR <strong>NÃO precisa pegar autorização para RX e RM</strong> pois o pacote já está incluso.
+                <p className="text-sm sm:text-base text-slate-900 m-0 font-bold leading-relaxed">
+                  No SERVIR <strong className="text-[#87143E] underline">NÃO precisa pegar autorização para RX e RM</strong> pois o pacote já está incluso.
                 </p>
-                <p className="text-xs sm:text-sm text-[#B01B52] m-0 font-black leading-relaxed">
+                <p className="text-sm sm:text-base text-[#B01B52] m-0 font-black leading-relaxed">
                   ⚠️ OBRIGATÓRIO: PEGAR ASSINATURA NA GUIA E COLOCAR A CAPA JUNTOS.
                 </p>
-                <p className="text-[11px] text-slate-500 m-0 font-medium">
+                <p className="text-xs text-slate-500 m-0 font-semibold">
                   * Esta orientação aplica-se exclusivamente ao POPS de Pronto-Socorro.
                 </p>
               </div>
@@ -993,17 +1003,17 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
         {/* BANNER ESPECIAL CASSI NO PRONTO-SOCORRO */}
         {/* ========================================================= */}
         {isCassi && (
-          <div className="bg-[#EBF7F8] border-2 border-[#0E7B86] rounded-2xl p-5 my-5 shadow-sm space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <span className="w-8 h-8 rounded-xl bg-[#0E7B86] text-white flex items-center justify-center font-black text-sm">
+          <div className="bg-[#EBF7F8] border-2 border-[#0E7B86] rounded-2xl p-6 my-5 shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <span className="w-10 h-10 rounded-xl bg-[#0E7B86] text-white flex items-center justify-center font-black text-base flex-shrink-0">
                   !
                 </span>
                 <div>
-                  <h3 className="text-base font-black text-[#095962] m-0">
+                  <h3 className="text-lg font-black text-[#095962] m-0">
                     PORTAL DA CASSI É O ORIZON • PRONTO-SOCORRO
                   </h3>
-                  <p className="text-xs text-slate-600 m-0 font-medium">
+                  <p className="text-sm text-slate-700 m-0 font-semibold">
                     Tanto no Pronto-Socorro como na Internação, utilize o autenticador Orizon (Polimed) para elegibilidade, consultas e exames.
                   </p>
                 </div>
@@ -1013,25 +1023,25 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                 href="https://www.polimed.com.br/autenticadorOrizon/loginAutenticador"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0E7B86] hover:bg-[#095962] text-white rounded-xl text-xs font-bold transition-all shadow-xs w-fit"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0E7B86] hover:bg-[#095962] text-white rounded-xl text-sm font-black transition-all shadow-xs w-fit"
               >
                 <span>Acessar Portal Orizon</span>
-                <ExternalLink className="w-3.5 h-3.5" />
+                <ExternalLink className="w-4 h-4" />
               </a>
             </div>
 
-            <div className="bg-white/90 border border-[#C4E5E8] rounded-xl p-3.5 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div className="bg-white/95 border-1.5 border-[#C4E5E8] rounded-xl p-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
               <div>
-                <span className="font-bold text-slate-400 block text-[10px] uppercase">Código Prestador</span>
-                <span className="font-mono font-black text-slate-900 text-sm">2120820</span>
+                <span className="font-black text-slate-500 block text-xs uppercase tracking-wider">Código Prestador</span>
+                <span className="font-mono font-black text-slate-900 text-base">2120820</span>
               </div>
               <div>
-                <span className="font-bold text-slate-400 block text-[10px] uppercase">Usuário Medical (CNPJ)</span>
-                <span className="font-mono font-black text-slate-900 text-sm">12955953000192</span>
+                <span className="font-black text-slate-500 block text-xs uppercase tracking-wider">Usuário Medical (CNPJ)</span>
+                <span className="font-mono font-black text-slate-900 text-base">12955953000192</span>
               </div>
               <div>
-                <span className="font-bold text-slate-400 block text-[10px] uppercase">Senha do Autorizador</span>
-                <span className="font-mono font-black text-[#0E7B86] text-sm">cassi@2025</span>
+                <span className="font-black text-slate-500 block text-xs uppercase tracking-wider">Senha do Autorizador</span>
+                <span className="font-mono font-black text-[#0E7B86] text-base">cassi@2025</span>
               </div>
             </div>
           </div>
@@ -1167,17 +1177,17 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                     <h4>{block.title}</h4>
 
                     {block.info && (
-                      <p className="text-xs sm:text-sm text-slate-700 bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 m-0 leading-relaxed font-medium">
+                      <p className="text-sm sm:text-base text-slate-800 bg-slate-50 p-4 rounded-xl border border-slate-200/90 m-0 leading-relaxed font-semibold">
                         {block.info}
                       </p>
                     )}
 
                     {block.alerts && block.alerts.length > 0 && (
-                      <div className="bg-[#FDF2F6] border border-[#F7D0DF] rounded-xl p-3.5 text-xs text-slate-800 space-y-1.5 mt-3">
+                      <div className="bg-[#FDF2F6] border border-[#F7D0DF] rounded-xl p-4 text-sm sm:text-base text-slate-900 space-y-2 mt-3.5">
                         {block.alerts.map((al, aIdx) => (
-                          <div key={aIdx} className="flex items-start gap-2 break-words">
-                            <Info className="w-4 h-4 text-[#B01B52] mt-0.5 flex-shrink-0" />
-                            <span className="leading-relaxed font-bold text-[#87143E]">{al}</span>
+                          <div key={aIdx} className="flex items-start gap-2.5 break-words">
+                            <Info className="w-5 h-5 text-[#B01B52] mt-0.5 flex-shrink-0" />
+                            <span className="leading-relaxed font-black text-[#87143E]">{al}</span>
                           </div>
                         ))}
                       </div>
@@ -1185,29 +1195,29 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
 
                     {block.rows && block.rows.length > 0 && (
                       <div className="overflow-x-auto mt-4">
-                        <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                        <table className="w-full text-left text-sm sm:text-base border-collapse">
                           <thead>
-                            <tr className="border-b border-slate-200 text-slate-400 font-bold">
-                              <th className="py-2.5 px-3 w-36">Código TUSS</th>
-                              <th className="py-2.5 px-3">Descrição do Procedimento</th>
-                              <th className="py-2.5 px-3 text-right w-28">Ações</th>
+                            <tr className="border-b-2 border-slate-200 text-slate-500 font-black text-xs sm:text-sm uppercase tracking-wider">
+                              <th className="py-3 px-3.5 w-40">Código TUSS</th>
+                              <th className="py-3 px-3.5">Descrição do Procedimento</th>
+                              <th className="py-3 px-3.5 text-right w-32">Ações</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-slate-100 font-medium">
+                          <tbody className="divide-y divide-slate-100">
                             {block.rows.map((row, rIdx) => (
                               <tr key={rIdx} className="hover:bg-slate-50/80 transition-colors">
-                                <td className="py-3 px-3 font-mono font-bold text-[#0E7B86] whitespace-nowrap">
+                                <td className="py-3.5 px-3.5 font-mono font-black text-[#0E7B86] whitespace-nowrap text-sm sm:text-base">
                                   {row[0]}
                                 </td>
-                                <td className="py-3 px-3 text-slate-800 break-words leading-relaxed font-bold">
+                                <td className="py-3.5 px-3.5 text-slate-900 break-words leading-relaxed font-bold text-sm sm:text-base">
                                   {row[1]}
                                 </td>
-                                <td className="py-3 px-3 text-right">
+                                <td className="py-3.5 px-3.5 text-right">
                                   <div className="flex items-center justify-end gap-2">
                                     <button
                                       type="button"
                                       onClick={() => copyCodeToClipboard(row[0])}
-                                      className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] text-slate-600 hover:text-[#0E7B86] transition-colors cursor-pointer"
+                                      className="p-2 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86] transition-colors cursor-pointer"
                                       title="Copiar Código"
                                     >
                                       {copiedCode === row[0] ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
@@ -1216,7 +1226,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                                       <button
                                         type="button"
                                         onClick={() => onGeneratePreGuia('SERVIR', row[0], row[1])}
-                                        className="px-2.5 py-1 rounded-lg bg-[#FDF2F6] hover:bg-[#FCE7EF] text-[#B01B52] font-bold text-xs transition-colors cursor-pointer"
+                                        className="px-3 py-1.5 rounded-lg bg-[#FDF2F6] hover:bg-[#FCE7EF] text-[#B01B52] font-black text-xs transition-colors cursor-pointer"
                                       >
                                         Pré-Guia
                                       </button>
@@ -1238,7 +1248,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                   <div className="pop-card">
                     <div className="pop-cardtop">
                       <span className="pop-code">
-                        <Ambulance className="w-3.5 h-3.5 text-[#0E7B86]" />
+                        <Ambulance className="w-4 h-4 text-[#0E7B86]" />
                         <span>{activeConvenioObj?.pacotePs ? activeConvenioObj.pacotePs.split(' ')[0] : '10101039'}</span>
                       </span>
                       <span className="pop-category urgencia">PACOTE CONSULTA PS</span>
@@ -1249,33 +1259,33 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                     <div className="pop-detail-grid">
                       <div className="pop-detail">
                         <b>Código Principal</b>
-                        <span className="font-mono font-black text-[#0E7B86]">
+                        <span className="font-mono font-black text-[#0E7B86] text-sm sm:text-base">
                           {activeConvenioObj?.pacotePs || '10101039 - Consulta em Pronto-Socorro'}
                         </span>
                       </div>
                       <div className="pop-detail">
                         <b>Tipo de Cobertura</b>
-                        <span className="font-semibold text-slate-800">
+                        <span className="font-bold text-slate-900 text-sm sm:text-base">
                           {activeConvenioObj?.category || 'Atendimento de Urgência 24h'}
                         </span>
                       </div>
                       <div className="pop-detail">
                         <b>Carência & Elegibilidade</b>
-                        <span className="font-semibold text-slate-800">
+                        <span className="font-bold text-slate-900 text-sm sm:text-base">
                           {activeConvenioObj?.elegibilidadeRules || 'Validação obrigatória no portal/biometria'}
                         </span>
                       </div>
                     </div>
 
                     {activeConvenioObj?.criticalNotes && activeConvenioObj.criticalNotes.length > 0 && (
-                      <div className="bg-[#FDF2F6] border border-[#F7D0DF] rounded-xl p-3.5 text-xs text-slate-800 space-y-1.5 mt-4">
-                        <strong className="text-[#87143E] block uppercase tracking-wider text-[11px]">
+                      <div className="bg-[#FDF2F6] border border-[#F7D0DF] rounded-xl p-4 text-sm sm:text-base text-slate-900 space-y-2 mt-4">
+                        <strong className="text-[#87143E] block uppercase tracking-wider text-xs font-black">
                           Avisos Importantes de Atendimento:
                         </strong>
                         {activeConvenioObj.criticalNotes.map((note, nIdx) => (
-                          <div key={nIdx} className="flex items-start gap-2">
-                            <span className="text-[#B01B52] font-black">•</span>
-                            <span className="leading-relaxed font-medium">{note}</span>
+                          <div key={nIdx} className="flex items-start gap-2.5">
+                            <span className="text-[#B01B52] font-black text-base">•</span>
+                            <span className="leading-relaxed font-bold text-slate-800">{note}</span>
                           </div>
                         ))}
                       </div>
@@ -1287,7 +1297,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                     <div className="pop-card">
                       <div className="pop-cardtop">
                         <span className="pop-code">
-                          <Stethoscope className="w-3.5 h-3.5 text-[#0E7B86]" />
+                          <Stethoscope className="w-4 h-4 text-[#0E7B86]" />
                           <span>PROCEDIMENTOS-PS</span>
                         </span>
                         <span className="pop-category urgencia">URGÊNCIA AMBULATORIAL</span>
@@ -1295,29 +1305,29 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
 
                       <h4>Procedimentos de Urgência Amparados</h4>
 
-                      <div className="overflow-x-auto mt-3">
-                        <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                      <div className="overflow-x-auto mt-4">
+                        <table className="w-full text-left text-sm sm:text-base border-collapse">
                           <thead>
-                            <tr className="border-b border-slate-200 text-slate-400 font-bold">
-                              <th className="py-2.5 px-3 w-36">Código TUSS</th>
-                              <th className="py-2.5 px-3">Descrição do Procedimento</th>
-                              <th className="py-2.5 px-3 text-right w-28">Ações</th>
+                            <tr className="border-b-2 border-slate-200 text-slate-500 font-black text-xs sm:text-sm uppercase tracking-wider">
+                              <th className="py-3 px-3.5 w-40">Código TUSS</th>
+                              <th className="py-3 px-3.5">Descrição do Procedimento</th>
+                              <th className="py-3 px-3.5 text-right w-32">Ações</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-slate-100 font-medium">
+                          <tbody className="divide-y divide-slate-100">
                             {activeConvenioObj.sections.ps.procedures.map((proc, pIdx) => (
                               <tr key={pIdx} className="hover:bg-slate-50/80 transition-colors">
-                                <td className="py-3 px-3 font-mono font-bold text-[#0E7B86] whitespace-nowrap">
+                                <td className="py-3.5 px-3.5 font-mono font-black text-[#0E7B86] whitespace-nowrap text-sm sm:text-base">
                                   {proc.code}
                                 </td>
-                                <td className="py-3 px-3 text-slate-800 break-words leading-relaxed font-semibold">
+                                <td className="py-3.5 px-3.5 text-slate-900 break-words leading-relaxed font-bold text-sm sm:text-base">
                                   {proc.desc}
                                 </td>
-                                <td className="py-3 px-3 text-right">
+                                <td className="py-3.5 px-3.5 text-right">
                                   <button
                                     type="button"
                                     onClick={() => copyCodeToClipboard(proc.code)}
-                                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] text-slate-600 hover:text-[#0E7B86] transition-colors cursor-pointer"
+                                    className="p-2 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86] transition-colors cursor-pointer"
                                     title="Copiar Código"
                                   >
                                     {copiedCode === proc.code ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
@@ -1336,7 +1346,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                     <div className="pop-card">
                       <div className="pop-cardtop">
                         <span className="pop-code">
-                          <FileText className="w-3.5 h-3.5 text-[#0E7B86]" />
+                          <FileText className="w-4 h-4 text-[#0E7B86]" />
                           <span>NORMAS-OPERACIONAIS</span>
                         </span>
                         <span className="pop-category">REGRAS DO PS</span>
@@ -1344,10 +1354,10 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
 
                       <h4>Orientações e Normas do Pronto-Socorro</h4>
 
-                      <ul className="space-y-2 text-xs sm:text-sm text-slate-700 m-0 mt-3 pl-1 font-medium leading-relaxed">
+                      <ul className="space-y-2.5 text-sm sm:text-base text-slate-800 m-0 mt-3.5 pl-1 font-semibold leading-relaxed">
                         {activeConvenioObj.sections.ps.textItems.map((item, iIdx) => (
-                          <li key={iIdx} className="flex items-start gap-2.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#0E7B86] mt-2 flex-shrink-0" />
+                          <li key={iIdx} className="flex items-start gap-3">
+                            <span className="w-2 h-2 rounded-full bg-[#0E7B86] mt-2 flex-shrink-0" />
                             <span className="leading-relaxed">{item}</span>
                           </li>
                         ))}
@@ -1368,7 +1378,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
               <div className="pop-card">
                 <div className="pop-cardtop">
                   <span className="pop-code">
-                    <TestTube2 className="w-3.5 h-3.5 text-[#0E7B86]" />
+                    <TestTube2 className="w-4 h-4 text-[#0E7B86]" />
                     <span>LAB-URGENCIA</span>
                   </span>
                   <span className="pop-category urgencia">EXAMES LABORATORIAIS</span>
@@ -1379,19 +1389,19 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                 <div className="pop-detail-grid">
                   <div className="pop-detail">
                     <b>Regra de Liberação</b>
-                    <span className="font-bold text-slate-900">
+                    <span className="font-bold text-slate-900 text-sm sm:text-base">
                       {isServir ? 'Incluso no pacote' : (activeConvenioObj?.labUrgencia || 'Conforme pedido do médico assistente')}
                     </span>
                   </div>
                   <div className="pop-detail">
                     <b>Exames Comuns</b>
-                    <span className="text-slate-700">
+                    <span className="text-slate-800 font-semibold text-sm sm:text-base">
                       Hemograma, PCR, Ureia, Creatinina, Eletrólitos, Gasometria, Troponina e EAS.
                     </span>
                   </div>
                   <div className="pop-detail">
                     <b>Validação</b>
-                    <span className="text-slate-700">
+                    <span className="text-slate-800 font-semibold text-sm sm:text-base">
                       Carimbo e assinatura do médico na guia de urgência.
                     </span>
                   </div>
@@ -1402,7 +1412,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
               <div className="pop-card">
                 <div className="pop-cardtop">
                   <span className="pop-code">
-                    <Scan className="w-3.5 h-3.5 text-[#0E7B86]" />
+                    <Scan className="w-4 h-4 text-[#0E7B86]" />
                     <span>IMAGEM-URGENCIA</span>
                   </span>
                   <span className="pop-category">RADIOLOGIA & IMAGEM</span>
@@ -1413,13 +1423,13 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                 <div className="pop-detail-grid">
                   <div className="pop-detail">
                     <b>Status Contratual</b>
-                    <span className="font-black text-[#0E7B86]">
+                    <span className="font-black text-[#0E7B86] text-sm sm:text-base">
                       {isServir ? 'RX e RM Inclusos no Pacote (Sem autorização)' : (activeConvenioObj?.imagemUrgencia || 'Solicitar Autorização')}
                     </span>
                   </div>
                   <div className="pop-detail">
                     <b>Diretriz Operacional</b>
-                    <span className="text-slate-700 font-medium">
+                    <span className="text-slate-800 font-semibold text-sm sm:text-base">
                       {isServir 
                         ? 'Não precisa pegar autorização para RX e RM pois o pacote está incluso. Pegar assinatura na guia e colocar a capa juntos.'
                         : 'Radiografias e Tomografias liberadas amparadas pelo pedido médico do PS.'}
@@ -1427,16 +1437,16 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                   </div>
                   <div className="pop-detail">
                     <b>Requisito Mandatório</b>
-                    <span className="font-bold text-slate-900">
+                    <span className="font-black text-slate-900 text-sm sm:text-base">
                       {isServir ? 'Assinatura na Guia + Capa Juntos' : 'Laudo do médico assistente'}
                     </span>
                   </div>
                 </div>
 
                 {isServir && (
-                  <div className="bg-[#FDF2F6] border border-[#F7D0DF] rounded-xl p-3.5 text-xs text-slate-800 mt-4 flex items-center gap-2 font-bold text-[#87143E]">
-                    <AlertTriangle className="w-4 h-4 text-[#B01B52] flex-shrink-0" />
-                    <span>Aviso Obrigatório SERVIR: NÃO precisa autorizar RX e RM no portal. Obrigatório colher assinatura na guia e anexar a capa do atendimento.</span>
+                  <div className="bg-[#FDF2F6] border border-[#F7D0DF] rounded-xl p-4 text-sm sm:text-base text-slate-900 mt-4 flex items-start gap-2.5 font-bold text-[#87143E]">
+                    <AlertTriangle className="w-5 h-5 text-[#B01B52] flex-shrink-0 mt-0.5" />
+                    <span className="leading-relaxed">Aviso Obrigatório SERVIR: NÃO precisa autorizar RX e RM no portal. Obrigatório colher assinatura na guia e anexar a capa do atendimento.</span>
                   </div>
                 )}
               </div>
@@ -1446,7 +1456,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                 <div className="pop-card">
                   <div className="pop-cardtop">
                     <span className="pop-code">
-                      <FileText className="w-3.5 h-3.5 text-[#0E7B86]" />
+                      <FileText className="w-4 h-4 text-[#0E7B86]" />
                       <span>PASSO-A-PASSO</span>
                     </span>
                     <span className="pop-category urgencia">SOLICITAÇÃO DE EXAMES</span>
@@ -1454,13 +1464,13 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
 
                   <h4>Fluxo de Solicitação de Exames no Autorizador</h4>
 
-                  <div className="space-y-3 mt-3">
+                  <div className="space-y-3 mt-4">
                     {activeConvenioObj.sections.exames.steps.map((step, sIdx) => (
-                      <div key={sIdx} className="flex items-start gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
-                        <div className="w-6 h-6 rounded-full bg-[#0E7B86] text-white font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div key={sIdx} className="flex items-start gap-3.5 bg-slate-50 p-4 rounded-xl border border-slate-200/90">
+                        <div className="w-7 h-7 rounded-full bg-[#0E7B86] text-white font-black text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
                           {sIdx + 1}
                         </div>
-                        <p className="text-xs sm:text-sm text-slate-800 m-0 leading-relaxed font-medium">
+                        <p className="text-sm sm:text-base text-slate-900 m-0 leading-relaxed font-bold">
                           {step}
                         </p>
                       </div>
@@ -1479,7 +1489,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
               <div className="pop-card">
                 <div className="pop-cardtop">
                   <span className="pop-code">
-                    <KeyRound className="w-3.5 h-3.5 text-[#0E7B86]" />
+                    <KeyRound className="w-4 h-4 text-[#0E7B86]" />
                     <span>TOKEN-VALIDACAO</span>
                   </span>
                   <span className="pop-category urgencia">BALCÃO DO PS</span>
@@ -1490,32 +1500,32 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                 <div className="pop-detail-grid">
                   <div className="pop-detail">
                     <b>Exigência de Token</b>
-                    <span className="font-bold text-slate-900">
+                    <span className="font-black text-slate-900 text-sm sm:text-base">
                       {activeConvenioObj?.sections?.token?.steps ? 'Obrigatório no Atendimento' : 'Conforme sistema da operadora'}
                     </span>
                   </div>
                   <div className="pop-detail">
                     <b>Biometria Facial</b>
-                    <span className="text-slate-700 font-medium">
+                    <span className="text-slate-800 font-semibold text-sm sm:text-base">
                       Obrigatório realizar conferência documental com foto do paciente.
                     </span>
                   </div>
                   <div className="pop-detail">
                     <b>Contingência</b>
-                    <span className="text-slate-700 font-medium">
+                    <span className="text-slate-800 font-semibold text-sm sm:text-base">
                       {activeConvenioObj?.sections?.token?.contingency || 'Em caso de instabilidade, contatar central de autorização da operadora.'}
                     </span>
                   </div>
                 </div>
 
                 {activeConvenioObj?.sections?.token?.steps && (
-                  <div className="space-y-3 mt-4 pt-3 border-t border-slate-100">
-                    <span className="text-xs font-black uppercase text-slate-400 tracking-wider block">
+                  <div className="space-y-3 mt-5 pt-4 border-t border-slate-100">
+                    <span className="text-xs font-black uppercase text-slate-500 tracking-wider block">
                       Passo a Passo no Balcão de Recepção:
                     </span>
                     {activeConvenioObj.sections.token.steps.map((st, idx) => (
-                      <div key={idx} className="flex items-start gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200/80 text-xs text-slate-800 font-medium">
-                        <span className="w-5 h-5 rounded-full bg-[#0E7B86] text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">
+                      <div key={idx} className="flex items-start gap-3.5 bg-slate-50 p-3.5 rounded-xl border border-slate-200/90 text-sm sm:text-base text-slate-900 font-semibold">
+                        <span className="w-6 h-6 rounded-full bg-[#0E7B86] text-white flex items-center justify-center font-black text-xs flex-shrink-0 mt-0.5">
                           {idx + 1}
                         </span>
                         <span className="leading-relaxed">{st}</span>
@@ -1538,7 +1548,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                   <div key={cIdx} className="pop-card">
                     <div className="pop-cardtop">
                       <span className="pop-code">
-                        <Globe className="w-3.5 h-3.5 text-[#0E7B86]" />
+                        <Globe className="w-4 h-4 text-[#0E7B86]" />
                         <span>PORTAL-ACESSO</span>
                       </span>
                       <span className="pop-category urgencia">LOGIN & SENHA</span>
@@ -1553,68 +1563,68 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                           href={cred.portalUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="font-bold text-[#0E7B86] hover:underline flex items-center gap-1 mt-1 truncate"
+                          className="font-bold text-[#0E7B86] hover:underline flex items-center gap-1.5 mt-1.5 truncate text-sm sm:text-base"
                         >
                           <span className="truncate">{cred.portalUrl}</span>
-                          <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                          <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
                         </a>
                       </div>
 
                       <div className="pop-detail">
-                        <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center justify-between mb-1.5">
                           <b>Login de Acesso</b>
                           <button
                             type="button"
                             onClick={() => copyCredField(cred.id, 'login', cred.login)}
-                            className="text-[10px] font-bold text-[#0E7B86] hover:underline flex items-center gap-1 cursor-pointer"
+                            className="text-xs font-black text-[#0E7B86] hover:underline flex items-center gap-1 cursor-pointer"
                           >
                             {copiedCredential?.id === cred.id && copiedCredential?.field === 'login' ? (
-                              <Check className="w-3 h-3 text-emerald-600" />
+                              <Check className="w-3.5 h-3.5 text-emerald-600" />
                             ) : (
-                              <Copy className="w-3 h-3" />
+                              <Copy className="w-3.5 h-3.5" />
                             )}
                             <span>Copiar</span>
                           </button>
                         </div>
-                        <span className="font-mono font-black text-slate-900 text-xs">
+                        <span className="font-mono font-black text-slate-900 text-sm sm:text-base">
                           {cred.login}
                         </span>
                       </div>
 
                       <div className="pop-detail">
-                        <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center justify-between mb-1.5">
                           <b>Senha de Acesso</b>
                           <div className="flex items-center gap-2">
                             <button
                               type="button"
                               onClick={() => togglePasswordReveal(cred.id)}
-                              className="text-[10px] font-bold text-slate-500 hover:text-slate-800 flex items-center gap-0.5 cursor-pointer"
+                              className="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1 cursor-pointer"
                             >
-                              {revealedPasswords[cred.id] ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                              {revealedPasswords[cred.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                               <span>{revealedPasswords[cred.id] ? 'Ocultar' : 'Ver'}</span>
                             </button>
                             <button
                               type="button"
                               onClick={() => copyCredField(cred.id, 'senha', cred.senha)}
-                              className="text-[10px] font-bold text-[#0E7B86] hover:underline flex items-center gap-1 cursor-pointer"
+                              className="text-xs font-black text-[#0E7B86] hover:underline flex items-center gap-1 cursor-pointer"
                             >
                               {copiedCredential?.id === cred.id && copiedCredential?.field === 'senha' ? (
-                                <Check className="w-3 h-3 text-emerald-600" />
+                                <Check className="w-3.5 h-3.5 text-emerald-600" />
                               ) : (
-                                <Copy className="w-3 h-3" />
+                                <Copy className="w-3.5 h-3.5" />
                               )}
                               <span>Copiar</span>
                             </button>
                           </div>
                         </div>
-                        <span className="font-mono font-black text-[#0E7B86] text-xs">
+                        <span className="font-mono font-black text-[#0E7B86] text-sm sm:text-base">
                           {revealedPasswords[cred.id] ? cred.senha : '••••••••••••'}
                         </span>
                       </div>
                     </div>
 
                     {cred.notes && (
-                      <p className="text-xs text-slate-600 font-medium mt-3 m-0 bg-slate-50 p-2.5 rounded-lg border border-slate-200/80">
+                      <p className="text-sm text-slate-700 font-semibold mt-3.5 m-0 bg-slate-50 p-3 rounded-xl border border-slate-200/90 leading-relaxed">
                         {cred.notes}
                       </p>
                     )}
@@ -1625,7 +1635,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                 <div className="pop-card">
                   <div className="pop-cardtop">
                     <span className="pop-code">
-                      <Globe className="w-3.5 h-3.5 text-[#0E7B86]" />
+                      <Globe className="w-4 h-4 text-[#0E7B86]" />
                       <span>PORTAL-OPERADORA</span>
                     </span>
                     <span className="pop-category urgencia">ACESSO WEB</span>
@@ -1642,25 +1652,25 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                         href={isServir ? 'https://servir.facilinformatica.com.br' : (activeConvenioObj?.portalUrl || '#')}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-bold text-[#0E7B86] hover:underline flex items-center gap-1 mt-1 truncate"
+                        className="font-bold text-[#0E7B86] hover:underline flex items-center gap-1.5 mt-1.5 truncate text-sm sm:text-base"
                       >
                         <span className="truncate">
                           {isServir ? 'https://servir.facilinformatica.com.br' : (activeConvenioObj?.portalUrl || 'Verificar portal')}
                         </span>
-                        <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                        <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
                       </a>
                     </div>
 
                     <div className="pop-detail">
                       <b>Usuário / CNPJ</b>
-                      <span className="font-mono font-black text-slate-900 text-xs">
+                      <span className="font-mono font-black text-slate-900 text-sm sm:text-base">
                         12955953000192 (Palmas Medical)
                       </span>
                     </div>
 
                     <div className="pop-detail">
                       <b>Senha Padrão</b>
-                      <span className="font-mono font-black text-[#0E7B86] text-xs">
+                      <span className="font-mono font-black text-[#0E7B86] text-sm sm:text-base">
                         {isServir ? 'Medical@2025' : 'Hpm2025hpm@'}
                       </span>
                     </div>
@@ -1673,7 +1683,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                 <div className="pop-card">
                   <div className="pop-cardtop">
                     <span className="pop-code">
-                      <Phone className="w-3.5 h-3.5 text-[#0E7B86]" />
+                      <Phone className="w-4 h-4 text-[#0E7B86]" />
                       <span>CANAIS-SUPORTE</span>
                     </span>
                     <span className="pop-category">TELEFONES & E-MAILS</span>
@@ -1685,19 +1695,19 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                     {activeConvenioObj.contact.phone && (
                       <div className="pop-detail">
                         <b>Central Telefônica</b>
-                        <span className="font-bold text-slate-900">{activeConvenioObj.contact.phone}</span>
+                        <span className="font-black text-slate-900 text-sm sm:text-base">{activeConvenioObj.contact.phone}</span>
                       </div>
                     )}
                     {activeConvenioObj.contact.support0800 && (
                       <div className="pop-detail">
                         <b>Suporte 0800</b>
-                        <span className="font-bold text-slate-900">{activeConvenioObj.contact.support0800}</span>
+                        <span className="font-black text-slate-900 text-sm sm:text-base">{activeConvenioObj.contact.support0800}</span>
                       </div>
                     )}
                     {activeConvenioObj.contact.email && (
                       <div className="pop-detail">
                         <b>E-mail de Autorização</b>
-                        <span className="font-bold text-[#0E7B86]">{activeConvenioObj.contact.email}</span>
+                        <span className="font-black text-[#0E7B86] text-sm sm:text-base">{activeConvenioObj.contact.email}</span>
                       </div>
                     )}
                   </div>

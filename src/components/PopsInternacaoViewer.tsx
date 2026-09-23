@@ -1,5 +1,32 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ExternalLink, Globe, Printer, FileText, Copy, Check, Eye, EyeOff, AlertTriangle, KeyRound, ShieldAlert } from 'lucide-react';
+import { 
+  ExternalLink, 
+  Globe, 
+  Printer, 
+  FileText, 
+  Copy, 
+  Check, 
+  Eye, 
+  EyeOff, 
+  AlertTriangle, 
+  KeyRound, 
+  ShieldAlert,
+  Stethoscope,
+  Pill,
+  FlaskConical,
+  Scan,
+  Activity,
+  Link2,
+  Building2,
+  Bed,
+  CheckCircle2,
+  AlertCircle,
+  LayoutGrid,
+  List,
+  SlidersHorizontal,
+  ArrowUpRight,
+  Sparkles
+} from 'lucide-react';
 import { SERVIR_DATA, CONVENIOS_MASTER_LIST } from '../data/popsData';
 import { TABELA_DIARIAS_DATA, ALL_DIARIAS_ITEMS, DiariaItem, ConvenioDiariasRules } from '../data/diariasData';
 import { PORTAIS_CREDENCIAIS, PORTAIS_RULES, PortalCredential } from '../data/portaisData';
@@ -26,6 +53,8 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('Todos');
   const [revealedPasswords, setRevealedPasswords] = useState<{ [id: string]: boolean }>({});
   const [copiedCredential, setCopiedCredential] = useState<{ id: string; field: 'login' | 'senha' } | null>(null);
+  const [copiedCardSummary, setCopiedCardSummary] = useState<string | null>(null);
+  const [cardLayoutMode, setCardLayoutMode] = useState<'cards' | 'table'>('cards');
 
   const togglePasswordReveal = (id: string) => {
     setRevealedPasswords(prev => ({ ...prev, [id]: !prev[id] }));
@@ -36,6 +65,49 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
     navigator.clipboard.writeText(text);
     setCopiedCredential({ id, field });
     setTimeout(() => setCopiedCredential(null), 1800);
+  };
+
+  // Status visual dos 5 pilares de autorização
+  const getPillarStatus = (value?: string | null) => {
+    if (!value || value.toLowerCase().includes('não informado')) {
+      return {
+        badgeText: 'Não informado',
+        badgeClass: 'bg-slate-100 text-slate-500 border-slate-200',
+        cardClass: 'bg-slate-50/80 border-slate-200/80',
+        textClass: 'text-slate-400 italic'
+      };
+    }
+    const lower = value.toLowerCase();
+    if (lower.includes('não precisa') || lower.includes('não necessita') || lower.includes('isento') || lower.includes('liberado')) {
+      return {
+        badgeText: 'Liberado',
+        badgeClass: 'bg-emerald-100/90 text-emerald-800 border-emerald-300 font-bold',
+        cardClass: 'bg-emerald-50/40 border-emerald-200/90',
+        textClass: 'text-emerald-950 font-semibold'
+      };
+    }
+    if (lower.includes('incluso')) {
+      return {
+        badgeText: 'Incluso',
+        badgeClass: 'bg-teal-100/90 text-teal-800 border-teal-300 font-bold',
+        cardClass: 'bg-teal-50/40 border-teal-200/90',
+        textClass: 'text-teal-950 font-semibold'
+      };
+    }
+    if (lower.includes('necessita') || lower.includes('acima') || lower.includes('autoriza') || lower.includes('obrigat') || lower.includes('solicitar')) {
+      return {
+        badgeText: 'Autorização',
+        badgeClass: 'bg-amber-100/90 text-amber-900 border-amber-300 font-bold',
+        cardClass: 'bg-amber-50/40 border-amber-300/90',
+        textClass: 'text-amber-950 font-bold'
+      };
+    }
+    return {
+      badgeText: 'Contratual',
+      badgeClass: 'bg-sky-100/90 text-sky-800 border-sky-200 font-bold',
+      cardClass: 'bg-sky-50/30 border-sky-200/90',
+      textClass: 'text-slate-800 font-medium'
+    };
   };
 
   useEffect(() => {
@@ -57,6 +129,38 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
     } catch {
       // Fallback
     }
+  };
+
+  const handleCopyCardSummary = (item: DiariaItem, isUti: boolean, pName: string) => {
+    const getVal = (itemVal?: string, ruleVal?: string) => {
+      if (itemVal && !itemVal.toLowerCase().includes('não informado')) return itemVal;
+      if (ruleVal && !ruleVal.toLowerCase().includes('não informado')) return ruleVal;
+      return null;
+    };
+
+    const valParecer = getVal(item.parecer, planDiariasRules?.parecer) || 'Não informado na planilha';
+    const valMatMed = getVal(item.matMed, planDiariasRules?.matMed) || 'Não informado na planilha';
+    const valExLab = getVal(item.exLab, planDiariasRules?.exLab) || 'Não informado na planilha';
+    const valExRad = getVal(item.exRad, planDiariasRules?.exRad) || 'Não informado na planilha';
+    const valFisio = getVal(item.fisioIntern, planDiariasRules?.fisioIntern) || 'Não informado na planilha';
+
+    let text = `🏥 *${pName.toUpperCase()} - ${isUti ? 'UTI INTENSIVA' : 'INTERNAÇÃO CLÍNICA'}*\n`;
+    text += `🛏️ *Acomodação:* ${item.acomodacao}\n`;
+    text += `🔢 *Código:* ${item.code}\n`;
+    if (item.solicitarJunto) {
+      text += `🔗 *Solicitar Junto:* ${item.solicitarJunto}\n`;
+    }
+    text += `📋 *Regras de Liberação/Autorização:*\n`;
+    text += `• Parecer Especialista: ${valParecer}\n`;
+    text += `• Mat / Med: ${valMatMed}\n`;
+    text += `• Exames Laboratoriais: ${valExLab}\n`;
+    text += `• Exames Radiológicos: ${valExRad}\n`;
+    text += `• Fisioterapia: ${valFisio}\n`;
+
+    navigator.clipboard.writeText(text);
+    const key = item.id || item.code + item.acomodacao;
+    setCopiedCardSummary(key);
+    setTimeout(() => setCopiedCardSummary(null), 2000);
   };
 
   const planCategories = ['Todos', 'Autogestão', 'Seguradora', 'Privado', 'Militar', 'Estadual'];
@@ -273,7 +377,7 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
   // ==========================================
   if (viewMode === 'grid') {
     return (
-      <div className="space-y-6 max-w-7xl mx-auto pb-16">
+      <div className="space-y-6 w-full max-w-[1700px] mx-auto pb-16">
         <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs">
           <div className="max-w-3xl space-y-2">
             <div className="flex items-center gap-2">
@@ -391,14 +495,16 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
           color: #172b43;
           background: #f3f7fa;
           font-synthesis: none;
-          margin: -1.5rem;
-          padding: 1.5rem;
+          margin: -1rem;
+          padding: 1rem;
           min-height: calc(100vh - 80px);
+          width: calc(100% + 2rem);
         }
         .pop-shell {
-          max-width: 1220px;
-          margin: auto;
-          padding: 10px 10px 70px;
+          max-width: 100%;
+          width: 100%;
+          margin: 0;
+          padding: 10px 4px 70px;
         }
         .pop-topline {
           display: flex;
@@ -1403,6 +1509,38 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
               </div>
 
               <div className="pop-actions">
+                {/* Visual View Switcher (Cartões vs Tabela) */}
+                {!isSpecialTab && (
+                  <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => setCardLayoutMode('cards')}
+                      className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                        cardLayoutMode === 'cards'
+                          ? 'bg-white text-[#0E7B86] shadow-2xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                      title="Modo Cartões Detalhados"
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Cartões</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCardLayoutMode('table')}
+                      className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                        cardLayoutMode === 'table'
+                          ? 'bg-white text-[#0E7B86] shadow-2xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                      title="Modo Tabela Comparativa"
+                    >
+                      <List className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Tabela</span>
+                    </button>
+                  </div>
+                )}
+
                 <label className="pop-search">
                   <span aria-hidden="true">⌕</span>
                   <input
@@ -1448,100 +1586,393 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
             )}
           </div>
 
-          {/* Cards Grid (quando ativa é clinica, uti ou todos) */}
+          {/* Cards & Table Section (quando ativa é clinica, uti ou todos) */}
           {!isSpecialTab && (
-            <div className="pop-cards" id="cards" aria-live="polite">
+            <div className="px-4 sm:px-6 pb-8" id="cards" aria-live="polite">
               {filteredCards.length > 0 ? (
-                filteredCards.map(item => {
-                  const isUti = isUtiItem(item);
+                cardLayoutMode === 'cards' ? (
+                  <div className="grid grid-cols-1 gap-5">
+                    {filteredCards.map(item => {
+                      const isUti = isUtiItem(item);
 
-                  const getVal = (itemVal?: string, ruleVal?: string) => {
-                    if (itemVal && !itemVal.toLowerCase().includes('não informado')) return itemVal;
-                    if (ruleVal && !ruleVal.toLowerCase().includes('não informado')) return ruleVal;
-                    return null;
-                  };
+                      const getVal = (itemVal?: string, ruleVal?: string) => {
+                        if (itemVal && !itemVal.toLowerCase().includes('não informado')) return itemVal;
+                        if (ruleVal && !ruleVal.toLowerCase().includes('não informado')) return ruleVal;
+                        return null;
+                      };
 
-                  const valParecer = getVal(item.parecer, planDiariasRules?.parecer);
-                  const valMatMed = getVal(item.matMed, planDiariasRules?.matMed);
-                  const valExLab = getVal(item.exLab, planDiariasRules?.exLab);
-                  const valExRad = getVal(item.exRad, planDiariasRules?.exRad);
-                  const valFisio = getVal(item.fisioIntern, planDiariasRules?.fisioIntern);
+                      const valParecer = getVal(item.parecer, planDiariasRules?.parecer);
+                      const valMatMed = getVal(item.matMed, planDiariasRules?.matMed);
+                      const valExLab = getVal(item.exLab, planDiariasRules?.exLab);
+                      const valExRad = getVal(item.exRad, planDiariasRules?.exRad);
+                      const valFisio = getVal(item.fisioIntern, planDiariasRules?.fisioIntern);
 
-                  return (
-                    <article className="pop-card" key={item.id || item.code + item.acomodacao}>
-                      <div className="pop-cardtop">
-                        <span className="pop-code">
-                          {item.code}{' '}
-                          <button
-                            type="button"
-                            className="pop-copy"
-                            data-code={item.code}
-                            onClick={() => copyCodeToClipboard(item.code)}
-                            aria-label={`Copiar código ${item.code}`}
-                            title="Copiar código"
-                          >
-                            {copiedCode === item.code ? '✓' : '▢'}
-                          </button>
-                        </span>
-                        <span className={`pop-category ${isUti ? 'uti' : ''}`}>
-                          {isUti ? 'UTI' : 'INTERNAÇÃO'}
-                        </span>
-                      </div>
+                      const pillars = [
+                        {
+                          key: 'parecer',
+                          label: 'Parecer',
+                          sub: 'Especialista',
+                          val: valParecer,
+                          icon: Stethoscope,
+                          status: getPillarStatus(valParecer)
+                        },
+                        {
+                          key: 'matMed',
+                          label: 'Mat / Med',
+                          sub: 'Materiais & Medicamentos',
+                          val: valMatMed,
+                          icon: Pill,
+                          status: getPillarStatus(valMatMed)
+                        },
+                        {
+                          key: 'exLab',
+                          label: 'Ex. Lab',
+                          sub: 'Laboratoriais',
+                          val: valExLab,
+                          icon: FlaskConical,
+                          status: getPillarStatus(valExLab)
+                        },
+                        {
+                          key: 'exRad',
+                          label: 'Ex. Rad',
+                          sub: 'Raio-X & Tomografia',
+                          val: valExRad,
+                          icon: Scan,
+                          status: getPillarStatus(valExRad)
+                        },
+                        {
+                          key: 'fisio',
+                          label: 'Fisioterapia',
+                          sub: 'Hospitalar / Diária',
+                          val: valFisio,
+                          icon: Activity,
+                          status: getPillarStatus(valFisio)
+                        }
+                      ];
 
-                      <h4>{item.acomodacao}</h4>
+                      const cardKey = item.id || item.code + item.acomodacao;
 
-                      <div className="pop-joint">
-                        <span className="label">SOLICITAR JUNTO</span>
-                        {item.solicitarJunto ? (
-                          <span className="value">{item.solicitarJunto}</span>
-                        ) : (
-                          <span className="empty">Não informado na planilha</span>
-                        )}
-                      </div>
+                      return (
+                        <article 
+                          key={cardKey}
+                          className={`bg-white rounded-2xl border border-slate-200/90 hover:border-[#0E7B86]/40 shadow-xs hover:shadow-md transition-all duration-200 overflow-hidden relative ${
+                            isUti ? 'border-l-4 border-l-indigo-600' : 'border-l-4 border-l-[#0E7B86]'
+                          }`}
+                        >
+                          <div className="p-5 sm:p-6">
+                            {/* Top row: Category tag & Code Pill */}
+                            <div className="flex flex-wrap items-center justify-between gap-3 mb-2.5">
+                              <div className="flex items-center gap-2">
+                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider ${
+                                  isUti 
+                                    ? 'bg-indigo-50 border border-indigo-200 text-indigo-700' 
+                                    : 'bg-[#EBF7F8] border border-[#C4E5E8] text-[#0E7B86]'
+                                }`}>
+                                  {isUti ? <Activity className="w-3.5 h-3.5" /> : <Building2 className="w-3.5 h-3.5" />}
+                                  {isUti ? 'UTI Intensiva' : 'Internação Clínica'}
+                                </span>
 
-                      <div className="pop-detail-grid">
-                        <div className="pop-detail">
-                          <b>Parecer</b>
-                          <span className={valParecer ? '' : 'missing'}>
-                            {valParecer || 'Não informado na planilha'}
-                          </span>
-                        </div>
+                                <span className="text-[11px] font-semibold text-slate-400 hidden sm:inline">
+                                  {planDisplayName}
+                                </span>
+                              </div>
 
-                        <div className="pop-detail">
-                          <b>Mat / Med</b>
-                          <span className={valMatMed ? '' : 'missing'}>
-                            {valMatMed || 'Não informado na planilha'}
-                          </span>
-                        </div>
+                              {/* TUSS / Hospital Code badge */}
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => copyCodeToClipboard(item.code)}
+                                  className="group inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-[#EBF7F8] border border-slate-200 hover:border-[#0E7B86]/40 text-slate-800 hover:text-[#0E7B86] transition-all cursor-pointer shadow-2xs"
+                                  title="Clique para copiar código TUSS"
+                                >
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-[#0E7B86]">Cód:</span>
+                                  <span className="font-mono text-xs sm:text-sm font-black tabular-nums">{item.code}</span>
+                                  {copiedCode === item.code ? (
+                                    <span className="inline-flex items-center gap-1 text-emerald-600 text-xs font-bold">
+                                      <Check className="w-3.5 h-3.5" />
+                                    </span>
+                                  ) : (
+                                    <Copy className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0E7B86]" />
+                                  )}
+                                </button>
+                              </div>
+                            </div>
 
-                        <div className="pop-detail">
-                          <b>Ex. Lab</b>
-                          <span className={valExLab ? '' : 'missing'}>
-                            {valExLab || 'Não informado na planilha'}
-                          </span>
-                        </div>
+                            {/* Accommodation Name */}
+                            <h4 className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-snug my-2 uppercase">
+                              {item.acomodacao}
+                            </h4>
 
-                        <div className="pop-detail">
-                          <b>Ex. Rad</b>
-                          <span className={valExRad ? '' : 'missing'}>
-                            {valExRad || 'Não informado na planilha'}
-                          </span>
-                        </div>
+                            {/* Directive: SOLICITAR JUNTO */}
+                            {item.solicitarJunto ? (
+                              <div className="bg-sky-50/90 border border-sky-200 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 my-3.5 shadow-2xs">
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  <div className="w-7 h-7 rounded-lg bg-sky-600 text-white flex items-center justify-center flex-shrink-0 shadow-2xs">
+                                    <Link2 className="w-4 h-4" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-sky-800 block">
+                                      Código Vinculado Obrigatório (Solicitar Junto):
+                                    </span>
+                                    <span className="font-mono font-black text-sm text-sky-950 truncate block">
+                                      {item.solicitarJunto}
+                                    </span>
+                                  </div>
+                                </div>
 
-                        <div className="pop-detail">
-                          <b>Fisio</b>
-                          <span className={valFisio ? '' : 'missing'}>
-                            {valFisio || 'Não informado na planilha'}
-                          </span>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })
+                                <button
+                                  type="button"
+                                  onClick={() => copyCodeToClipboard(item.solicitarJunto || '')}
+                                  className="px-2.5 py-1 rounded-lg bg-white border border-sky-300 hover:bg-sky-100 text-sky-900 text-xs font-bold transition-colors flex items-center gap-1.5 w-fit flex-shrink-0 cursor-pointer shadow-2xs"
+                                  title="Copiar código vinculado"
+                                >
+                                  {copiedCode === item.solicitarJunto ? (
+                                    <>
+                                      <Check className="w-3 h-3 text-emerald-600" />
+                                      <span className="text-emerald-700">Copiado</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="w-3 h-3" />
+                                      <span>Copiar Vinculado</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="bg-slate-50/80 border border-slate-200/70 rounded-xl px-3.5 py-2 flex items-center gap-2 text-xs text-slate-500 my-3">
+                                <CheckCircle2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                                <span className="text-xs font-medium">
+                                  <strong className="text-slate-700">Solicitar Junto:</strong> Sem código vinculado obrigatório na planilha.
+                                </span>
+                              </div>
+                            )}
+
+                            {/* The 5 Clinical Authorization Pillars */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3.5 mt-4">
+                              {pillars.map(p => {
+                                const IconComp = p.icon;
+                                return (
+                                  <div
+                                    key={p.key}
+                                    className={`p-4 rounded-xl border flex flex-col justify-between transition-all min-w-0 ${p.status.cardClass}`}
+                                  >
+                                    <div>
+                                      {/* Header do Pilar: Linha 1 = Ícone + Título; Linha 2 = Tag de Status (sem sobreposição) */}
+                                      <div className="pb-3 mb-3 border-b border-black/10 flex flex-col gap-2">
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-7 h-7 rounded-lg bg-white/90 shadow-2xs border border-slate-200/80 flex items-center justify-center flex-shrink-0">
+                                            <IconComp className="w-3.5 h-3.5 text-slate-700" />
+                                          </div>
+                                          <span className="text-xs font-black text-slate-900 uppercase tracking-wide">
+                                            {p.label}
+                                          </span>
+                                        </div>
+
+                                        <div>
+                                          <span className={`inline-flex items-center text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md border shadow-2xs ${p.status.badgeClass}`}>
+                                            {p.status.badgeText}
+                                          </span>
+                                        </div>
+                                      </div>
+
+                                      {/* Texto descritivo da regra com fonte maior e alta legibilidade */}
+                                      <p className={`text-sm leading-relaxed m-0 font-medium break-words ${p.status.textClass}`}>
+                                        {p.val || 'Não informado na planilha'}
+                                      </p>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+
+                            {/* Card Footer: Metadata & Actions */}
+                            <div className="mt-4 pt-3.5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                              <div className="flex items-center gap-2 text-xs text-slate-500">
+                                <span className={`w-2 h-2 rounded-full ${isUti ? 'bg-indigo-500' : 'bg-[#0E7B86]'}`}></span>
+                                <span>Regras oficiais: <strong className="text-slate-800">{planDisplayName}</strong></span>
+                              </div>
+
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopyCardSummary(item, isUti, planDisplayName)}
+                                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                                  title="Copiar regras completas desta acomodação para o prontuário ou portal"
+                                >
+                                  {copiedCardSummary === cardKey ? (
+                                    <>
+                                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                      <span className="text-emerald-700 font-bold">Resumo Copiado!</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="w-3.5 h-3.5 text-slate-500" />
+                                      <span>Copiar Regras</span>
+                                    </>
+                                  )}
+                                </button>
+
+                                {onGeneratePreGuia && (
+                                  <button
+                                    type="button"
+                                    onClick={() => onGeneratePreGuia(selectedPlanId, item.code, item.acomodacao)}
+                                    className="px-3.5 py-1.5 rounded-xl bg-[#0E7B86] hover:bg-[#095962] text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                                    title="Preencher pré-guia com esta diária"
+                                  >
+                                    <span>Gerar Pré-Guia</span>
+                                    <ArrowUpRight className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  /* Modo Tabela Comparativa Compacta */
+                  <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 uppercase tracking-wider text-[10px] font-black">
+                            <th className="py-3 px-3.5">Código</th>
+                            <th className="py-3 px-3.5">Acomodação</th>
+                            <th className="py-3 px-3.5">Tipo</th>
+                            <th className="py-3 px-3.5">Solicitar Junto</th>
+                            <th className="py-3 px-3.5">Parecer</th>
+                            <th className="py-3 px-3.5">Mat / Med</th>
+                            <th className="py-3 px-3.5">Ex. Lab</th>
+                            <th className="py-3 px-3.5">Ex. Rad</th>
+                            <th className="py-3 px-3.5">Fisio</th>
+                            <th className="py-3 px-3.5 text-right">Ações</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {filteredCards.map(item => {
+                            const isUti = isUtiItem(item);
+                            const getVal = (itemVal?: string, ruleVal?: string) => {
+                              if (itemVal && !itemVal.toLowerCase().includes('não informado')) return itemVal;
+                              if (ruleVal && !ruleVal.toLowerCase().includes('não informado')) return ruleVal;
+                              return null;
+                            };
+
+                            const valParecer = getVal(item.parecer, planDiariasRules?.parecer);
+                            const valMatMed = getVal(item.matMed, planDiariasRules?.matMed);
+                            const valExLab = getVal(item.exLab, planDiariasRules?.exLab);
+                            const valExRad = getVal(item.exRad, planDiariasRules?.exRad);
+                            const valFisio = getVal(item.fisioIntern, planDiariasRules?.fisioIntern);
+
+                            const cardKey = item.id || item.code + item.acomodacao;
+
+                            return (
+                              <tr key={cardKey} className="hover:bg-slate-50/80 transition-colors">
+                                <td className="py-3 px-3.5 whitespace-nowrap">
+                                  <button
+                                    type="button"
+                                    onClick={() => copyCodeToClipboard(item.code)}
+                                    className="font-mono font-black text-slate-900 bg-slate-100 hover:bg-[#EBF7F8] px-2 py-1 rounded-md border border-slate-200 hover:border-[#0E7B86]/40 transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                                    title="Copiar código"
+                                  >
+                                    <span>{item.code}</span>
+                                    {copiedCode === item.code ? (
+                                      <Check className="w-3 h-3 text-emerald-600" />
+                                    ) : (
+                                      <Copy className="w-3 h-3 text-slate-400" />
+                                    )}
+                                  </button>
+                                </td>
+                                <td className="py-3 px-3.5 font-bold text-slate-900 min-w-[200px]">
+                                  {item.acomodacao}
+                                </td>
+                                <td className="py-3 px-3.5 whitespace-nowrap">
+                                  <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                                    isUti ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]'
+                                  }`}>
+                                    {isUti ? 'UTI' : 'Internação'}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-3.5">
+                                  {item.solicitarJunto ? (
+                                    <span className="font-mono font-bold text-sky-800 bg-sky-50 px-2 py-0.5 rounded border border-sky-200 block text-[11px]">
+                                      {item.solicitarJunto}
+                                    </span>
+                                  ) : (
+                                    <span className="text-slate-400 italic text-[11px]">-</span>
+                                  )}
+                                </td>
+                                <td className="py-3 px-3.5 text-[11px] text-slate-700 max-w-[150px]">
+                                  {valParecer || <span className="text-slate-400 italic">-</span>}
+                                </td>
+                                <td className="py-3 px-3.5 text-[11px] text-slate-700 max-w-[150px]">
+                                  {valMatMed || <span className="text-slate-400 italic">-</span>}
+                                </td>
+                                <td className="py-3 px-3.5 text-[11px] text-slate-700 max-w-[150px]">
+                                  {valExLab || <span className="text-slate-400 italic">-</span>}
+                                </td>
+                                <td className="py-3 px-3.5 text-[11px] text-slate-700 max-w-[150px]">
+                                  {valExRad || <span className="text-slate-400 italic">-</span>}
+                                </td>
+                                <td className="py-3 px-3.5 text-[11px] text-slate-700 max-w-[150px]">
+                                  {valFisio || <span className="text-slate-400 italic">-</span>}
+                                </td>
+                                <td className="py-3 px-3.5 text-right whitespace-nowrap">
+                                  <div className="flex items-center justify-end gap-1.5">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCopyCardSummary(item, isUti, planDisplayName)}
+                                      className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                                      title="Copiar regras"
+                                    >
+                                      {copiedCardSummary === cardKey ? (
+                                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                      ) : (
+                                        <Copy className="w-3.5 h-3.5" />
+                                      )}
+                                    </button>
+                                    {onGeneratePreGuia && (
+                                      <button
+                                        type="button"
+                                        onClick={() => onGeneratePreGuia(selectedPlanId, item.code, item.acomodacao)}
+                                        className="p-1.5 rounded-lg bg-[#0E7B86] hover:bg-[#095962] text-white transition-colors cursor-pointer shadow-2xs"
+                                        title="Gerar Pré-Guia"
+                                      >
+                                        <ArrowUpRight className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )
               ) : (
-                <p className="pop-empty-state">
-                  Nenhum item encontrado para esta busca no convênio {planDisplayName}.
-                </p>
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-12 text-center my-6">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-200 text-slate-500 mx-auto flex items-center justify-center mb-3">
+                    <AlertCircle className="w-6 h-6" />
+                  </div>
+                  <h4 className="text-base font-black text-slate-800 mb-1">
+                    Nenhuma acomodação encontrada
+                  </h4>
+                  <p className="text-xs text-slate-500 max-w-md mx-auto mb-4">
+                    Não encontramos itens para o termo pesquisado na aba selecionada no convênio {planDisplayName}.
+                  </p>
+                  {query && (
+                    <button
+                      type="button"
+                      onClick={() => setQuery('')}
+                      className="px-4 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 text-xs font-bold transition-colors cursor-pointer"
+                    >
+                      Limpar filtro de busca
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           )}

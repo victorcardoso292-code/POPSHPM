@@ -20,6 +20,10 @@ import {
   Building2,
   ShieldCheck,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
   Sparkles,
   ArrowRight
 } from 'lucide-react';
@@ -50,6 +54,11 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
   const [quoteNotes, setQuoteNotes] = useState('');
   const [copiedSuccess, setCopiedSuccess] = useState(false);
 
+  // Pagination state: 5 procedures per page
+  const PAGE_SIZE = 5;
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [jumpPageInput, setJumpPageInput] = useState<string>('');
+
   // Format currency in BRL
   const formatCurrencyBRL = (val: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -62,6 +71,7 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
   const handleTabChange = (tab: 'geral' | 'medicos' | 'diarias') => {
     setActiveTab(tab);
     setSelectedCategory('all');
+    setCurrentPage(1);
   };
 
   // Base list depending on active tab
@@ -103,6 +113,29 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
       return true;
     });
   }, [currentBaseList, selectedCategory, searchQuery]);
+
+  // Reset page to 1 when filters or tabs change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, activeTab]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProcedures.length / PAGE_SIZE));
+  const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+
+  // Paginated procedures: exactly 5 procedures per page
+  const paginatedProcedures = useMemo(() => {
+    const startIndex = (validCurrentPage - 1) * PAGE_SIZE;
+    return filteredProcedures.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [filteredProcedures, validCurrentPage, PAGE_SIZE]);
+
+  const handleJumpPage = (e: React.FormEvent) => {
+    e.preventDefault();
+    const p = parseInt(jumpPageInput, 10);
+    if (!isNaN(p) && p >= 1 && p <= totalPages) {
+      setCurrentPage(p);
+      setJumpPageInput('');
+    }
+  };
 
   // Add / Toggle item in budget
   const handleAddItem = (proc: HospitalProcedure) => {
@@ -445,8 +478,14 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
             )}
           </div>
 
-          <div className="text-xs font-bold text-slate-500 self-center whitespace-nowrap">
-            Mostrando <strong className="text-slate-800">{filteredProcedures.length}</strong> de {currentBaseList.length} procedimentos
+          <div className="text-xs font-bold text-slate-500 self-center whitespace-nowrap flex items-center gap-1.5">
+            <span>
+              Página <strong className="text-slate-800">{validCurrentPage}</strong> de {totalPages}
+            </span>
+            <span className="text-slate-300">•</span>
+            <span>
+              Total: <strong className="text-slate-800">{filteredProcedures.length}</strong> procedimentos
+            </span>
           </div>
         </div>
 
@@ -456,7 +495,7 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
             <span className="text-[11px] font-bold text-slate-400 uppercase mr-1">Filtrar por:</span>
             <button
               type="button"
-              onClick={() => setSelectedCategory('all')}
+              onClick={() => { setSelectedCategory('all'); setCurrentPage(1); }}
               className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                 selectedCategory === 'all'
                   ? 'bg-[#0E7B86] text-white shadow-2xs'
@@ -471,7 +510,7 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
                 <button
                   key={cat}
                   type="button"
-                  onClick={() => setSelectedCategory(cat)}
+                  onClick={() => { setSelectedCategory(cat); setCurrentPage(1); }}
                   className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                     selectedCategory === cat
                       ? 'bg-[#0E7B86] text-white shadow-2xs'
@@ -499,9 +538,14 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
                     : 'Diárias Globais, Apartamento, Enfermaria e UTI')}
             </h3>
           </div>
-          <span className="text-xs text-white/80 font-medium">
-            {filteredProcedures.length} registros
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-white/80 font-medium">
+              {filteredProcedures.length} registros
+            </span>
+            <span className="bg-white/20 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-white/20">
+              Página {validCurrentPage} de {totalPages}
+            </span>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -517,13 +561,13 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredProcedures.length === 0 ? (
+              {paginatedProcedures.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-400">
                     <p className="text-sm font-medium">Nenhum procedimento encontrado para &quot;{searchQuery}&quot;.</p>
                     <button
                       type="button"
-                      onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }}
+                      onClick={() => { setSearchQuery(''); setSelectedCategory('all'); setCurrentPage(1); }}
                       className="mt-2 text-xs font-bold text-[#0E7B86] underline cursor-pointer"
                     >
                       Limpar busca e filtros
@@ -531,9 +575,10 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
                   </td>
                 </tr>
               ) : (
-                filteredProcedures.map((proc, idx) => {
+                paginatedProcedures.map((proc, idx) => {
                   const isSelected = !!selectedItems[proc.id];
                   const qty = selectedItems[proc.id]?.quantity || 0;
+                  const globalIndex = (validCurrentPage - 1) * PAGE_SIZE + idx + 1;
 
                   return (
                     <tr
@@ -543,7 +588,7 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
                       }`}
                     >
                       <td className="py-3 px-3.5 text-center font-bold text-slate-400">
-                        {idx + 1}
+                        {globalIndex}
                       </td>
 
                       <td className="py-3 px-4">
@@ -630,6 +675,110 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Unified Pagination Bar (5 items per page) */}
+        <div className="border-t border-slate-200 p-3.5 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-slate-600 font-medium">
+            <span>
+              Mostrando <strong className="text-slate-900">{filteredProcedures.length > 0 ? (validCurrentPage - 1) * PAGE_SIZE + 1 : 0}</strong> a <strong className="text-slate-900">{Math.min(validCurrentPage * PAGE_SIZE, filteredProcedures.length)}</strong> de <strong className="text-slate-900">{filteredProcedures.length}</strong> procedimentos
+            </span>
+            <span className="bg-[#EBF7F8] text-[#0E7B86] text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-[#C4E5E8]">
+              5 por página
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 flex-wrap justify-center">
+            {/* First Page */}
+            <button
+              type="button"
+              disabled={validCurrentPage <= 1}
+              onClick={() => setCurrentPage(1)}
+              className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+              title="Primeira página"
+            >
+              <ChevronsLeft className="w-4 h-4" />
+            </button>
+
+            {/* Prev Page */}
+            <button
+              type="button"
+              disabled={validCurrentPage <= 1}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span>Anterior</span>
+            </button>
+
+            {/* Numbered Page Buttons */}
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let p = i + 1;
+                if (totalPages > 5) {
+                  if (validCurrentPage <= 3) {
+                    p = i + 1;
+                  } else if (validCurrentPage >= totalPages - 2) {
+                    p = totalPages - 4 + i;
+                  } else {
+                    p = validCurrentPage - 2 + i;
+                  }
+                }
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setCurrentPage(p)}
+                    className={`w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      validCurrentPage === p
+                        ? 'bg-[#0E7B86] text-white shadow-xs'
+                        : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Next Page */}
+            <button
+              type="button"
+              disabled={validCurrentPage >= totalPages}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <span>Próxima</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Last Page */}
+            <button
+              type="button"
+              disabled={validCurrentPage >= totalPages}
+              onClick={() => setCurrentPage(totalPages)}
+              className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+              title="Última página"
+            >
+              <ChevronsRight className="w-4 h-4" />
+            </button>
+
+            {/* Jump to page if many */}
+            {totalPages > 5 && (
+              <form onSubmit={handleJumpPage} className="flex items-center gap-1 ml-2">
+                <span className="text-[11px] text-slate-400 font-medium">Ir:</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={totalPages}
+                  placeholder={validCurrentPage.toString()}
+                  value={jumpPageInput}
+                  onChange={e => setJumpPageInput(e.target.value)}
+                  className="w-12 px-1.5 py-1 text-center bg-white border border-slate-200 rounded-md text-xs font-bold focus:ring-1 focus:ring-[#0E7B86] outline-none"
+                />
+              </form>
+            )}
+          </div>
         </div>
       </div>
 

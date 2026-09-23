@@ -718,6 +718,7 @@ export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
     pacotePs: '10101039 CONSULTA EM PRONTO SOCORRO',
     imagemUrgencia: 'URGÊNCIA CONFORME POP',
     criticalNotes: [
+      'Quando é urgência não precisa autorização — só verificar a elegibilidade.',
       'Não exige cartão físico do plano; paciente deve apresentar documento oficial com foto e ter elegibilidade confirmada.',
       'RX e Tomografia de urgência: podem ser realizados normalmente no PS quando amparados por pedido médico.',
       'Encaminhar pedido e documentos da internação para to.seade@conab.gov.br.'
@@ -736,6 +737,48 @@ export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
           '10101039 — Consulta em Pronto-Socorro.',
           'RX e Tomografia de Urgência liberados com pedido médico.',
           'Exames eletivos exigem retorno do beneficiário com guia previamente autorizada.'
+        ]
+      }
+    }
+  },
+  {
+    id: 'TRE',
+    name: 'TRE (Tribunal Regional Eleitoral)',
+    badge: 'TR',
+    category: 'Autogestão',
+    labUrgencia: 'CONFORME POP',
+    pacotePs: '10101039 CONSULTA EM PRONTO SOCORRO',
+    imagemUrgencia: 'URGÊNCIA CONFORME POP',
+    criticalNotes: [
+      'PACIENTE NÃO PODE FICAR EM ENFERMARIA. Acomodação exclusivamente em Apartamento.',
+      'Diária de Apartamento: 60000651. Isolamento Apto: 60000686.',
+      'Diária de UTI: 60001038. Isolamento UTI: 60001330.',
+      'Berçário Normal: 60000619. Isolamento Berçário: 60001194.'
+    ],
+    contacts: ['(63) 3229-9500'],
+    sections: {
+      ps: {
+        id: 'ps',
+        label: 'Pronto-Socorro',
+        textItems: [
+          '10101039 — Consulta em Pronto-Socorro.',
+          'Atendimento de urgência conforme elegibilidade ativa.'
+        ]
+      },
+      internacao: {
+        id: 'internacao',
+        label: 'Internação',
+        textItems: [
+          'PACIENTE NÃO PODE FICAR EM ENFERMARIA.',
+          'Acomodação exclusivamente em Apartamento Standard (60000651) ou Isolamento Apto (60000686).'
+        ],
+        codes: [
+          { code: '60000651', label: 'Diária de Apartamento Standard' },
+          { code: '60000686', label: 'Diária de Isolamento de Apartamento Standard' },
+          { code: '60001038', label: 'Diária UTI' },
+          { code: '60001330', label: 'Diária de Isolamento de UTI Adulto' },
+          { code: '60000619', label: 'Diária de Berçário Normal' },
+          { code: '60001194', label: 'Diária de Isolamento de Berçário Normal' }
         ]
       }
     }

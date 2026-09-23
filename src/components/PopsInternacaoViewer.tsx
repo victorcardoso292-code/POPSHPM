@@ -22,6 +22,7 @@ import {
   Globe
 } from 'lucide-react';
 import { SERVIR_DATA, CONVENIOS_MASTER_LIST } from '../data/popsData';
+import { TABELA_DIARIAS_DATA, ALL_DIARIAS_ITEMS, DiariaItem, ConvenioDiariasRules } from '../data/diariasData';
 
 interface PopsInternacaoViewerProps {
   onOpenAiWithPrompt?: (prompt: string) => void;
@@ -59,8 +60,61 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
 
   const planCategories = ['Todos', 'Autogestão', 'Seguradora', 'Privado', 'Militar', 'Estadual'];
 
+  const planDiariasRules = useMemo(() => {
+    if (!selectedPlanId) return null;
+    const norm = selectedPlanId.toUpperCase().trim();
+    return TABELA_DIARIAS_DATA.find(r => 
+      r.convenioId.toUpperCase() === norm ||
+      r.convenioName.toUpperCase() === norm ||
+      (norm === 'CAPESESP' && r.convenioId === 'CAPESAUDE') ||
+      (norm === 'PETROBRAS' && r.convenioId === 'PETROBRAS') ||
+      (norm === 'BRADESCO' && r.convenioId === 'BRADESCO') ||
+      (norm === 'SERVIR' && r.convenioId === 'SERVIR') ||
+      (norm.includes('CAIXA') && r.convenioId === 'SAÚDE CAIXA') ||
+      (norm.includes('TOCANTINS') && r.convenioId === 'PRO TOCANTINS') ||
+      (norm.includes('SOCIAL') && r.convenioId === 'PRO SOCIAL') ||
+      (norm.includes('POSTAL') && r.convenioId === 'POSTAL SAÚDE') ||
+      (norm.includes('GAMA') && r.convenioId === 'GAMASAÚDE') ||
+      (norm.includes('BEST') && r.convenioId === 'BEST SAÚDE') ||
+      (norm.includes('UNIMED') && r.convenioId === 'UNIMED') ||
+      (norm.includes('CAMED') && r.convenioId === 'CAMED') ||
+      (norm.includes('MEDISERVICE') && r.convenioId === 'MEDISERVICE') ||
+      (norm.includes('ASSEFAZ') && r.convenioId === 'ASSEFAZ') ||
+      (norm.includes('CASSI') && r.convenioId === 'CASSI') ||
+      (norm.includes('GEAP') && r.convenioId === 'GEAP') ||
+      (norm.includes('CONAB') && r.convenioId === 'CONAB') ||
+      (norm.includes('TRE') && r.convenioId === 'TRE') ||
+      (norm.includes('E-VIDA') && r.convenioId === 'E-VIDA') ||
+      (norm.includes('FUSEX') && r.convenioId === 'FUSEX')
+    ) || null;
+  }, [selectedPlanId]);
+
+  // Helper para identificar leitos e diárias de UTI
+  const isUtiItem = (item: DiariaItem) => {
+    const normTipo = item.tipo.toUpperCase();
+    const normAcomodacao = item.acomodacao.toUpperCase();
+    return (
+      normTipo === 'UTI' ||
+      normAcomodacao.includes('UTI') ||
+      normAcomodacao.includes('CORONARIANA') ||
+      normAcomodacao.includes('INTENSIV')
+    );
+  };
+
+  // Diárias exclusivas de Internação Clínica (Apartamento, Enfermaria, Berçário, Hospital Dia)
+  const clinicaDiarias = useMemo(() => {
+    if (!planDiariasRules) return [];
+    return planDiariasRules.itens.filter(i => !isUtiItem(i));
+  }, [planDiariasRules]);
+
+  // Diárias exclusivas de UTI & Cuidados Intensivos
+  const utiDiarias = useMemo(() => {
+    if (!planDiariasRules) return [];
+    return planDiariasRules.itens.filter(i => isUtiItem(i));
+  }, [planDiariasRules]);
+
   const allPlansList = useMemo(() => {
-    const plans = [
+    const plans: { id: string; name: string; category: string; badge: string }[] = [
       ...CONVENIOS_MASTER_LIST.map(c => ({
         id: c.id,
         name: c.name,
@@ -71,11 +125,36 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
         id: 'SERVIR', 
         name: 'SERVIR (Plano de Saúde TO)', 
         category: 'Estadual', 
-        badge: 'SE'
+        badge: 'SE' 
       }
     ];
 
-    return plans.filter(p => {
+    // Inclui convênios da tabela de diárias não mapeados na lista base
+    TABELA_DIARIAS_DATA.forEach(d => {
+      const exists = plans.some(p => 
+        p.id.toUpperCase() === d.convenioId.toUpperCase() ||
+        (p.id === 'CAPESESP' && d.convenioId === 'CAPESAUDE') ||
+        (p.id === 'SAÚDE CAIXA' && d.convenioId === 'SAÚDE CAIXA') ||
+        (p.id === 'PRO TOCANTINS' && d.convenioId === 'PRO TOCANTINS') ||
+        (p.id === 'PRO SOCIAL' && d.convenioId === 'PRO SOCIAL') ||
+        (p.id === 'POSTAL SAÚDE' && d.convenioId === 'POSTAL SAÚDE') ||
+        (p.id === 'GAMASAÚDE' && d.convenioId === 'GAMASAÚDE')
+      );
+      if (!exists) {
+        plans.push({
+          id: d.convenioId,
+          name: d.convenioName,
+          category: d.category,
+          badge: d.badge
+        });
+      }
+    });
+
+    return plans.sort((a, b) => a.name.localeCompare(b.name));
+  }, []);
+
+  const filteredPlans = useMemo(() => {
+    return allPlansList.filter(p => {
       const matchCat = activeCategoryFilter === 'Todos' || 
         (activeCategoryFilter === 'Autogestão' && p.category.toLowerCase().includes('autogest')) ||
         (activeCategoryFilter === 'Militar' && p.category.toLowerCase().includes('militar')) ||
@@ -85,7 +164,7 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
         p.category.toLowerCase().includes(planSearch.toLowerCase());
       return matchCat && matchSearch;
     });
-  }, [planSearch, activeCategoryFilter]);
+  }, [allPlansList, planSearch, activeCategoryFilter]);
 
   const activeConvenioObj = useMemo(() => {
     if (selectedPlanId === 'SERVIR') return null;
@@ -110,7 +189,7 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
   if (viewMode === 'grid') {
     return (
       <div className="space-y-6">
-        {/* Header Banner - Medical Kora Saúde Palette */}
+        {/* Header Banner */}
         <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs">
           <div className="max-w-3xl space-y-2">
             <div className="flex items-center gap-2">
@@ -124,7 +203,7 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
               Escolha o Convênio do Paciente Internado
             </h2>
             <p className="text-sm text-slate-600 leading-relaxed m-0">
-              Clique no convênio para abrir a página exclusiva com todas as diretrizes de leitos clínicos, diárias de enfermaria e apartamento, UTI, pareceres do intensivista e prorrogações.
+              Clique no convênio desejado para acessar os códigos de diárias, regras de acomodação (enfermaria/apartamento), pareceres médicos e leitos de UTI cadastrados na tabela oficial.
             </p>
           </div>
 
@@ -163,54 +242,75 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
         {/* Counter of available plans */}
         <div className="flex items-center justify-between px-1">
           <span className="text-xs font-black uppercase tracking-wider text-slate-400">
-            Convênios Disponíveis para Internação ({allPlansList.length})
+            Convênios Disponíveis para Internação ({filteredPlans.length})
           </span>
           <span className="text-xs text-slate-500">
-            Clique em qualquer cartão para ver as diárias e regras de UTI
+            Clique no convênio para ver seus respectivos códigos e regras
           </span>
         </div>
 
         {/* Plan Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {allPlansList.map(plan => (
-            <button
-              key={plan.id}
-              type="button"
-              onClick={() => handleSelectPlan(plan.id)}
-              className="w-full text-left bg-white border border-slate-200 hover:border-[#B01B52] hover:shadow-md rounded-2xl p-5 transition-all duration-150 cursor-pointer group flex flex-col justify-between gap-4"
-            >
-              <div className="space-y-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-[#B01B52] text-white font-black text-sm flex items-center justify-center flex-shrink-0 shadow-xs tracking-wider">
-                    {plan.badge}
+          {filteredPlans.map(plan => {
+            const planRules = TABELA_DIARIAS_DATA.find(r => 
+              r.convenioId.toUpperCase() === plan.id.toUpperCase() ||
+              r.convenioName.toUpperCase() === plan.name.toUpperCase()
+            );
+
+            return (
+              <button
+                key={plan.id}
+                type="button"
+                onClick={() => handleSelectPlan(plan.id)}
+                className="w-full text-left bg-white border border-slate-200 hover:border-[#B01B52] hover:shadow-md rounded-2xl p-5 transition-all duration-150 cursor-pointer group flex flex-col justify-between gap-4"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-[#B01B52] text-white font-black text-sm flex items-center justify-center flex-shrink-0 shadow-xs tracking-wider">
+                      {plan.badge}
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8] transition-colors">
+                        {plan.category}
+                      </span>
+                      {planRules && (
+                        <span className="text-[10px] text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded">
+                          {planRules.itens.length} diárias
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8] transition-colors">
-                    {plan.category}
+
+                  <div>
+                    <h3 className="font-black text-slate-900 text-base tracking-tight leading-snug group-hover:text-[#B01B52] transition-colors m-0 break-words">
+                      {plan.name}
+                    </h3>
+                    <p className="text-xs text-slate-500 font-medium mt-1 m-0">
+                      Diárias clínicas, acomodação, pareceres e leitos de UTI
+                    </p>
+                  </div>
+
+                  {planRules?.criticalRule && (
+                    <div className="bg-[#FDF2F6] border border-[#F7D0DF] rounded-lg px-2.5 py-1 text-[11px] text-[#B01B52] font-black flex items-center gap-1.5">
+                      <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="truncate">{planRules.criticalRule}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <span className="font-bold text-[#B01B52] group-hover:underline flex items-center gap-1">
+                    Ver Diárias & Regras do Plano
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                   </span>
+                  <span className="text-[11px] text-slate-400 font-medium">Internação</span>
                 </div>
-
-                <div>
-                  <h3 className="font-black text-slate-900 text-base tracking-tight leading-snug group-hover:text-[#B01B52] transition-colors m-0 break-words">
-                    {plan.name}
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1 m-0">
-                    Diárias, acomodação, UTI e pareceres cirúrgicos
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="font-bold text-[#B01B52] group-hover:underline flex items-center gap-1">
-                  Ver Diárias & Regras de Leito
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </span>
-                <span className="text-[11px] text-slate-400 font-medium">Internação</span>
-              </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
 
-        {allPlansList.length === 0 && (
+        {filteredPlans.length === 0 && (
           <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center space-y-3">
             <Info className="w-8 h-8 text-slate-400 mx-auto" />
             <p className="text-sm font-bold text-slate-700 m-0">Nenhum convênio encontrado com esse termo.</p>
@@ -230,9 +330,9 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
   // ==========================================
   // VIEW 2: PÁGINA EXCLUSIVA DO CONVÊNIO ESCOLHIDO
   // ==========================================
-  const planDisplayName = activeConvenioObj?.name || (selectedPlanId === 'SERVIR' ? 'SERVIR (Plano de Saúde TO)' : selectedPlanId);
-  const planCategory = activeConvenioObj?.category || 'Estadual';
-  const planBadge = activeConvenioObj?.badge || (selectedPlanId === 'SERVIR' ? 'SE' : selectedPlanId.slice(0, 2));
+  const planDisplayName = activeConvenioObj?.name || planDiariasRules?.convenioName || (selectedPlanId === 'SERVIR' ? 'SERVIR (Plano de Saúde TO)' : selectedPlanId);
+  const planCategory = activeConvenioObj?.category || planDiariasRules?.category || 'Convênio';
+  const planBadge = activeConvenioObj?.badge || planDiariasRules?.badge || (selectedPlanId === 'SERVIR' ? 'SE' : selectedPlanId.slice(0, 2));
 
   return (
     <div className="space-y-6">
@@ -356,10 +456,28 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
         {/* Horizontal Navigation Tab Bar */}
         <div className="flex border-b border-slate-200 bg-slate-50/60 overflow-x-auto">
           {[
-            { id: 'clinica' as InternacaoSubTab, label: 'Internação Clínica & Diárias', icon: Bed },
-            { id: 'uti' as InternacaoSubTab, label: 'UTI & Pareceres Médicos', icon: Activity },
-            { id: 'cirurgias' as InternacaoSubTab, label: 'Cirurgias, OPME & Pré-Guia', icon: Scissors },
-            { id: 'contatos' as InternacaoSubTab, label: 'Portal, Acessos & Contatos', icon: Globe }
+            { 
+              id: 'clinica' as InternacaoSubTab, 
+              label: 'Internação Clínica (Enfermaria / Apto)', 
+              badgeCount: clinicaDiarias.length,
+              icon: Bed 
+            },
+            { 
+              id: 'uti' as InternacaoSubTab, 
+              label: 'UTI & Cuidados Intensivos', 
+              badgeCount: utiDiarias.length,
+              icon: Activity 
+            },
+            { 
+              id: 'cirurgias' as InternacaoSubTab, 
+              label: 'Cirurgias, OPME & Pré-Guia', 
+              icon: Scissors 
+            },
+            { 
+              id: 'contatos' as InternacaoSubTab, 
+              label: 'Portal, Acessos & Contatos', 
+              icon: Globe 
+            }
           ].map(tab => {
             const Icon = tab.icon;
             const isActive = activeSubTab === tab.id;
@@ -376,6 +494,15 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
               >
                 <Icon className={`w-4 h-4 ${isActive ? 'text-[#B01B52]' : 'text-slate-400'}`} />
                 <span>{tab.label}</span>
+                {tab.badgeCount !== undefined && tab.badgeCount > 0 && (
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                    isActive 
+                      ? 'bg-[#B01B52]/10 text-[#B01B52]' 
+                      : 'bg-slate-200 text-slate-600'
+                  }`}>
+                    {tab.badgeCount}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -385,11 +512,11 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
         <div className="p-6 space-y-6">
 
           {/* ========================================================= */}
-          {/* ABA 1: INTERNAÇÃO CLÍNICA & DIÁRIAS */}
+          {/* ABA 1: INTERNAÇÃO CLÍNICA & DIÁRIAS (SEM UTI) */}
           {/* ========================================================= */}
           {activeSubTab === 'clinica' && (
             <div className="space-y-6">
-              {/* Critical warning if available */}
+              {/* Critical warning if available from Convenio Object */}
               {activeConvenioObj?.criticalNotes && activeConvenioObj.criticalNotes.length > 0 && (
                 <div className="bg-[#FDF2F6] border border-[#F7D0DF] rounded-2xl p-5 space-y-3">
                   <div className="flex items-center gap-2 text-[#B01B52] font-black text-sm">
@@ -407,10 +534,183 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                 </div>
               )}
 
-              {/* SERVIR Case */}
-              {selectedPlanId === 'SERVIR' ? (
+              {/* Official Diárias Table from Tabela Oficial (SOMENTE LEITOS CLÍNICOS) */}
+              {planDiariasRules && (
+                <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-black uppercase tracking-wider text-[#0E7B86] bg-[#EBF7F8] px-2.5 py-0.5 rounded-full border border-[#C4E5E8] flex items-center gap-1.5">
+                          <Bed className="w-3.5 h-3.5 text-[#0E7B86]" />
+                          Diárias de Internação Clínica (Sem UTI)
+                        </span>
+                        <span className="text-xs text-slate-600 font-bold bg-slate-100 px-2 py-0.5 rounded-full">
+                          {clinicaDiarias.length} leitos clínicos
+                        </span>
+                      </div>
+                      <h3 className="text-base sm:text-lg font-black text-slate-900 m-0">
+                        Códigos TUSS de Enfermaria, Apartamento & Hospital Dia
+                      </h3>
+                    </div>
+
+                    {planDiariasRules.criticalRule && !planDiariasRules.criticalRule.includes('UTI') && (
+                      <div className="bg-rose-50 border border-rose-200 rounded-xl px-3 py-1.5 text-xs text-rose-900 font-black flex items-center gap-2 max-w-md">
+                        <AlertTriangle className="w-4 h-4 text-rose-700 flex-shrink-0" />
+                        <span>{planDiariasRules.criticalRule}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Banner de separação: aviso e atalho para leitos de UTI */}
+                  {utiDiarias.length > 0 && (
+                    <div className="bg-[#EBF7F8]/70 border border-[#C4E5E8] rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-[#0E7B86] flex-shrink-0" />
+                        <span className="text-xs text-slate-800 font-medium">
+                          Este convênio possui <strong>{utiDiarias.length} diárias e pareceres de UTI</strong> separadas na aba exclusiva de UTI.
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveSubTab('uti');
+                          window.scrollTo({ top: 300, behavior: 'smooth' });
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0E7B86] hover:bg-[#0B6670] text-white text-xs font-black transition-colors cursor-pointer w-fit shadow-xs"
+                      >
+                        <Activity className="w-3.5 h-3.5" />
+                        <span>Ver Diárias de UTI ({utiDiarias.length}) →</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {planDiariasRules.urgenciaRegra && (
+                    <div className="bg-sky-50 border border-sky-200 rounded-xl p-3 text-xs text-sky-900 font-bold flex items-center gap-2">
+                      <Info className="w-4 h-4 text-sky-700 flex-shrink-0" />
+                      <span>{planDiariasRules.urgenciaRegra}</span>
+                    </div>
+                  )}
+
+                  {/* Diárias Clínicas Table */}
+                  {clinicaDiarias.length > 0 ? (
+                    <div className="overflow-x-auto rounded-xl border border-slate-200">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="bg-slate-100/90 text-slate-600 font-black border-b border-slate-200 uppercase tracking-wider text-[11px]">
+                            <th className="py-3 px-3 min-w-[120px]">Código TUSS</th>
+                            <th className="py-3 px-3 min-w-[190px]">Acomodação Clínica</th>
+                            <th className="py-3 px-3 min-w-[130px]">Solicitar Junto</th>
+                            <th className="py-3 px-3 min-w-[110px]">Parecer</th>
+                            <th className="py-3 px-3 min-w-[130px]">Mat / Med</th>
+                            <th className="py-3 px-3 min-w-[100px]">Ex. Lab</th>
+                            <th className="py-3 px-3 min-w-[100px]">Ex. Rad</th>
+                            <th className="py-3 px-3 min-w-[130px]">Fisio</th>
+                            <th className="py-3 px-3 text-right min-w-[90px]">Ações</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200/80 font-medium">
+                          {clinicaDiarias.map((dItem, idx) => (
+                            <tr key={idx} className="hover:bg-[#F0F8F9]/50 transition-colors">
+                              <td className="py-3 px-3 align-top font-mono font-black text-slate-900">
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard(dItem.code)}
+                                  className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] hover:text-[#0E7B86] border border-slate-200 text-xs font-mono font-black text-slate-800 transition-colors cursor-pointer group"
+                                  title="Copiar código TUSS"
+                                >
+                                  <span>{dItem.code}</span>
+                                  {copiedText === dItem.code ? <Check className="w-3 h-3 text-[#0E7B86]" /> : <Copy className="w-3 h-3 text-slate-400 group-hover:text-[#0E7B86]" />}
+                                </button>
+                              </td>
+                              <td className="py-3 px-3 align-top">
+                                <span className="font-bold text-slate-900 block leading-snug">{dItem.acomodacao}</span>
+                                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                                  <span className="px-2 py-0.5 text-[10px] font-extrabold bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8] rounded">
+                                    {dItem.tipo}
+                                  </span>
+                                  {dItem.observacoes && (
+                                    <span className="text-[11px] text-[#B01B52] font-semibold bg-[#FDF2F6] px-1.5 py-0.5 rounded border border-[#F7D0DF]">
+                                      {dItem.observacoes}
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-3 px-3 align-top">
+                                {dItem.solicitarJunto ? (
+                                  <span className="bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8] rounded-md px-2 py-0.5 font-mono font-bold text-[11px] inline-block">
+                                    {dItem.solicitarJunto}
+                                  </span>
+                                ) : <span className="text-slate-300 font-medium">—</span>}
+                              </td>
+                              <td className="py-3 px-3 align-top">
+                                {dItem.parecer ? (
+                                  <span className={`px-2 py-0.5 rounded text-[11px] font-bold inline-block ${
+                                    dItem.parecer.toLowerCase().includes('não precisa')
+                                      ? 'bg-slate-100 text-slate-600'
+                                      : 'bg-amber-50 text-amber-800 border border-amber-200'
+                                  }`}>
+                                    {dItem.parecer}
+                                  </span>
+                                ) : <span className="text-slate-300 font-medium">—</span>}
+                              </td>
+                              <td className="py-3 px-3 align-top text-[11px] text-slate-700">
+                                {dItem.matMed || '—'}
+                              </td>
+                              <td className="py-3 px-3 align-top">
+                                {dItem.exLab ? (
+                                  <span className={`px-2 py-0.5 rounded text-[11px] font-bold inline-block ${
+                                    dItem.exLab.toLowerCase().includes('não') || dItem.exLab.toLowerCase().includes('incluso')
+                                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                                      : 'bg-rose-50 text-rose-800 border border-rose-200'
+                                  }`}>
+                                    {dItem.exLab}
+                                  </span>
+                                ) : <span className="text-slate-300 font-medium">—</span>}
+                              </td>
+                              <td className="py-3 px-3 align-top">
+                                {dItem.exRad ? (
+                                  <span className={`px-2 py-0.5 rounded text-[11px] font-bold inline-block ${
+                                    dItem.exRad.toLowerCase().includes('não') || dItem.exRad.toLowerCase().includes('incluso')
+                                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                                      : 'bg-amber-50 text-amber-800 border border-amber-200'
+                                  }`}>
+                                    {dItem.exRad}
+                                  </span>
+                                ) : <span className="text-slate-300 font-medium">—</span>}
+                              </td>
+                              <td className="py-3 px-3 align-top text-[11px] text-slate-700">
+                                {dItem.fisioIntern || '—'}
+                              </td>
+                              <td className="py-3 px-3 align-top text-right">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  {onGeneratePreGuia && dItem.code !== 'TEXTO LIVRE' && !dItem.code.startsWith('OPÇÃO') && (
+                                    <button
+                                      type="button"
+                                      onClick={() => onGeneratePreGuia(planDiariasRules.convenioId, dItem.code, dItem.acomodacao)}
+                                      className="px-2 py-1 rounded-lg bg-[#FDF2F6] hover:bg-[#FCE7EF] text-[#B01B52] font-black text-[10px] transition-colors cursor-pointer"
+                                    >
+                                      Pré-Guia
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center text-xs text-slate-600">
+                      Nenhuma diária clínica exclusiva cadastrada. Verifique a aba de UTI para leitos intensivos.
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* SERVIR Case (if SERVIR is selected, also keep its specific guide) */}
+              {selectedPlanId === 'SERVIR' && SERVIR_DATA['Internação'] && (
                 <div className="space-y-5">
-                  {SERVIR_DATA['Internação']?.map((block, bIdx) => (
+                  {SERVIR_DATA['Internação'].map((block, bIdx) => (
                     <div key={bIdx} className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-4">
                       <div className="flex items-center justify-between gap-3">
                         <h3 className="font-extrabold text-base text-slate-900 flex items-center gap-2 m-0">
@@ -440,58 +740,13 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                           ))}
                         </div>
                       )}
-
-                      {block.rows && block.rows.length > 0 && (
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left text-xs sm:text-sm border-collapse">
-                            <thead>
-                              <tr className="border-b border-slate-200 text-slate-400 font-bold">
-                                <th className="py-2.5 px-3 w-36">Código TUSS</th>
-                                <th className="py-2.5 px-3">Descrição da Diária</th>
-                                <th className="py-2.5 px-3 text-right w-36">Ações</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-200 font-medium">
-                              {block.rows.map((row, rIdx) => (
-                                <tr key={rIdx} className="hover:bg-white transition-colors">
-                                  <td className="py-3 px-3 font-mono font-bold text-[#0E7B86] whitespace-nowrap">
-                                    {row[0]}
-                                  </td>
-                                  <td className="py-3 px-3 text-slate-800 break-words leading-relaxed">
-                                    {row[1]}
-                                  </td>
-                                  <td className="py-3 px-3 text-right">
-                                    <div className="flex items-center justify-end gap-2">
-                                      <button
-                                        type="button"
-                                        onClick={() => copyToClipboard(row[0])}
-                                        className="p-2 rounded-xl bg-slate-100 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86] transition-colors cursor-pointer"
-                                        title="Copiar Código"
-                                      >
-                                        {copiedText === row[0] ? <Check className="w-4 h-4 text-[#0E7B86]" /> : <Copy className="w-4 h-4" />}
-                                      </button>
-                                      {onGeneratePreGuia && (
-                                        <button
-                                          type="button"
-                                          onClick={() => onGeneratePreGuia('SERVIR', row[0], row[1])}
-                                          className="px-2.5 py-1.5 rounded-xl bg-[#FDF2F6] hover:bg-[#FCE7EF] text-[#B01B52] font-bold text-xs transition-colors cursor-pointer"
-                                        >
-                                          Pré-Guia
-                                        </button>
-                                      )}
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
-              ) : (
-                /* Other Convenios */
+              )}
+
+              {/* Convenio Steps & Guidelines */}
+              {selectedPlanId !== 'SERVIR' && (
                 <div className="space-y-6">
                   <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-4">
                     <h3 className="font-extrabold text-base text-slate-900 m-0">
@@ -533,47 +788,6 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                         </div>
                       </div>
                     )}
-
-                    {activeConvenioObj?.sections?.internacao?.codes && activeConvenioObj.sections.internacao.codes.length > 0 && (
-                      <div className="space-y-3 pt-2">
-                        <span className="text-xs font-extrabold uppercase text-slate-400 tracking-wider block">
-                          Códigos de Diárias e Leitos:
-                        </span>
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left text-xs sm:text-sm border-collapse bg-white rounded-xl overflow-hidden border border-slate-200">
-                            <thead>
-                              <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-bold">
-                                <th className="py-2.5 px-3.5 w-36">Código TUSS</th>
-                                <th className="py-2.5 px-3.5">Descrição</th>
-                                <th className="py-2.5 px-3.5 text-right w-36">Ações</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-200 font-medium">
-                              {activeConvenioObj.sections.internacao.codes.map((c, cIdx) => (
-                                <tr key={cIdx} className="hover:bg-slate-50 transition-colors">
-                                  <td className="py-3 px-3.5 font-mono font-bold text-[#0E7B86] whitespace-nowrap">
-                                    {c.code}
-                                  </td>
-                                  <td className="py-3 px-3.5 text-slate-800 break-words leading-relaxed">
-                                    {c.label}
-                                  </td>
-                                  <td className="py-3 px-3.5 text-right">
-                                    <button
-                                      type="button"
-                                      onClick={() => copyToClipboard(c.code)}
-                                      className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86] transition-colors cursor-pointer"
-                                      title="Copiar Código"
-                                    >
-                                      {copiedText === c.code ? <Check className="w-4 h-4 text-[#0E7B86]" /> : <Copy className="w-4 h-4" />}
-                                    </button>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               )}
@@ -581,10 +795,177 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
           )}
 
           {/* ========================================================= */}
-          {/* ABA 2: UTI & PARECERES MÉDICOS */}
+          {/* ABA 2: UTI & CUIDADOS INTENSIVOS (EXCLUSIVO UTI) */}
           {/* ========================================================= */}
           {activeSubTab === 'uti' && (
             <div className="space-y-6">
+              {/* Official Diárias Table from Tabela Oficial (SOMENTE LEITOS DE UTI) */}
+              {planDiariasRules && (
+                <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-black uppercase tracking-wider text-[#B01B52] bg-[#FDF2F6] px-2.5 py-0.5 rounded-full border border-[#F7D0DF] flex items-center gap-1.5">
+                          <Activity className="w-3.5 h-3.5 text-[#B01B52]" />
+                          Diárias de UTI & Cuidados Intensivos
+                        </span>
+                        <span className="text-xs text-slate-600 font-bold bg-slate-100 px-2 py-0.5 rounded-full">
+                          {utiDiarias.length} leitos de UTI mapeados
+                        </span>
+                      </div>
+                      <h3 className="text-base sm:text-lg font-black text-slate-900 m-0">
+                        Códigos TUSS de UTI (Adulto, Coronariana, Pediátrica & Isolamento)
+                      </h3>
+                    </div>
+
+                    {planDiariasRules.criticalRule && (
+                      <div className="bg-rose-50 border border-rose-200 rounded-xl px-3 py-1.5 text-xs text-rose-900 font-black flex items-center gap-2 max-w-md">
+                        <AlertTriangle className="w-4 h-4 text-rose-700 flex-shrink-0" />
+                        <span>{planDiariasRules.criticalRule}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Banner para voltar para diárias clínicas se necessário */}
+                  {clinicaDiarias.length > 0 && (
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <Bed className="w-4 h-4 text-slate-600 flex-shrink-0" />
+                        <span className="text-xs text-slate-700 font-medium">
+                          Para consultar leitos de enfermaria, apartamento ou berçário ({clinicaDiarias.length} leitos), acesse a aba de internação clínica.
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveSubTab('clinica');
+                          window.scrollTo({ top: 300, behavior: 'smooth' });
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs font-black transition-colors cursor-pointer w-fit shadow-2xs"
+                      >
+                        <Bed className="w-3.5 h-3.5 text-[#0E7B86]" />
+                        <span>← Ver Diárias Clínicas ({clinicaDiarias.length})</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Diárias de UTI Table */}
+                  {utiDiarias.length > 0 ? (
+                    <div className="overflow-x-auto rounded-xl border border-slate-200">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="bg-slate-100/90 text-slate-600 font-black border-b border-slate-200 uppercase tracking-wider text-[11px]">
+                            <th className="py-3 px-3 min-w-[120px]">Código TUSS</th>
+                            <th className="py-3 px-3 min-w-[190px]">Leito UTI / Acomodação</th>
+                            <th className="py-3 px-3 min-w-[130px]">Solicitar Junto</th>
+                            <th className="py-3 px-3 min-w-[110px]">Parecer</th>
+                            <th className="py-3 px-3 min-w-[130px]">Mat / Med</th>
+                            <th className="py-3 px-3 min-w-[100px]">Ex. Lab</th>
+                            <th className="py-3 px-3 min-w-[100px]">Ex. Rad</th>
+                            <th className="py-3 px-3 min-w-[130px]">Fisio</th>
+                            <th className="py-3 px-3 text-right min-w-[90px]">Ações</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200/80 font-medium">
+                          {utiDiarias.map((uItem, idx) => (
+                            <tr key={idx} className="hover:bg-[#FDF2F6]/40 transition-colors">
+                              <td className="py-3 px-3 align-top font-mono font-black text-slate-900">
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard(uItem.code)}
+                                  className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 hover:bg-[#FDF2F6] hover:text-[#B01B52] border border-slate-200 text-xs font-mono font-black text-slate-800 transition-colors cursor-pointer group"
+                                  title="Copiar código TUSS"
+                                >
+                                  <span>{uItem.code}</span>
+                                  {copiedText === uItem.code ? <Check className="w-3 h-3 text-[#B01B52]" /> : <Copy className="w-3 h-3 text-slate-400 group-hover:text-[#B01B52]" />}
+                                </button>
+                              </td>
+                              <td className="py-3 px-3 align-top">
+                                <span className="font-bold text-slate-900 block leading-snug">{uItem.acomodacao}</span>
+                                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                                  <span className="px-2 py-0.5 text-[10px] font-extrabold bg-[#FDF2F6] text-[#B01B52] border border-[#F7D0DF] rounded">
+                                    {uItem.tipo}
+                                  </span>
+                                  {uItem.observacoes && (
+                                    <span className="text-[11px] text-[#B01B52] font-semibold bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
+                                      {uItem.observacoes}
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-3 px-3 align-top">
+                                {uItem.solicitarJunto ? (
+                                  <span className="bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8] rounded-md px-2 py-0.5 font-mono font-bold text-[11px] inline-block">
+                                    {uItem.solicitarJunto}
+                                  </span>
+                                ) : <span className="text-slate-300 font-medium">—</span>}
+                              </td>
+                              <td className="py-3 px-3 align-top">
+                                {uItem.parecer ? (
+                                  <span className={`px-2 py-0.5 rounded text-[11px] font-bold inline-block ${
+                                    uItem.parecer.toLowerCase().includes('não precisa')
+                                      ? 'bg-slate-100 text-slate-600'
+                                      : 'bg-amber-50 text-amber-800 border border-amber-200'
+                                  }`}>
+                                    {uItem.parecer}
+                                  </span>
+                                ) : <span className="text-slate-300 font-medium">—</span>}
+                              </td>
+                              <td className="py-3 px-3 align-top text-[11px] text-slate-700">
+                                {uItem.matMed || '—'}
+                              </td>
+                              <td className="py-3 px-3 align-top">
+                                {uItem.exLab ? (
+                                  <span className={`px-2 py-0.5 rounded text-[11px] font-bold inline-block ${
+                                    uItem.exLab.toLowerCase().includes('não') || uItem.exLab.toLowerCase().includes('incluso')
+                                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                                      : 'bg-rose-50 text-rose-800 border border-rose-200'
+                                  }`}>
+                                    {uItem.exLab}
+                                  </span>
+                                ) : <span className="text-slate-300 font-medium">—</span>}
+                              </td>
+                              <td className="py-3 px-3 align-top">
+                                {uItem.exRad ? (
+                                  <span className={`px-2 py-0.5 rounded text-[11px] font-bold inline-block ${
+                                    uItem.exRad.toLowerCase().includes('não') || uItem.exRad.toLowerCase().includes('incluso')
+                                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                                      : 'bg-amber-50 text-amber-800 border border-amber-200'
+                                  }`}>
+                                    {uItem.exRad}
+                                  </span>
+                                ) : <span className="text-slate-300 font-medium">—</span>}
+                              </td>
+                              <td className="py-3 px-3 align-top text-[11px] text-slate-700">
+                                {uItem.fisioIntern || '—'}
+                              </td>
+                              <td className="py-3 px-3 align-top text-right">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  {onGeneratePreGuia && uItem.code !== 'TEXTO LIVRE' && !uItem.code.startsWith('OPÇÃO') && (
+                                    <button
+                                      type="button"
+                                      onClick={() => onGeneratePreGuia(planDiariasRules.convenioId, uItem.code, uItem.acomodacao)}
+                                      className="px-2 py-1 rounded-lg bg-[#FDF2F6] hover:bg-[#FCE7EF] text-[#B01B52] font-black text-[10px] transition-colors cursor-pointer"
+                                    >
+                                      Pré-Guia
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center text-xs text-slate-600">
+                      Nenhum leito específico de UTI tabelado individualmente para este convênio. O faturamento segue a tabela padrão do hospital.
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Protocolo de Parecer Intensivista & Visitas */}
               <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-4">
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="font-extrabold text-base text-slate-900 m-0">
@@ -598,7 +979,7 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                 <div className="bg-[#EBF7F8] border border-[#C4E5E8] rounded-xl p-4 flex items-start gap-3">
                   <Activity className="w-5 h-5 text-[#0E7B86] mt-0.5 flex-shrink-0" />
                   <div className="space-y-1">
-                    <h4 className="text-sm font-black text-[#0E7B86] m-0">Protocolo de Parecer Intensivista</h4>
+                    <h4 className="text-sm font-black text-[#0E7B86] m-0">Protocolo de Parecer Intensivista & Visitas</h4>
                     <p className="text-xs sm:text-sm text-slate-800 m-0 leading-relaxed">
                       Toda admissão em UTI requer a inserção imediata do parecer médico fundamentado e o laudo de internação no portal do convênio em até 24 horas. Diárias de UTI sem laudo de justificativa clínica geram glosa integral do leito.
                     </p>
@@ -628,7 +1009,7 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                 {activeConvenioObj?.sections?.uti?.codes && activeConvenioObj.sections.uti.codes.length > 0 && (
                   <div className="space-y-3 pt-2">
                     <span className="text-xs font-extrabold uppercase text-slate-400 tracking-wider block">
-                      Códigos de Diárias e Procedimentos de UTI:
+                      Outros Códigos de UTI Registrados:
                     </span>
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs sm:text-sm border-collapse bg-white rounded-xl overflow-hidden border border-slate-200">
@@ -655,7 +1036,7 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                                   className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86] transition-colors cursor-pointer"
                                   title="Copiar Código"
                                 >
-                                  {copiedText === c.code ? <Check className="w-4 h-4 text-[#0E7B86]" /> : <Copy className="w-4 h-4" />}
+                                  {copiedText === c.code ? <Check className="w-4 h-4 text-[#0E7B86]" /> : <Copy className="w-4 h-4 text-slate-400 group-hover:text-[#0E7B86]" />}
                                 </button>
                               </td>
                             </tr>

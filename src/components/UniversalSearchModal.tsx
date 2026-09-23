@@ -17,6 +17,7 @@ import {
 import { AppMode, ExamRow } from '../types';
 import { CONVENIOS_MASTER_LIST } from '../data/popsData';
 import { HOSPITAL_EXTENSIONS, HOSPITAL_REPORTS } from '../data/hospitalData';
+import { ALL_DIARIAS_ITEMS } from '../data/diariasData';
 
 interface UniversalSearchModalProps {
   isOpen: boolean;
@@ -77,6 +78,7 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
     if (!q) {
       return {
         convenios: [],
+        diarias: [],
         exams: [],
         ramais: [],
         reports: [],
@@ -100,6 +102,14 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
       c.id.toLowerCase().includes(q) ||
       (c.category && c.category.toLowerCase().includes(q))
     ).slice(0, 5);
+
+    // 1.5 Diárias de Internação
+    const matchingDiarias = ALL_DIARIAS_ITEMS.filter(d => 
+      d.code.toLowerCase().includes(q) ||
+      d.acomodacao.toLowerCase().includes(q) ||
+      d.convenioName.toLowerCase().includes(q) ||
+      (d.solicitarJunto && d.solicitarJunto.toLowerCase().includes(q))
+    ).slice(0, 6);
 
     // 2. Exams
     const allExams = [...psExams, ...amorExams, ...labExams];
@@ -155,6 +165,7 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
 
     return {
       convenios: matchingConvenios,
+      diarias: matchingDiarias,
       exams: matchingExams,
       ramais: matchingRamais,
       reports: matchingReports.slice(0, 4),
@@ -163,11 +174,12 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
   }, [query, psExams, amorExams, labExams, onNavigateToConvenio, onNavigateToExames, onClose]);
 
   const hasAnyResults = 
-    results.convenios.length > 0 || 
-    results.exams.length > 0 || 
-    results.ramais.length > 0 || 
-    results.reports.length > 0 || 
-    results.rules.length > 0;
+    (results.convenios?.length ?? 0) > 0 || 
+    (results.diarias?.length ?? 0) > 0 ||
+    (results.exams?.length ?? 0) > 0 || 
+    (results.ramais?.length ?? 0) > 0 || 
+    (results.reports?.length ?? 0) > 0 || 
+    (results.rules?.length ?? 0) > 0;
 
   if (!isOpen) return null;
 
@@ -330,6 +342,63 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
                             Internação
                           </button>
                         </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Diárias de Internação Section */}
+              {results.diarias && results.diarias.length > 0 && (
+                <div className="pt-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] uppercase font-black tracking-wider text-[#0E7B86] block">
+                      Diárias de Internação & Leitos ({results.diarias.length})
+                    </span>
+                    <span className="text-[11px] text-slate-400 font-medium">
+                      Clique para abrir o convênio na Internação
+                    </span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {results.diarias.map(d => (
+                      <div
+                        key={d.id}
+                        onClick={() => {
+                          onNavigateToConvenio('pops-internacao', d.convenioId);
+                          onClose();
+                        }}
+                        className="p-3 rounded-xl border border-slate-200 hover:border-[#0E7B86] bg-white hover:bg-[#EBF7F8]/40 transition-all flex items-center justify-between gap-3 cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="w-7 h-7 rounded-lg bg-[#B01B52] text-white font-black text-[10px] flex items-center justify-center flex-shrink-0">
+                            {d.badge}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-[#0E7B86] transition-colors truncate">
+                                {d.acomodacao}
+                              </span>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                                {d.convenioName}
+                              </span>
+                              <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-[#EBF7F8] text-[#0E7B86]">
+                                {d.tipo}
+                              </span>
+                            </div>
+                            <span className="text-[11px] text-slate-500 font-mono font-bold block mt-0.5">
+                              Código TUSS: <strong className="text-slate-800">{d.code}</strong> {d.solicitarJunto ? `• Solicitar: ${d.solicitarJunto}` : ''}
+                            </span>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => copyText(e, d.code, d.id)}
+                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] text-slate-600 hover:text-[#0E7B86] transition-colors flex-shrink-0 cursor-pointer"
+                          title="Copiar código TUSS"
+                        >
+                          {copiedKey === d.id ? <Check className="w-3.5 h-3.5 text-[#0E7B86]" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
                       </div>
                     ))}
                   </div>

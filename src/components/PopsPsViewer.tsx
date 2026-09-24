@@ -1458,8 +1458,8 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                 </div>
 
                 {isServir && (
-                  <div className="bg-[#FDF2F6] border border-[#F7D0DF] rounded-xl p-4 text-sm sm:text-base text-slate-900 mt-4 flex items-start gap-2.5 font-bold text-[#87143E]">
-                    <AlertTriangle className="w-5 h-5 text-[#B01B52] flex-shrink-0 mt-0.5" />
+                  <div className="animate-alert-box border-2 rounded-xl p-4 text-sm sm:text-base text-slate-900 mt-4 flex items-start gap-2.5 font-bold text-[#87143E] shadow-sm">
+                    <AlertTriangle className="w-5 h-5 text-[#B01B52] animate-alert-sign flex-shrink-0 mt-0.5" />
                     <span className="leading-relaxed">Aviso Obrigatório SERVIR: NÃO precisa autorizar RX e RM no portal. Obrigatório colher assinatura na guia e anexar a capa do atendimento.</span>
                   </div>
                 )}

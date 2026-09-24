@@ -1595,8 +1595,12 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
 
           {/* Notice Banner */}
           {!isSpecialTab && (
-            <div className="pop-notice" id="notice">
-              <span aria-hidden="true">ⓘ</span>
+            <div className={`pop-notice ${planDiariasRules?.criticalRule ? 'animate-alert-box border-2 border-amber-400' : ''}`} id="notice">
+              {planDiariasRules?.criticalRule ? (
+                <AlertTriangle className="w-5 h-5 text-rose-600 animate-alert-sign flex-shrink-0" />
+              ) : (
+                <span aria-hidden="true">ⓘ</span>
+              )}
               <span>
                 <b>Leitura dos dados:</b> “Solicitar junto” aparece apenas quando preenchido para aquela diária. {specificNotice}
               </span>
@@ -1707,22 +1711,24 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                                 </span>
                               </div>
 
-                              {/* TUSS / Hospital Code badge */}
+                              {/* TUSS / Hospital Code badge - Caixa piscante com sinal de alerta */}
                               <div className="flex items-center gap-2">
                                 <button
                                   type="button"
                                   onClick={() => copyCodeToClipboard(item.code)}
-                                  className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-[#FDF2F6] border border-slate-200 hover:border-[#A7194D]/40 text-slate-800 hover:text-[#A7194D] transition-all cursor-pointer shadow-2xs"
-                                  title="Clique para copiar código TUSS"
+                                  className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border-2 animate-code-alert-box font-bold transition-all cursor-pointer shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-95 text-slate-900 dark:text-slate-100"
+                                  title="Clique para copiar código TUSS (Código com alerta de internação)"
                                 >
-                                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500 group-hover:text-[#A7194D]">Cód:</span>
-                                  <span className="font-mono text-sm sm:text-base font-black tabular-nums">{item.code}</span>
+                                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-alert-sign flex-shrink-0" />
+                                  <span className="text-xs font-black uppercase tracking-wider text-amber-900 dark:text-amber-300 group-hover:text-rose-700">Cód:</span>
+                                  <span className="font-mono text-sm sm:text-base font-black tabular-nums tracking-wide text-slate-950 dark:text-white">{item.code}</span>
                                   {copiedCode === item.code ? (
-                                    <span className="inline-flex items-center gap-1 text-emerald-600 text-xs sm:text-sm font-bold">
+                                    <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs sm:text-sm font-black bg-emerald-100 dark:bg-emerald-950/70 px-1.5 py-0.5 rounded-md">
                                       <Check className="w-4 h-4" />
+                                      <span className="text-[10px] uppercase font-black">Copiado!</span>
                                     </span>
                                   ) : (
-                                    <Copy className="w-4 h-4 text-slate-400 group-hover:text-[#A7194D]" />
+                                    <Copy className="w-4 h-4 text-amber-700/60 dark:text-amber-400/60 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors" />
                                   )}
                                 </button>
                               </div>
@@ -1733,18 +1739,29 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                               {item.acomodacao}
                             </h4>
 
-                            {/* Directive: SOLICITAR JUNTO */}
+                            {/* Directive: SOLICITAR JUNTO (Caixa Piscante com Sinal de Alerta) */}
                             {item.solicitarJunto ? (
-                              <div className="bg-sky-50/90 border border-sky-200 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 my-3.5 shadow-2xs">
-                                <div className="flex items-center gap-3 min-w-0">
-                                  <div className="w-8 h-8 rounded-lg bg-sky-600 text-white flex items-center justify-center flex-shrink-0 shadow-2xs">
-                                    <Link2 className="w-4 h-4" />
+                              <div 
+                                className="animate-alert-box border-2 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 my-4 transition-all shadow-md"
+                                role="alert"
+                                aria-live="polite"
+                              >
+                                <div className="flex items-center gap-3.5 min-w-0">
+                                  {/* Sinal de Alerta Piscante */}
+                                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500 via-rose-600 to-red-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm border border-white/40">
+                                    <AlertTriangle className="w-6 h-6 text-amber-100 animate-alert-sign" />
                                   </div>
                                   <div className="min-w-0">
-                                    <span className="text-xs font-black uppercase tracking-wider text-sky-800 block">
-                                      Código Vinculado Obrigatório (Solicitar Junto):
-                                    </span>
-                                    <span className="font-mono font-black text-sm sm:text-base text-sky-950 truncate block">
+                                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                                      <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-rose-800 dark:text-rose-300 flex items-center gap-1.5">
+                                        <AlertTriangle className="w-4 h-4 text-rose-600 animate-alert-sign" />
+                                        Código Vinculado Obrigatório (Solicitar Junto):
+                                      </span>
+                                      <span className="inline-flex items-center text-[10px] sm:text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-rose-600 text-white shadow-2xs">
+                                        Alerta de Glosa
+                                      </span>
+                                    </div>
+                                    <span className="font-mono font-black text-base sm:text-lg text-slate-950 dark:text-amber-200 truncate block">
                                       {item.solicitarJunto}
                                     </span>
                                   </div>
@@ -1753,17 +1770,18 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => copyCodeToClipboard(item.solicitarJunto || '')}
-                                  className="px-3 py-1.5 rounded-lg bg-white border border-sky-300 hover:bg-sky-100 text-sky-900 text-xs sm:text-sm font-bold transition-colors flex items-center gap-1.5 w-fit flex-shrink-0 cursor-pointer shadow-2xs"
-                                  title="Copiar código vinculado"
+                                  className="px-4 py-2.5 rounded-xl border-2 animate-code-alert-box hover:scale-[1.02] text-slate-900 dark:text-slate-100 text-xs sm:text-sm font-black transition-all flex items-center gap-2 w-fit flex-shrink-0 cursor-pointer shadow-xs hover:shadow-md"
+                                  title="Copiar código vinculado obrigatório"
                                 >
+                                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-alert-sign flex-shrink-0" />
                                   {copiedCode === item.solicitarJunto ? (
                                     <>
-                                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                      <span className="text-emerald-700">Copiado</span>
+                                      <Check className="w-4 h-4 text-emerald-600" />
+                                      <span className="text-emerald-700 dark:text-emerald-400">Copiado!</span>
                                     </>
                                   ) : (
                                     <>
-                                      <Copy className="w-3.5 h-3.5" />
+                                      <Copy className="w-4 h-4 text-rose-600" />
                                       <span>Copiar Vinculado</span>
                                     </>
                                   )}
@@ -1903,14 +1921,15 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                                   <button
                                     type="button"
                                     onClick={() => copyCodeToClipboard(item.code)}
-                                    className="font-mono font-black text-slate-900 bg-slate-100 hover:bg-[#FDF2F6] px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-[#A7194D]/40 text-xs sm:text-sm transition-colors cursor-pointer inline-flex items-center gap-1.5"
-                                    title="Copiar código"
+                                    className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-2 animate-code-alert-box font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs hover:scale-[1.02]"
+                                    title="Clique para copiar código TUSS"
                                   >
-                                    <span>{item.code}</span>
+                                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 animate-alert-sign flex-shrink-0" />
+                                    <span className="font-mono font-black text-slate-950 dark:text-white tabular-nums">{item.code}</span>
                                     {copiedCode === item.code ? (
                                       <Check className="w-3.5 h-3.5 text-emerald-600" />
                                     ) : (
-                                      <Copy className="w-3.5 h-3.5 text-slate-400" />
+                                      <Copy className="w-3.5 h-3.5 text-amber-700/60 dark:text-amber-400/60 group-hover:text-rose-600" />
                                     )}
                                   </button>
                                 </td>
@@ -1926,9 +1945,20 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                                 </td>
                                 <td className="py-3 px-3.5">
                                   {item.solicitarJunto ? (
-                                    <span className="font-mono font-black text-sky-800 bg-sky-50 px-2 py-1 rounded border border-sky-200 block text-xs">
-                                      {item.solicitarJunto}
-                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => copyCodeToClipboard(item.solicitarJunto || '')}
+                                      className="inline-flex items-center gap-1.5 font-mono font-black px-2.5 py-1 rounded-lg border-2 animate-code-alert-box shadow-xs text-xs cursor-pointer hover:scale-[1.02] transition-transform text-slate-950 dark:text-white"
+                                      title="Clique para copiar código vinculado obrigatório"
+                                    >
+                                      <AlertTriangle className="w-3.5 h-3.5 text-rose-600 animate-alert-sign flex-shrink-0" />
+                                      <span>{item.solicitarJunto}</span>
+                                      {copiedCode === item.solicitarJunto ? (
+                                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                      ) : (
+                                        <Copy className="w-3.5 h-3.5 text-rose-500/70" />
+                                      )}
+                                    </button>
                                   ) : (
                                     <span className="text-slate-400 italic text-xs">-</span>
                                   )}

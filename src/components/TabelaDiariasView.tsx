@@ -239,8 +239,8 @@ export const TabelaDiariasView: React.FC<TabelaDiariasViewProps> = ({
           </div>
 
           {currentConvenioRules.criticalRule && (
-            <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs text-rose-900 font-bold flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-rose-700 flex-shrink-0" />
+            <div className="animate-alert-box border-2 rounded-xl p-3.5 text-xs sm:text-sm text-rose-950 font-black flex items-center gap-2.5 shadow-sm">
+              <AlertTriangle className="w-5 h-5 text-rose-600 animate-alert-sign flex-shrink-0" />
               <span>{currentConvenioRules.criticalRule}</span>
             </div>
           )}
@@ -345,14 +345,15 @@ export const TabelaDiariasView: React.FC<TabelaDiariasViewProps> = ({
                       <button
                         type="button"
                         onClick={() => copyToClipboard(item.code)}
-                        className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 hover:bg-[#EBF7F8] hover:text-[#0E7B86] border border-slate-200/80 font-mono font-black text-xs text-slate-800 transition-colors cursor-pointer group"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-2 animate-code-alert-box font-mono font-black text-xs text-slate-950 dark:text-white transition-all cursor-pointer group shadow-2xs hover:scale-[1.02]"
                         title="Clique para copiar código TUSS"
                       >
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 animate-alert-sign flex-shrink-0" />
                         <span>{item.code}</span>
                         {isCodeCopied ? (
-                          <Check className="w-3 h-3 text-[#0E7B86]" />
+                          <Check className="w-3 h-3 text-emerald-600" />
                         ) : (
-                          <Copy className="w-3 h-3 text-slate-400 group-hover:text-[#0E7B86]" />
+                          <Copy className="w-3 h-3 text-amber-700/60 dark:text-amber-400/60 group-hover:text-rose-600" />
                         )}
                       </button>
                     </td>
@@ -379,8 +380,9 @@ export const TabelaDiariasView: React.FC<TabelaDiariasViewProps> = ({
                     {/* Solicitar Junto */}
                     <td className="py-3 px-3 align-top">
                       {item.solicitarJunto ? (
-                        <div className="bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8] rounded-lg px-2 py-1 font-mono font-bold text-[11px] leading-tight">
-                          {item.solicitarJunto}
+                        <div className="animate-alert-box border-2 rounded-lg px-2.5 py-1 font-mono font-black text-xs leading-tight inline-flex items-center gap-1.5 shadow-xs text-rose-950">
+                          <AlertTriangle className="w-3.5 h-3.5 text-rose-600 animate-alert-sign flex-shrink-0" />
+                          <span>{item.solicitarJunto}</span>
                         </div>
                       ) : (
                         <span className="text-slate-300 font-medium">—</span>

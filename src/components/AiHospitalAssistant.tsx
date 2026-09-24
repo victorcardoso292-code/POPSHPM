@@ -14,14 +14,28 @@ import {
   RefreshCw,
   HelpCircle,
   Stethoscope,
-  Info
+  Info,
+  Zap,
+  ShieldCheck
 } from 'lucide-react';
 import { CONVENIOS_MASTER_LIST } from '../data/popsData';
 import { AuditResult } from '../types';
+import { retrieveHospitalKnowledge, RetrievedHospitalFact } from '../services/aiKnowledgeEngine';
 
 interface AiHospitalAssistantProps {
   initialPrompt?: string;
   onClearInitialPrompt?: () => void;
+}
+
+interface CopilotMessage {
+  id?: string;
+  role: 'user' | 'assistant';
+  text: string;
+  time: string;
+  groundingFacts?: RetrievedHospitalFact[];
+  criticalAlerts?: string[];
+  matchedItems?: any[];
+  isStreaming?: boolean;
 }
 
 export const AiHospitalAssistant: React.FC<AiHospitalAssistantProps> = ({
@@ -31,10 +45,11 @@ export const AiHospitalAssistant: React.FC<AiHospitalAssistantProps> = ({
   const [activeTab, setActiveTab] = useState<'copilot' | 'auditor'>('copilot');
 
   // Copilot State
-  const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; text: string; time: string }[]>([
+  const [messages, setMessages] = useState<CopilotMessage[]>([
     {
+      id: 'welcome',
       role: 'assistant',
-      text: 'Olá! Sou o **Copilot de Autorizações & POPs Hospitalares** do Hospital Palmas Medical. Como posso ajudar na auditoria, códigos TUSS, regras de convênios ou processos de internação hoje?',
+      text: 'Olá! Sou o **Copilot de Alta Precisão & POPs** do Hospital Palmas Medical. 🏥\n\nEstou conectado diretamente à base de **Tabelas de Diárias, Códigos TUSS, Solicitar Junto e Regras de Convênios** para fornecer respostas precisas e imediatas.\n\nComo posso ajudar na auditoria ou esclarecimento de códigos hoje?',
       time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -52,35 +67,112 @@ export const AiHospitalAssistant: React.FC<AiHospitalAssistantProps> = ({
   const [isLoadingAudit, setIsLoadingAudit] = useState<boolean>(false);
   const [copiedAudit, setCopiedAudit] = useState<boolean>(false);
 
-  // Quick prompt suggestions
+  // Quick universal prompt suggestions
   const promptSuggestions = [
-    'Como autorizar Colonoscopia com Polipectomia no SERVIR?',
-    'Regras de Tomografia e Ressonância de Urgência no BRADESCO',
-    'Passo a passo de elegibilidade e Token no AMIL',
-    'Regras de Diária de UTI e Intensivista no CASSI',
-    'Autorização de OPME na Urgência vs Eletivo'
+    'Qual o código da Angiotomografia Arterial de Crânio?',
+    'Qual o ramal da UTI NEO e do Centro Cirúrgico?',
+    'Qual o código da Diária de UTI no Servir?',
+    'Qual o portal e regra de acesso do convênio Amil?',
+    'Qual o valor e diárias inclusas da Mastopexia?',
+    'Qual o WhatsApp da Priscila para alteração de senhas?',
+    'Qual o código de Fisioterapia na internação do Servir?'
   ];
+
+  const [copiedMsgIdx, setCopiedMsgIdx] = useState<number | null>(null);
 
   // Auto-send if initial prompt is set
   React.useEffect(() => {
     if (initialPrompt) {
-      setInputQuestion(initialPrompt);
       setActiveTab('copilot');
+      handleSendCopilot(initialPrompt);
       if (onClearInitialPrompt) onClearInitialPrompt();
     }
   }, [initialPrompt]);
+
+  const handleCopyMessage = (idx: number, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedMsgIdx(idx);
+    setTimeout(() => setCopiedMsgIdx(null), 2000);
+  };
+
+  const renderFormattedText = (text: string) => {
+    return text.split('\n').map((line, idx) => {
+      if (line.startsWith('### ')) {
+        return <h4 key={idx} className="text-sm font-black text-slate-900 mt-2 mb-1">{line.replace('### ', '')}</h4>;
+      }
+      if (line.startsWith('## ')) {
+        return <h3 key={idx} className="text-base font-black text-slate-900 mt-3 mb-1">{line.replace('## ', '')}</h3>;
+      }
+      if (line.startsWith('# ')) {
+        return <h2 key={idx} className="text-base font-black text-[#B01B52] mt-3 mb-1.5">{line.replace('# ', '')}</h2>;
+      }
+
+      if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
+        const itemText = line.trim().substring(2);
+        return (
+          <div key={idx} className="flex items-start gap-2 ml-1 my-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#0E7B86] mt-2 flex-shrink-0" />
+            <div className="flex-1">{formatInline(itemText)}</div>
+          </div>
+        );
+      }
+
+      const numMatch = line.trim().match(/^(\d+)\.\s+(.*)$/);
+      if (numMatch) {
+        return (
+          <div key={idx} className="flex items-start gap-2 ml-1 my-1">
+            <span className="text-xs font-black text-[#B01B52] min-w-4 mt-0.5">{numMatch[1]}.</span>
+            <div className="flex-1">{formatInline(numMatch[2])}</div>
+          </div>
+        );
+      }
+
+      if (!line.trim()) {
+        return <div key={idx} className="h-1.5" />;
+      }
+
+      return (
+        <p key={idx} className="m-0 leading-relaxed">
+          {formatInline(line)}
+        </p>
+      );
+    });
+  };
+
+  const formatInline = (content: string) => {
+    const parts = content.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, pIdx) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={pIdx} className="font-black text-slate-950">{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
+  };
 
   const handleSendCopilot = async (overridePrompt?: string) => {
     const q = (overridePrompt || inputQuestion).trim();
     if (!q || isLoadingCopilot) return;
 
-    const userMsg = {
-      role: 'user' as const,
+    // 1. Instant local grounding in 0ms across all system data
+    const localKnowledge = retrieveHospitalKnowledge(q);
+
+    const userMsg: CopilotMessage = {
+      id: String(Date.now()),
+      role: 'user',
       text: q,
       time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
     };
 
-    setMessages(prev => [...prev, userMsg]);
+    const assistantMsgId = String(Date.now() + 1);
+    const initialAssistantMsg: CopilotMessage = {
+      id: assistantMsgId,
+      role: 'assistant',
+      text: localKnowledge.directAnswer || '⚡ Buscando no sistema hospitalar...',
+      time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      isStreaming: !localKnowledge.directAnswer
+    };
+
+    setMessages(prev => [...prev, userMsg, initialAssistantMsg]);
     setInputQuestion('');
     setIsLoadingCopilot(true);
 
@@ -88,33 +180,33 @@ export const AiHospitalAssistant: React.FC<AiHospitalAssistantProps> = ({
       const res = await fetch('/api/ai/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question: q,
-          contextConvenio: selectedConvenioContext,
-          contextSection: 'Geral'
-        })
+        body: JSON.stringify({ question: q })
       });
 
       const data = await res.json();
-      const replyText = data.answer || data.fallbackAnswer || 'Não foi possível obter resposta no momento.';
+      const replyText = data.answer || localKnowledge.directAnswer || 'Informação não localizada.';
 
-      setMessages(prev => [
-        ...prev,
-        {
-          role: 'assistant',
-          text: replyText,
-          time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+      setMessages(prev => prev.map(m => {
+        if (m.id === assistantMsgId) {
+          return {
+            ...m,
+            text: replyText,
+            isStreaming: false
+          };
         }
-      ]);
+        return m;
+      }));
     } catch (err: any) {
-      setMessages(prev => [
-        ...prev,
-        {
-          role: 'assistant',
-          text: 'Ocorreu um erro de comunicação com o servidor de IA. Verifique as configurações de rede e tente novamente.',
-          time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+      setMessages(prev => prev.map(m => {
+        if (m.id === assistantMsgId) {
+          return {
+            ...m,
+            text: 'Ocorreu um erro de comunicação com o servidor de IA. As informações oficiais do banco de dados foram mantidas acima.',
+            isStreaming: false
+          };
         }
-      ]);
+        return m;
+      }));
     } finally {
       setIsLoadingCopilot(false);
     }
@@ -232,22 +324,16 @@ ${auditResult.documentosExigidos.map(d => `- ${d}`).join('\n')}`;
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
           {/* Quick Context & Prompts Sidebar */}
           <div className="lg:col-span-1 space-y-4">
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
-              <span className="text-xs uppercase font-black tracking-wider text-slate-400 block">
-                Convênio em Foco
-              </span>
-              <select
-                value={selectedConvenioContext}
-                onChange={e => setSelectedConvenioContext(e.target.value)}
-                className="w-full px-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-black text-slate-900 focus:ring-2 focus:ring-amber-500 focus:bg-white"
-              >
-                <option value="SERVIR">SERVIR (Plano de Saúde TO)</option>
-                {CONVENIOS_MASTER_LIST.map(c => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+            <div className="bg-[#EBF7F8] border border-[#C4E5E8] rounded-2xl p-4 sm:p-5 shadow-xs space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-xs uppercase font-black tracking-wider text-[#0E7B86] block">
+                  Busca Universal Ativa
+                </span>
+              </div>
+              <p className="text-xs text-slate-700 font-medium leading-relaxed m-0">
+                A IA responde sobre <strong>qualquer informação do hospital</strong> sem precisar selecionar convênio: exames, cirurgias, diárias, ramais e portais.
+              </p>
             </div>
 
             <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
@@ -295,10 +381,23 @@ ${auditResult.documentosExigidos.map(d => `- ${d}`).join('\n')}`;
                     >
                       <div className="flex items-center justify-between gap-4 border-b border-black/10 pb-1.5 mb-1.5 text-xs opacity-80">
                         <span className="font-black">{isUser ? 'Operador Hospitalar' : 'Copilot Palmas Medical (Gemini)'}</span>
-                        <span className="font-semibold">{msg.time}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold">{msg.time}</span>
+                          {!isUser && (
+                            <button
+                              type="button"
+                              onClick={() => handleCopyMessage(idx, msg.text)}
+                              className="p-1 rounded hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors"
+                              title="Copiar resposta"
+                            >
+                              {copiedMsgIdx === idx ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <div className="whitespace-pre-wrap font-sans font-medium">
-                        {msg.text}
+
+                      <div className="space-y-1 font-sans font-medium text-xs sm:text-sm">
+                        {renderFormattedText(msg.text)}
                       </div>
                     </div>
                     {isUser && (

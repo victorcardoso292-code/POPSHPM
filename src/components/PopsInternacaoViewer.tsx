@@ -1589,6 +1589,18 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                 >
                   ↑ &nbsp;Imprimir
                 </button>
+
+                {onOpenAiWithPrompt && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenAiWithPrompt(`Como funciona o processo de autorização, internação clínica, cirúrgica e diárias de UTI no convênio ${planDisplayName}? Quais os alertas de glosa mais comuns?`)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#0E7B86] to-[#095962] text-white hover:from-[#095962] hover:to-[#07474E] text-xs font-bold transition-all shadow-xs cursor-pointer"
+                    title="Tirar dúvidas sobre este convênio com IA"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+                    <span>Dúvidas com IA</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -1767,25 +1779,39 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                                   </div>
                                 </div>
 
-                                <button
-                                  type="button"
-                                  onClick={() => copyCodeToClipboard(item.solicitarJunto || '')}
-                                  className="px-4 py-2.5 rounded-xl border-2 animate-code-alert-box hover:scale-[1.02] text-slate-900 dark:text-slate-100 text-xs sm:text-sm font-black transition-all flex items-center gap-2 w-fit flex-shrink-0 cursor-pointer shadow-xs hover:shadow-md"
-                                  title="Copiar código vinculado obrigatório"
-                                >
-                                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-alert-sign flex-shrink-0" />
-                                  {copiedCode === item.solicitarJunto ? (
-                                    <>
-                                      <Check className="w-4 h-4 text-emerald-600" />
-                                      <span className="text-emerald-700 dark:text-emerald-400">Copiado!</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Copy className="w-4 h-4 text-rose-600" />
-                                      <span>Copiar Vinculado</span>
-                                    </>
+                                <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => copyCodeToClipboard(item.solicitarJunto || '')}
+                                    className="px-4 py-2.5 rounded-xl border-2 animate-code-alert-box hover:scale-[1.02] text-slate-900 dark:text-slate-100 text-xs sm:text-sm font-black transition-all flex items-center gap-2 w-fit flex-shrink-0 cursor-pointer shadow-xs hover:shadow-md"
+                                    title="Copiar código vinculado obrigatório"
+                                  >
+                                    <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-alert-sign flex-shrink-0" />
+                                    {copiedCode === item.solicitarJunto ? (
+                                      <>
+                                        <Check className="w-4 h-4 text-emerald-600" />
+                                        <span className="text-emerald-700 dark:text-emerald-400">Copiado!</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Copy className="w-4 h-4 text-rose-600" />
+                                        <span>Copiar Vinculado</span>
+                                      </>
+                                    )}
+                                  </button>
+
+                                  {onOpenAiWithPrompt && (
+                                    <button
+                                      type="button"
+                                      onClick={() => onOpenAiWithPrompt(`Por que o código ${item.solicitarJunto} precisa ser solicitado junto com a diária de ${item.acomodacao} (cód: ${item.code}) no convênio ${planDisplayName}? Como orientar o faturamento para evitar glosa?`)}
+                                      className="px-3 py-2.5 rounded-xl bg-amber-100/90 hover:bg-amber-200 text-amber-900 border border-amber-300 text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                                      title="Tirar dúvida sobre este código vinculado com IA"
+                                    >
+                                      <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                                      <span>Explicar com IA</span>
+                                    </button>
                                   )}
-                                </button>
+                                </div>
                               </div>
                             ) : (
                               <div className="bg-slate-50/80 border border-slate-200/70 rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs sm:text-sm text-slate-500 my-3">
@@ -1842,6 +1868,18 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                               </div>
 
                               <div className="flex items-center gap-2 flex-wrap">
+                                {onOpenAiWithPrompt && (
+                                  <button
+                                    type="button"
+                                    onClick={() => onOpenAiWithPrompt(`Como autorizar a acomodação ${item.acomodacao} (Código ${item.code}) no convênio ${planDisplayName}? Quais os requisitos clínicos, pareceres e documentação necessária?`)}
+                                    className="px-3.5 py-2 rounded-xl bg-[#EBF7F8] hover:bg-[#D8ECEE] text-[#0E7B86] hover:text-[#095962] border border-[#C4E5E8] text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                                    title="Tirar dúvida sobre esta acomodação com IA"
+                                  >
+                                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                                    <span>Dúvida com IA</span>
+                                  </button>
+                                )}
+
                                 <button
                                   type="button"
                                   onClick={() => handleCopyCardSummary(item, isUti, planDisplayName)}
@@ -1980,6 +2018,16 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                                 </td>
                                 <td className="py-3 px-3.5 text-right whitespace-nowrap">
                                   <div className="flex items-center justify-end gap-1.5">
+                                    {onOpenAiWithPrompt && (
+                                      <button
+                                        type="button"
+                                        onClick={() => onOpenAiWithPrompt(`Dúvida sobre a tabela de diárias do convênio ${planDisplayName}: Como funciona a autorização de ${item.acomodacao} (Código ${item.code})? Quais os pareceres e regras exigidas?`)}
+                                        className="p-1.5 rounded-lg bg-[#EBF7F8] hover:bg-[#D8ECEE] text-[#0E7B86] hover:text-[#095962] border border-[#C4E5E8] transition-colors cursor-pointer"
+                                        title="Tirar dúvida desta linha com IA"
+                                      >
+                                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                                      </button>
+                                    )}
                                     <button
                                       type="button"
                                       onClick={() => handleCopyCardSummary(item, isUti, planDisplayName)}

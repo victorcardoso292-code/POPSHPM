@@ -12,7 +12,9 @@ import {
   Stethoscope,
   LogOut,
   Moon,
-  Sun
+  Sun,
+  Sparkles,
+  Bot
 } from 'lucide-react';
 import { AppMode } from '../types';
 
@@ -55,6 +57,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: Building2,
       badge: 'Internação',
       badgeColor: 'bg-[#FDF2F6] text-[#B01B52] border border-[#F7D0DF]'
+    },
+    {
+      id: 'ai-assistant' as AppMode,
+      label: 'IA Tira-Dúvidas',
+      subtitle: 'Copilot hospitalar & auditor',
+      icon: Sparkles,
+      badge: 'Gemini IA',
+      badgeColor: 'bg-amber-100 text-amber-900 border border-amber-300'
     },
     {
       id: 'exames' as AppMode,

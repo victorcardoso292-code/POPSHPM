@@ -1140,6 +1140,18 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                   <Printer className="w-3.5 h-3.5" />
                   <span>Imprimir POP</span>
                 </button>
+
+                {onOpenAiWithPrompt && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenAiWithPrompt(`Como funciona o atendimento de urgência, pacotes, exames e token no convênio ${planDisplayName}? Quais os alertas críticos para o Pronto-Socorro?`)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#0E7B86] to-[#095962] text-white hover:from-[#095962] hover:to-[#07474E] text-xs font-bold transition-all shadow-xs cursor-pointer"
+                    title="Tirar dúvidas sobre este convênio com IA"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+                    <span>Dúvidas com IA</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>

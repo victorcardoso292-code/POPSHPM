@@ -1,8 +1,9 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
+import { retrieveHospitalKnowledge } from './src/services/aiKnowledgeEngine';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,50 +33,102 @@ async function startServer() {
     res.json({ status: 'ok', time: new Date().toISOString() });
   });
 
-  // AI Hospital Copilot Ask Endpoint
+  // AI Hospital Copilot Ask Endpoint (Fast, Universal & Ultra-Concise)
   app.post('/api/ai/ask', async (req, res) => {
     try {
-      const { question, contextConvenio, contextSection } = req.body;
+      const { question } = req.body;
       if (!question) {
         return res.status(400).json({ error: 'Pergunta obrigatória' });
       }
 
+      // Universal hospital knowledge retrieval across all system datasets (exams, surgeries, ramais, portals, diárias)
+      const knowledge = retrieveHospitalKnowledge(question);
       const ai = getGeminiClient();
-      if (!ai) {
-        return res.status(503).json({
-          error: 'Chave do Gemini (GEMINI_API_KEY) não configurada no ambiente.',
-          fallbackAnswer: 'Para utilizar a IA em tempo real, configure a chave da API no painel de configurações. Consulte as regras do POP nas abas institucionais ao lado.'
-        });
+
+      const systemPrompt = `Você é o Assistente Oficial e Inteligência Universal do Hospital Palmas Medical.
+Você tem acesso a TODO o sistema do hospital:
+- Exames (mais de 430 exames com códigos TUSS, valores e preparos)
+- Diárias, Internações e Acomodações de TODOS os convênios
+- Cirurgias, Procedimentos e Valores de Pacotes Hospitalares
+- Ramais telefônicos internos e setores do hospital
+- Portais de autorização, links e orientações
+- Prontuários e kits de documentação
+
+REGRA SUPREMA: SEJA EXTREMAMENTE SUCINTO, DIRETO E OBJETIVO.
+1. Se o usuário pedir um código, ramal, valor, portal ou regra:
+   - Responda APENAS com a informação solicitada.
+   - NADA MAIS. NÃO adicione introduções ("Olá", "Com certeza"), NÃO adicione disclaimers, avisos de assinatura ou textos genéricos.
+   Exemplo para código:
+   **ANGIO RM ARTERIAL DE CRÂNIO**
+   • **Código TUSS:** \`41101537\`
+   • **Valor:** R$ 870,00 (Convênio) / R$ 685,00 (Particular)
+
+   Exemplo para ramal:
+   **UTI NEO**
+   • **Ramal:** \`1887\`
+   • **Local:** Bloco Crítico / 3º Andar
+
+2. Responda em no máximo 1 a 3 linhas diretas.
+3. Baseie-se ESTRITAMENTE nos dados oficiais do sistema abaixo:
+
+${knowledge.groundingPromptText}`;
+
+      let responseText = '';
+
+      if (ai) {
+        try {
+          const geminiPromise = ai.models.generateContent({
+            model: 'gemini-3.8-flash',
+            contents: [{ text: `${systemPrompt}\n\nDúvida / Solicitação:\n${question}` }],
+            config: {
+              thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+              temperature: 0.1
+            }
+          });
+
+          // 4.5 seconds timeout race to guarantee ultra-fast response
+          let timeoutHandle: NodeJS.Timeout;
+          const timeoutPromise = new Promise<{ text?: string }>((resolve) => {
+            timeoutHandle = setTimeout(() => resolve({ text: '' }), 4500);
+          });
+
+          const raceResult = await Promise.race([geminiPromise, timeoutPromise]);
+          clearTimeout(timeoutHandle!);
+          responseText = raceResult.text || '';
+
+          if (!responseText) {
+            responseText = formatGroundingAnswer(knowledge, question);
+          }
+        } catch (firstErr) {
+          responseText = formatGroundingAnswer(knowledge, question);
+        }
+      } else {
+        responseText = formatGroundingAnswer(knowledge, question);
       }
 
-      const systemPrompt = `Você é o Assistente Inteligente Oficial de Autorizações e POPs Hospitalares do Hospital Palmas Medical.
-Seu objetivo é orientar recepcionistas, enfermeiros, médicos e auditores hospitalares sobre:
-1. Regras de autorização por convênio (AMIL, BRADESCO, CASSI, SERVIR, GEAP, SAÚDE CAIXA, ASSEFAZ, CONAB, E-VIDA, FUSEX, GAMA SAÚDE, GOLDEN CROSS, MARINHA, PASA/VALE, UNAFISCO, VIGIMED, etc.).
-2. Validação de códigos TUSS / Pacotes próprios (ex: SERVIR 10101037, 70101401-412, AMIL 10101012, BRADESCO 84000406, GEAP 989100094/43, SAÚDE CAIXA 98800124 + 10101039).
-3. Regras de Token, necessidade de anexar pedido médico, elegibilidade prévia, carência, e assinatura obrigatória do beneficiário.
-4. Regras clínicas obrigatórias: Exames de Colonoscopia/Endoscopia sempre acompanhados de Anestesia (código 3.16.02.23-1), diárias de isolamento, diárias de UTI (intensivistas 10104020 x2 + 10104011), OPME na urgência vs eletivo.
-5. Seja claro, objetivo, profissional, use formatação organizada em tópicos (Markdown) e destaque alertas em negrito.
-${contextConvenio ? `O usuário está atualmente consultando o convênio: ${contextConvenio}.` : ''}
-${contextSection ? `Seção ativa: ${contextSection}.` : ''}`;
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.7-flash',
-        contents: [
-          {
-            text: `${systemPrompt}\n\nDúvida / Solicitação do Usuário:\n${question}`
-          }
-        ]
-      });
-
       res.json({
-        answer: response.text || 'Sem resposta gerada.',
-        model: 'gemini-3.7-flash'
+        answer: responseText,
+        detectedConvenio: knowledge.detectedConvenio,
+        matchedCategory: knowledge.matchedCategory,
+        facts: knowledge.facts.slice(0, 5),
+        model: 'gemini-3.8-flash'
       });
     } catch (err: any) {
       console.error('Error in /api/ai/ask:', err);
       res.status(500).json({ error: err.message || 'Erro ao processar solicitação com IA.' });
     }
   });
+
+  // Helper for generating deterministic ground-truth answers when API is busy
+  function formatGroundingAnswer(knowledge: ReturnType<typeof retrieveHospitalKnowledge>, question: string): string {
+    if (knowledge.directAnswer) {
+      return knowledge.directAnswer;
+    }
+    if (knowledge.facts.length > 0) {
+      return knowledge.facts.map(f => `• **${f.title}:** ${f.details}`).join('\n');
+    }
+    return 'Informação não localizada na base institucional.';
+  }
 
   // AI Medical Order / Glosas & Rules Audit Endpoint
   app.post('/api/ai/audit', async (req, res) => {
@@ -121,7 +174,7 @@ Retorne sua resposta estritamente no formato JSON estruturado com o seguinte sch
 }`;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.7-flash',
+        model: 'gemini-3.8-flash',
         contents: [{ text: prompt }],
         config: {
           responseMimeType: 'application/json'
@@ -166,7 +219,7 @@ Responda em formato JSON:
 }`;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.7-flash',
+        model: 'gemini-3.8-flash',
         contents: [{ text: prompt }],
         config: {
           responseMimeType: 'application/json'

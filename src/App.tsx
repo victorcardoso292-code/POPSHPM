@@ -8,12 +8,14 @@ import { ProcedureValuesViewer } from './components/ProcedureValuesViewer';
 import { HospitalReportsViewer } from './components/HospitalReportsViewer';
 import { HospitalExtensionsViewer } from './components/HospitalExtensionsViewer';
 import { AiHospitalAssistant } from './components/AiHospitalAssistant';
+import { AiChatDrawer } from './components/AiChatDrawer';
 import { PreGuiaGenerator } from './components/PreGuiaGenerator';
 import { MasterModal } from './components/MasterModal';
 import { UniversalSearchModal } from './components/UniversalSearchModal';
 import { SmartRuleDrawer } from './components/SmartRuleDrawer';
 import { Footer } from './components/Footer';
 import { LoginScreen } from './components/LoginScreen';
+import { Sparkles } from 'lucide-react';
 
 import { AppMode, ExamRow, ExamTableType, SelectedExamItem } from './types';
 import { 
@@ -41,6 +43,10 @@ export default function App() {
   const [isUniversalSearchOpen, setIsUniversalSearchOpen] = useState<boolean>(false);
   const [isSmartDrawerOpen, setIsSmartDrawerOpen] = useState<boolean>(false);
   const [smartDrawerDefaultPlanId, setSmartDrawerDefaultPlanId] = useState<string>('AMIL');
+
+  // Floating AI Chat Drawer state
+  const [isAiDrawerOpen, setIsAiDrawerOpen] = useState<boolean>(false);
+  const [aiDrawerPrompt, setAiDrawerPrompt] = useState<string>('');
 
   // Navigation target states (defaults to empty so user sees the clean grid of plans)
   const [selectedPlanForPops, setSelectedPlanForPops] = useState<string>('');
@@ -185,7 +191,13 @@ export default function App() {
   };
 
   const handleOpenAiWithPrompt = (prompt: string) => {
-    setAiInitialPrompt(prompt);
+    setAiDrawerPrompt(prompt);
+    setIsAiDrawerOpen(true);
+  };
+
+  const handleOpenFullAi = (prompt?: string) => {
+    if (prompt) setAiInitialPrompt(prompt);
+    setIsAiDrawerOpen(false);
     setActiveMode('ai-assistant');
   };
 
@@ -255,6 +267,7 @@ export default function App() {
           selectedExamsCount={selectedCount}
           onOpenUniversalSearch={() => setIsUniversalSearchOpen(true)}
           onOpenSmartDrawer={() => setIsSmartDrawerOpen(true)}
+          onOpenAiDrawer={() => setIsAiDrawerOpen(true)}
           onLogoutSystem={handleLogoutSystem}
           isDarkMode={isDarkMode}
           onToggleDarkMode={handleToggleDarkMode}
@@ -354,6 +367,44 @@ export default function App() {
       {/* Medical Kora Saúde Footer */}
       <div className="print:hidden">
         <Footer onNavigateToMode={handleSelectMode} />
+      </div>
+
+      {/* Floating AI Help Trigger Button */}
+      <div className="fixed bottom-5 right-5 z-40 print:hidden">
+        <button
+          type="button"
+          onClick={() => setIsAiDrawerOpen(true)}
+          className="flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-[#B01B52] via-[#A7194D] to-[#0E7B86] hover:from-[#971444] hover:to-[#095962] text-white shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer border-2 border-white/70 group"
+          title="Clique para tirar dúvidas sobre convênios, códigos TUSS e regras de internação com a IA"
+          aria-label="Abrir assistente inteligente para tirar dúvidas"
+        >
+          <div className="relative">
+            <Sparkles className="w-5 h-5 text-yellow-300 group-hover:rotate-12 transition-transform" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400" />
+          </div>
+          <div className="flex flex-col text-left leading-none">
+            <span className="text-xs sm:text-sm font-black tracking-wide text-white drop-shadow-xs">
+              Tirar Dúvidas com IA
+            </span>
+            <span className="text-[10px] text-white/90 font-medium tracking-tight mt-0.5">
+              Gemini • Online
+            </span>
+          </div>
+        </button>
+      </div>
+
+      {/* Floating AI Chat & Q&A Drawer */}
+      <div className="print:hidden">
+        <AiChatDrawer
+          isOpen={isAiDrawerOpen}
+          onClose={() => setIsAiDrawerOpen(false)}
+          onOpenFullAi={handleOpenFullAi}
+          currentMode={activeMode}
+          selectedPlanId={selectedPlanForPops}
+          pendingPrompt={aiDrawerPrompt}
+          onClearPendingPrompt={() => setAiDrawerPrompt('')}
+        />
       </div>
 
       {/* Universal Search Modal */}

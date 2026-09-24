@@ -21,6 +21,7 @@ interface HeaderProps {
   selectedExamsCount: number;
   onOpenUniversalSearch?: () => void;
   onOpenSmartDrawer?: () => void;
+  onOpenAiDrawer?: () => void;
   onLogoutSystem?: () => void;
   isDarkMode?: boolean;
   onToggleDarkMode?: () => void;
@@ -34,6 +35,7 @@ export const Header: React.FC<HeaderProps> = ({
   selectedExamsCount,
   onOpenUniversalSearch,
   onOpenSmartDrawer,
+  onOpenAiDrawer,
   onLogoutSystem
 }) => {
   return (
@@ -126,6 +128,18 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Quick Actions & Master Status */}
           <div className="flex items-center gap-2 flex-wrap">
+            {/* Quick AI Dúvidas Button */}
+            <button
+              type="button"
+              onClick={onOpenAiDrawer || (() => onSelectMode('ai-assistant'))}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-[#0E7B86] to-[#095962] hover:from-[#095962] hover:to-[#07474E] text-white transition-all shadow-xs cursor-pointer border border-[#C4E5E8]/40 group"
+              title="Tirar Dúvidas com IA (Assistente de Regras e Convênios)"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-yellow-300 group-hover:rotate-12 transition-transform" />
+              <span>Dúvidas com IA</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-0.5" />
+            </button>
+
             {/* Quick Smart Rule Inspector Button - Medical Berry Pill matching Agendar Online */}
             <button
               type="button"

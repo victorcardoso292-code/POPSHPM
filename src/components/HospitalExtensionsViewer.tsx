@@ -87,16 +87,16 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
       </div>
 
       {/* Pinned Critical / Emergency Extensions */}
-      <div className="bg-white border border-[#F6C6D6] rounded-2xl p-4 shadow-2xs space-y-2.5">
+      <div className="bg-white border border-[#F6C6D6] rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-black uppercase tracking-wider text-[#B01B52] flex items-center gap-1.5">
-            <ShieldCheck className="w-4 h-4 text-[#B01B52]" />
+          <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-[#B01B52] flex items-center gap-1.5">
+            <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-[#B01B52]" />
             Ramais Críticos • Emergência & Pronta Resposta
           </span>
-          <span className="text-[11px] text-slate-400 font-semibold">1-clique para copiar</span>
+          <span className="text-xs text-slate-400 font-bold">1-clique para copiar</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 sm:gap-3">
           {[
             { sector: 'PA - HST', num: '8359', tag: 'HST • PA' },
             { sector: 'Internação HST', num: '8300', tag: 'HST • INT' },
@@ -111,23 +111,23 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
               key={crit.num}
               type="button"
               onClick={() => copyNumber(crit.num)}
-              className="p-2.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-[#FDF2F6] hover:border-[#F6C6D6] transition-all text-left flex flex-col justify-between gap-1 group cursor-pointer"
+              className="p-3 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-[#FDF2F6] hover:border-[#F6C6D6] transition-all text-left flex flex-col justify-between gap-1.5 group cursor-pointer"
             >
               <div className="flex items-center justify-between gap-1">
-                <span className="text-[10px] font-black uppercase text-[#B01B52] bg-[#FDF2F6] px-1.5 py-0.5 rounded border border-[#F6C6D6]">
+                <span className="text-[10px] sm:text-xs font-black uppercase text-[#B01B52] bg-[#FDF2F6] px-2 py-0.5 rounded border border-[#F6C6D6]">
                   {crit.tag}
                 </span>
                 {copiedNumber === crit.num ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  <Check className="w-4 h-4 text-emerald-600" />
                 ) : (
-                  <Copy className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#B01B52]" />
+                  <Copy className="w-4 h-4 text-slate-400 group-hover:text-[#B01B52]" />
                 )}
               </div>
               <div>
-                <span className="text-xs font-bold text-slate-800 block truncate">
+                <span className="text-xs sm:text-sm font-bold text-slate-800 block truncate">
                   {crit.sector}
                 </span>
-                <span className="font-mono text-sm font-black text-slate-900 block mt-0.5">
+                <span className="font-mono text-base sm:text-lg font-black text-slate-900 block mt-0.5">
                   {crit.num}
                 </span>
               </div>
@@ -137,16 +137,16 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-3">
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3.5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Category tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
             {categories.map(cat => (
               <button
                 key={cat.id}
                 type="button"
                 onClick={() => setSelectedCat(cat.id)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
                   selectedCat === cat.id
                     ? 'bg-[#0E7B86] text-white shadow-xs'
                     : 'bg-slate-100 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86]'
@@ -158,59 +158,59 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
           </div>
 
           {/* Search input */}
-          <div className="relative w-full md:w-72">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <div className="relative w-full md:w-80">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="search"
               placeholder="Pesquisar setor ou ramal..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0E7B86] focus:bg-white"
+              className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#0E7B86] focus:bg-white text-slate-900"
             />
           </div>
         </div>
       </div>
 
       {/* Extensions Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredExtensions.map((ext, idx) => {
           const isHst = ext.sector.toUpperCase().includes('HST') || (ext.building && ext.building.toUpperCase().includes('HST'));
           return (
             <div
               key={idx}
-              className={`bg-white border rounded-2xl p-4 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-3 ${
+              className={`bg-white border rounded-2xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-3.5 ${
                 isHst ? 'border-amber-300 hover:border-amber-500 bg-gradient-to-br from-white to-amber-50/20' : 'border-slate-200 hover:border-[#0E7B86]'
               }`}
             >
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     {isHst && (
-                      <span className="text-[10px] font-black uppercase text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-300">
+                      <span className="text-xs font-black uppercase text-amber-800 bg-amber-100 px-2 py-0.5 rounded border border-amber-300">
                         Unidade HST
                       </span>
                     )}
-                    <span className="text-[10px] uppercase font-black tracking-wider text-slate-400">
+                    <span className="text-xs uppercase font-black tracking-wider text-slate-400">
                       {(ext.category || 'geral').toUpperCase()}
                     </span>
                   </div>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                 </div>
-                <h3 className="text-sm font-black text-slate-900 m-0 leading-tight">
+                <h3 className="text-base sm:text-lg font-black text-slate-900 m-0 leading-tight">
                   {ext.sector}
                 </h3>
                 {ext.building && (
-                  <p className="text-[11px] text-slate-500 flex items-center gap-1 m-0 pt-0.5">
-                    <MapPin className="w-3 h-3 text-slate-400 flex-shrink-0" />
+                  <p className="text-xs sm:text-sm text-slate-500 flex items-center gap-1.5 m-0 pt-0.5 font-medium">
+                    <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                     <span className="truncate">{ext.building}</span>
                   </p>
                 )}
               </div>
 
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-slate-400 font-bold">Ramal:</span>
-                  <span className={`font-mono text-base font-black px-2 py-0.5 rounded-lg border ${
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs sm:text-sm text-slate-500 font-bold">Ramal:</span>
+                  <span className={`font-mono text-lg sm:text-xl font-black px-2.5 py-1 rounded-lg border ${
                     isHst 
                       ? 'text-amber-900 bg-amber-50 border-amber-300' 
                       : 'text-teal-800 bg-teal-50 border-teal-200'
@@ -219,11 +219,11 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
                   <button
                     type="button"
                     onClick={() => copyNumber(ext.number)}
-                    className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-teal-700 transition-colors"
+                    className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-teal-700 transition-colors cursor-pointer"
                     title="Copiar ramal"
                   >
                     {copiedNumber === ext.number ? (
@@ -234,7 +234,7 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
                   </button>
                   <a
                     href={`tel:${ext.number}`}
-                    className={`p-1.5 rounded-lg transition-colors ${
+                    className={`p-2 rounded-lg transition-colors ${
                       isHst 
                         ? 'bg-amber-50 hover:bg-amber-100 text-amber-800' 
                         : 'bg-teal-50 hover:bg-teal-100 text-teal-700'

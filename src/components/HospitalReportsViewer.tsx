@@ -124,7 +124,7 @@ export const HospitalReportsViewer: React.FC<HospitalReportsViewerProps> = ({
           <button
             type="button"
             onClick={handlePrintChecklist}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#B01B52] hover:bg-[#971444] text-white font-bold text-xs shadow-xs transition-all self-start md:self-auto cursor-pointer border border-[#F7D0DF]/30"
+            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-[#B01B52] hover:bg-[#971444] text-white font-bold text-sm shadow-xs transition-all self-start md:self-auto cursor-pointer border border-[#F7D0DF]/30"
           >
             <Printer className="w-4 h-4 text-white" />
             <span>Imprimir Checklist do Prontuário</span>
@@ -140,7 +140,7 @@ export const HospitalReportsViewer: React.FC<HospitalReportsViewerProps> = ({
                 key={rep.tipo}
                 type="button"
                 onClick={() => setSelectedType(rep.tipo)}
-                className={`p-4 rounded-2xl border text-left transition-all shadow-2xs flex items-center justify-between cursor-pointer ${
+                className={`p-5 rounded-2xl border text-left transition-all shadow-2xs flex items-center justify-between cursor-pointer ${
                   isSelected
                     ? rep.tipo === 'URGÊNCIA'
                       ? 'bg-[#FDF2F6] border-2 border-[#B01B52]'
@@ -149,14 +149,14 @@ export const HospitalReportsViewer: React.FC<HospitalReportsViewerProps> = ({
                 }`}
               >
                 <div>
-                  <span className="text-[11px] uppercase font-black tracking-wider text-slate-400 block mb-0.5">
+                  <span className="text-xs uppercase font-black tracking-wider text-slate-400 block mb-0.5">
                     Modalidade
                   </span>
-                  <h3 className="text-lg font-black text-slate-900 m-0 leading-tight">
+                  <h3 className="text-xl font-black text-slate-900 m-0 leading-tight">
                     {rep.tipo}
                   </h3>
                 </div>
-                <span className={`text-xs font-black px-2.5 py-1 rounded-full ${
+                <span className={`text-xs sm:text-sm font-black px-3 py-1.5 rounded-full ${
                   rep.tipo === 'URGÊNCIA' ? 'bg-[#B01B52] text-white' : 'bg-[#0E7B86] text-white'
                 }`}>
                   {rep.nums.length} Relatórios
@@ -167,15 +167,15 @@ export const HospitalReportsViewer: React.FC<HospitalReportsViewerProps> = ({
         </div>
 
         {/* Search Bar for Document Numbers */}
-        <div className="relative bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="search"
               placeholder="Pesquisar número do relatório (ex: 2, 4, 7, 10)..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-9.5 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0E7B86] focus:bg-white text-slate-800"
+              className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-semibold focus:outline-none focus:ring-2 focus:ring-[#0E7B86] focus:bg-white text-slate-900"
             />
           </div>
           
@@ -188,17 +188,17 @@ export const HospitalReportsViewer: React.FC<HospitalReportsViewerProps> = ({
                 setCopiedList(true);
                 setTimeout(() => setCopiedList(false), 2000);
               }}
-              className="px-3 py-2 bg-[#EBF7F8] hover:bg-[#d8eff2] border border-[#C4E5E8] text-[#0E7B86] rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2.5 bg-[#EBF7F8] hover:bg-[#d8eff2] border border-[#C4E5E8] text-[#0E7B86] rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer"
               title="Copiar sequência de números para colar no PEP ou ERP"
             >
-              {copiedList ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+              {copiedList ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
               <span>{copiedList ? 'Copiado!' : 'Copiar Sequência'}</span>
             </button>
 
             <button
               type="button"
               onClick={handleSelectAll}
-              className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer"
+              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer"
             >
               {checkedCount === activeReportConfig.nums.length ? 'Desmarcar Todos' : 'Marcar Todos'}
             </button>
@@ -206,23 +206,23 @@ export const HospitalReportsViewer: React.FC<HospitalReportsViewerProps> = ({
         </div>
 
         {/* Documents Grid / Interactive List - Numbers Only */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
             <div>
               <span className="text-xs uppercase font-extrabold tracking-wider text-slate-400">
                 Documentos para Impressão • {selectedType}
               </span>
-              <h3 className="text-lg font-black text-slate-900 m-0">
+              <h3 className="text-xl font-black text-slate-900 m-0">
                 Relação de Relatórios ({filteredNums.length} itens)
               </h3>
             </div>
 
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <span className="text-xs font-black text-slate-800 block">
+                <span className="text-sm font-black text-slate-800 block">
                   {checkedCount} de {activeReportConfig.nums.length} impressos
                 </span>
-                <span className="text-[10px] text-slate-400 font-bold">
+                <span className="text-xs text-slate-400 font-bold">
                   {Math.round((checkedCount / Math.max(1, activeReportConfig.nums.length)) * 100)}% concluído
                 </span>
               </div>
@@ -230,14 +230,14 @@ export const HospitalReportsViewer: React.FC<HospitalReportsViewerProps> = ({
           </div>
 
           {/* Visual Progress Bar */}
-          <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
             <div 
-              className="bg-emerald-600 h-2 rounded-full transition-all duration-300"
+              className="bg-emerald-600 h-2.5 rounded-full transition-all duration-300"
               style={{ width: `${(checkedCount / Math.max(1, activeReportConfig.nums.length)) * 100}%` }}
             />
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5">
             {filteredNums.map(num => {
               const checkKey = `${selectedType}-${num}`;
               const isChecked = !!checkedReports[checkKey];
@@ -247,7 +247,7 @@ export const HospitalReportsViewer: React.FC<HospitalReportsViewerProps> = ({
                   key={num}
                   type="button"
                   onClick={() => toggleCheck(num)}
-                  className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 text-left ${
+                  className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 text-left ${
                     isChecked
                       ? 'bg-emerald-50 border-emerald-400 text-emerald-950 ring-2 ring-emerald-500/20 shadow-xs'
                       : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-800'
@@ -256,17 +256,17 @@ export const HospitalReportsViewer: React.FC<HospitalReportsViewerProps> = ({
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="flex-shrink-0">
                       {isChecked ? (
-                        <CheckSquare className="w-4 h-4 text-emerald-600" />
+                        <CheckSquare className="w-5 h-5 text-emerald-600" />
                       ) : (
-                        <Square className="w-4 h-4 text-slate-400" />
+                        <Square className="w-5 h-5 text-slate-400" />
                       )}
                     </div>
-                    <span className="font-mono text-sm font-black text-slate-900 bg-white border border-slate-200 px-2 py-0.5 rounded shadow-2xs truncate">
+                    <span className="font-mono text-base font-black text-slate-900 bg-white border border-slate-200 px-2.5 py-1 rounded-lg shadow-2xs truncate">
                       Nº {num}
                     </span>
                   </div>
                   {isChecked && (
-                    <span className="text-[9px] font-black uppercase text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded flex-shrink-0">
+                    <span className="text-xs font-black uppercase text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md flex-shrink-0">
                       OK
                     </span>
                   )}
@@ -277,11 +277,11 @@ export const HospitalReportsViewer: React.FC<HospitalReportsViewerProps> = ({
         </div>
 
         {/* Orientation Card */}
-        <div className="bg-[#EBF7F8] border border-[#C4E5E8] rounded-2xl p-4 text-xs text-[#095962] font-medium flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-[#0E7B86] flex-shrink-0 mt-0.5" />
+        <div className="bg-[#EBF7F8] border border-[#C4E5E8] rounded-2xl p-5 text-sm text-[#095962] font-medium flex items-start gap-3.5">
+          <AlertCircle className="w-6 h-6 text-[#0E7B86] flex-shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <strong className="text-[#095962] block font-extrabold">Instrução Operacional de Admissão:</strong>
-            <span className="text-slate-700">
+            <strong className="text-[#095962] block font-black text-base">Instrução Operacional de Admissão:</strong>
+            <span className="text-slate-800 text-sm leading-relaxed">
               Todos os relatórios listados pelos respectivos números devem ser impressos no momento da abertura da internação na recepção e anexados ao prontuário físico para encaminhamento ao posto de enfermagem.
             </span>
           </div>

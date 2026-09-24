@@ -381,30 +381,31 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
         <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs">
           <div className="max-w-3xl space-y-2">
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]">
-                Central de POPS Internação
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8] flex items-center gap-1.5">
+                <Bed className="w-3 h-3 text-[#0E7B86]" />
+                <span>Central de POPS Internação</span>
               </span>
               <span className="text-xs text-slate-400 font-medium hidden sm:inline">Hospital Palmas Medical</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-[#0E7B86] m-0">
               Escolha o Convênio do Paciente Internado
             </h2>
-            <p className="text-sm text-slate-600 leading-relaxed m-0">
+            <p className="text-sm sm:text-base text-slate-600 leading-relaxed m-0 font-medium">
               Selecione o convênio para abrir o guia de consulta com códigos de diárias, regras de acomodação (enfermaria/apartamento), vínculos de cobrança e leitos de UTI.
             </p>
           </div>
 
           <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
               {planCategories.map(cat => (
                 <button
                   key={cat}
                   type="button"
                   onClick={() => setActiveCategoryFilter(cat)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                  className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
                     activeCategoryFilter === cat
                       ? 'bg-[#A7194D] text-white shadow-xs'
-                      : 'bg-slate-100 hover:bg-[#EBF7F8] text-slate-600 hover:text-[#0E7B86]'
+                      : 'bg-slate-100 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86]'
                   }`}
                 >
                   {cat}
@@ -418,31 +419,31 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                 placeholder="Buscar convênio para internação..."
                 value={planSearch}
                 onChange={e => setPlanSearch(e.target.value)}
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0E7B86] focus:bg-white text-slate-900 placeholder:text-slate-400"
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#0E7B86] focus:bg-white text-slate-900 placeholder:text-slate-400"
               />
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
           {filteredPlansForGrid.map(plan => (
             <button
               key={plan.id}
               type="button"
               onClick={() => handleSelectPlan(plan.id)}
-              className="bg-white border border-slate-200/90 hover:border-[#BFDEE7] hover:shadow-md rounded-2xl p-5 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between group space-y-4"
+              className="bg-white border-1.5 border-slate-200/90 hover:border-[#A7194D] hover:shadow-md rounded-2xl p-6 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between group space-y-4"
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="w-12 h-12 rounded-xl bg-[#A7194D] text-white font-black text-sm flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                  <div className="w-14 h-14 rounded-2xl bg-[#A7194D] text-white font-black text-base flex items-center justify-center flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform">
                     {plan.badge}
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]">
+                    <span className="text-xs font-black px-2.5 py-1 rounded-full bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]">
                       {plan.category}
                     </span>
                     {plan.count > 0 && (
-                      <span className="text-[10px] text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded">
+                      <span className="text-xs text-slate-600 font-bold bg-slate-100 px-2.5 py-0.5 rounded">
                         {plan.count} diárias
                       </span>
                     )}
@@ -450,20 +451,20 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                 </div>
 
                 <div>
-                  <h3 className="font-black text-slate-900 text-base tracking-tight leading-snug group-hover:text-[#A7194D] transition-colors m-0 break-words">
+                  <h3 className="font-black text-slate-900 text-lg tracking-tight leading-snug group-hover:text-[#A7194D] transition-colors m-0 break-words">
                     {plan.name}
                   </h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1 m-0">
+                  <p className="text-sm text-slate-600 font-medium mt-1.5 m-0 line-clamp-3">
                     Diárias clínicas, acomodação, vínculos e leitos de UTI
                   </p>
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="font-bold text-[#A7194D] group-hover:underline flex items-center gap-1">
+              <div className="pt-3.5 border-t border-slate-100 flex items-center justify-between text-sm">
+                <span className="font-black text-[#A7194D] group-hover:underline flex items-center gap-1">
                   Abrir Modelo de Internação →
                 </span>
-                <span className="text-[11px] text-slate-400 font-medium">Internação</span>
+                <span className="text-xs text-slate-500 font-bold">Internação</span>
               </div>
             </button>
           ))}
@@ -504,97 +505,102 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
           max-width: 100%;
           width: 100%;
           margin: 0;
-          padding: 10px 4px 70px;
+          padding: 12px 6px 70px;
         }
         .pop-topline {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin: 0 0 15px;
-          color: #64768a;
-          font-size: 13px;
-          font-weight: 500;
+          margin: 0 0 16px;
+          color: #475569;
+          font-size: 14px;
+          font-weight: 600;
           letter-spacing: -0.01em;
           flex-wrap: wrap;
-          gap: 10px;
+          gap: 12px;
         }
         .pop-crumb {
           display: flex;
           align-items: center;
-          gap: 9px;
+          gap: 10px;
           flex-wrap: wrap;
         }
         .pop-crumb button.crumb-btn {
           background: none;
           border: 0;
-          color: #64768a;
+          color: #64748b;
           cursor: pointer;
           padding: 0;
           font: inherit;
-          font-weight: 500;
+          font-weight: 600;
         }
         .pop-crumb button.crumb-btn:hover {
           color: #a7194d;
           text-decoration: underline;
         }
         .pop-crumb span.active-crumb {
-          color: #1b354c;
-          font-weight: 800;
+          color: #0f172a;
+          font-weight: 850;
         }
         .pop-top-actions {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 12px;
         }
         .pop-plan-select {
-          padding: 6px 12px;
-          border: 1px solid #d8e5ec;
+          padding: 8px 15px;
+          border: 1.5px solid #cbd5e1;
           border-radius: 20px;
           background: white;
-          color: #1b354c;
-          font-size: 12px;
-          font-weight: 700;
+          color: #0f172a;
+          font-size: 13.5px;
+          font-weight: 750;
           font-family: inherit;
           outline: none;
           cursor: pointer;
+          transition: border-color 0.2s;
+        }
+        .pop-plan-select:focus {
+          border-color: #a7194d;
         }
         .pop-preview {
-          padding: 5px 12px;
-          border: 1px solid #d8e5ec;
+          padding: 7px 15px;
+          border: 1.5px solid #cbd5e1;
           border-radius: 30px;
           background: white;
-          font-size: 12px;
-          font-weight: 600;
-          color: #475569;
+          font-size: 13px;
+          font-weight: 700;
+          color: #334155;
           white-space: nowrap;
+          cursor: pointer;
         }
         .pop-hero, .pop-workspace {
           background: #fff;
-          border: 1px solid #dae5ed;
-          box-shadow: 0 5px 18px #182f4b09;
+          border: 1.5px solid #cbd5e1;
+          box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
           border-radius: 20px;
         }
         .pop-hero {
-          padding: 28px 30px 23px;
+          padding: 28px 32px 24px;
         }
         .pop-hero-main {
           display: flex;
           align-items: center;
-          gap: 16px;
+          gap: 18px;
         }
         .pop-badge {
           display: grid;
           place-items: center;
-          flex: 0 0 56px;
-          width: 56px;
-          height: 56px;
-          border-radius: 16px;
+          flex: 0 0 64px;
+          width: 64px;
+          height: 64px;
+          border-radius: 18px;
           background: #a7194d;
           color: #fff;
-          font-size: 20px;
-          font-weight: 850;
+          font-size: 22px;
+          font-weight: 900;
           letter-spacing: -0.02em;
-          box-shadow: 0 4px 9px #a7194d25;
+          box-shadow: 0 4px 12px rgba(167, 25, 77, 0.25);
         }
         .pop-heading {
           min-width: 0;
@@ -602,68 +608,77 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
         }
         .pop-name-row {
           display: flex;
-          gap: 10px;
+          gap: 12px;
           align-items: center;
           flex-wrap: wrap;
         }
         .pop-heading h1 {
           margin: 0;
-          color: #0c2541;
-          letter-spacing: -0.04em;
-          font-size: 26px;
-          font-weight: 850;
+          color: #0f172a;
+          letter-spacing: -0.035em;
+          font-size: 28px;
+          font-weight: 900;
           line-height: 1.2;
         }
         .pop-tag {
-          padding: 4px 10px;
-          border-radius: 7px;
-          background: #e8f8fa;
-          border: 1px solid #bee6ec;
-          color: #14758a;
-          font-weight: 750;
-          font-size: 12px;
+          padding: 5px 12px;
+          border-radius: 8px;
+          background: #fdf2f6;
+          border: 1px solid #f7d0df;
+          color: #a7194d;
+          font-weight: 800;
+          font-size: 13px;
           letter-spacing: 0.01em;
         }
         .pop-heading p {
-          margin: 5px 0 0;
-          color: #516780;
-          font-size: 13px;
-          font-weight: 500;
+          margin: 6px 0 0;
+          color: #475569;
+          font-size: 15px;
+          font-weight: 550;
           letter-spacing: -0.01em;
+          line-height: 1.4;
         }
         .pop-hero-rule {
           height: 1px;
-          background: #edf1f5;
-          margin: 23px 0 16px;
+          background: #e2e8f0;
+          margin: 24px 0 18px;
         }
         .pop-stats {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 12px;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 16px;
         }
         .pop-stat {
           display: flex;
-          gap: 12px;
+          gap: 16px;
           align-items: center;
-          border: 1px solid #dde8f0;
-          background: #fbfdff;
-          border-radius: 13px;
-          padding: 13px;
+          border: 1.5px solid #e2e8f0;
+          background: #f8fafc;
+          border-radius: 16px;
+          padding: 18px 22px;
+          min-height: 86px;
+          box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+          transition: all 0.2s ease;
+        }
+        .pop-stat:hover {
+          background: #ffffff;
+          border-color: #cbd5e1;
+          box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
         }
         .pop-stat-icon {
           display: grid;
           place-items: center;
-          width: 36px;
-          height: 36px;
-          flex: 0 0 36px;
-          border-radius: 10px;
-          background: #eaf7fb;
-          color: #08768d;
-          font-size: 18px;
+          width: 44px;
+          height: 44px;
+          flex: 0 0 44px;
+          border-radius: 12px;
+          background: #fdf2f6;
+          color: #a7194d;
+          font-size: 22px;
         }
         .pop-stat:nth-child(2) .pop-stat-icon {
-          background: #fff0f5;
-          color: #b01b51;
+          background: #ebf7f8;
+          color: #0e7b86;
         }
         .pop-stat:nth-child(3) .pop-stat-icon {
           background: #eef5fa;
@@ -671,75 +686,78 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
         }
         .pop-stat small {
           display: block;
-          color: #687b91;
-          font-size: 10.5px;
+          color: #475569;
+          font-size: 12.5px;
           font-weight: 850;
-          letter-spacing: .08em;
+          letter-spacing: .06em;
           text-transform: uppercase;
         }
         .pop-stat strong {
           display: block;
-          margin-top: 3px;
-          font-size: 13.5px;
-          line-height: 1.25;
-          color: #0c2541;
-          font-weight: 800;
+          margin-top: 4px;
+          font-size: 16px;
+          line-height: 1.35;
+          color: #0f172a;
+          font-weight: 850;
           letter-spacing: -0.015em;
+          word-break: break-word;
+          white-space: normal;
         }
         .pop-workspace {
-          margin-top: 20px;
+          margin-top: 24px;
           overflow: hidden;
         }
         .pop-workspace-head {
-          padding: 24px 26px 0;
+          padding: 28px 32px 0;
         }
         .pop-eyebrow {
-          color: #ac2354;
-          font-size: 11px;
-          font-weight: 850;
+          color: #a7194d;
+          font-size: 12px;
+          font-weight: 900;
           letter-spacing: .12em;
           text-transform: uppercase;
         }
         .pop-workspace h2 {
-          margin: 5px 0 4px;
-          color: #122a46;
-          font-size: 22px;
+          margin: 6px 0 5px;
+          color: #0f172a;
+          font-size: 25px;
           letter-spacing: -.035em;
-          font-weight: 800;
+          font-weight: 850;
           line-height: 1.25;
         }
         .pop-subtext {
-          font-size: 13px;
-          color: #708196;
-          margin: 0 0 18px;
+          font-size: 15px;
+          color: #64748b;
+          margin: 0 0 20px;
           font-weight: 500;
           letter-spacing: -0.01em;
+          line-height: 1.45;
         }
         .pop-toolbar {
           display: flex;
-          gap: 12px;
+          gap: 16px;
           justify-content: space-between;
           align-items: center;
           flex-wrap: wrap;
         }
         .pop-tabs {
           display: flex;
-          gap: 4px;
-          padding: 4px;
+          gap: 6px;
+          padding: 6px;
+          flex-wrap: wrap;
           max-width: 100%;
-          overflow-x: auto;
-          background: #f1f6f9;
-          border: 1px solid #e5edf3;
-          border-radius: 11px;
+          background: #f1f5f9;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 14px;
         }
         .pop-tab {
           border: 0;
           background: transparent;
-          border-radius: 8px;
-          padding: 9px 14px;
-          color: #607387;
-          font-weight: 750;
-          font-size: 13px;
+          border-radius: 10px;
+          padding: 11px 18px;
+          color: #475569;
+          font-weight: 800;
+          font-size: 14.5px;
           font-family: inherit;
           cursor: pointer;
           transition: all 0.15s ease;
@@ -749,58 +767,59 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
         .pop-tab[aria-selected="true"] {
           color: #a7194d;
           background: #fff;
-          font-weight: 800;
-          box-shadow: 0 2px 7px #182f4b16;
+          font-weight: 850;
+          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
         }
-        .pop-count {
-          font-size: 11px;
-          font-weight: 750;
-          opacity: .75;
-          margin-left: 5px;
+        .pop-count, .pop-tab .count {
+          font-size: 12.5px;
+          font-weight: 850;
+          opacity: .9;
+          margin-left: 6px;
         }
         .pop-actions {
           display: flex;
-          gap: 9px;
+          gap: 10px;
           align-items: center;
         }
         .pop-search {
           display: flex;
           align-items: center;
-          gap: 7px;
-          border: 1px solid #dce6ed;
-          border-radius: 9px;
-          padding: 0 12px;
+          gap: 8px;
+          border: 1.5px solid #cbd5e1;
+          border-radius: 11px;
+          padding: 0 14px;
           background: white;
-          color: #6b8190;
+          color: #64748b;
         }
         .pop-search input {
-          width: 210px;
-          height: 38px;
+          width: 230px;
+          height: 42px;
           border: 0;
           outline: 0;
-          color: #203951;
+          color: #0f172a;
           background: transparent;
-          font-size: 13px;
+          font-size: 14px;
           font-family: inherit;
-          font-weight: 500;
+          font-weight: 600;
         }
         .pop-search input::placeholder {
           color: #94a3b8;
+          font-weight: 500;
         }
         .pop-print {
-          border: 1px solid #dce6ed;
-          color: #234459;
+          border: 1.5px solid #cbd5e1;
+          color: #1e293b;
           background: white;
-          border-radius: 9px;
-          padding: 9px 12px;
-          font-size: 13px;
+          border-radius: 11px;
+          padding: 10px 15px;
+          font-size: 13.5px;
           font-family: inherit;
-          font-weight: 700;
+          font-weight: 750;
           letter-spacing: -0.01em;
           cursor: pointer;
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 7px;
           transition: background .15s;
         }
         .pop-print:hover {
@@ -809,92 +828,93 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
         .pop-notice {
           display: flex;
           align-items: center;
-          gap: 10px;
-          margin: 21px 26px 0;
-          padding: 12px 15px;
-          border-radius: 11px;
-          background: #f1f9fb;
-          color: #245568;
-          font-size: 12px;
-          font-weight: 500;
-          line-height: 1.5;
-          border: 1px solid #d8ecf2;
+          gap: 12px;
+          margin: 22px 28px 0;
+          padding: 14px 18px;
+          border-radius: 13px;
+          background: #fdf2f6;
+          color: #1e293b;
+          font-size: 14px;
+          font-weight: 550;
+          line-height: 1.55;
+          border: 1px solid #f7d0df;
           letter-spacing: -0.01em;
         }
         .pop-notice b {
-          color: #176d82;
-          font-weight: 750;
+          color: #a7194d;
+          font-weight: 850;
         }
         .pop-list-head {
-          padding: 22px 26px 12px;
+          padding: 24px 28px 14px;
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
-          gap: 14px;
+          gap: 16px;
         }
         .pop-list-head h3 {
-          font-size: 15px;
-          margin: 0 0 3px;
-          color: #1b354c;
-          font-weight: 800;
+          font-size: 18px;
+          margin: 0 0 4px;
+          color: #0f172a;
+          font-weight: 850;
           letter-spacing: -0.02em;
         }
         .pop-list-head p {
-          font-size: 12px;
-          color: #708196;
+          font-size: 14px;
+          color: #64748b;
           margin: 0;
           font-weight: 500;
+          line-height: 1.45;
         }
         .pop-results {
-          font-size: 12px;
-          color: #708196;
+          font-size: 13px;
+          color: #64748b;
           white-space: nowrap;
-          font-weight: 600;
+          font-weight: 700;
         }
         .pop-cards {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 16px;
-          padding: 0 26px 27px;
+          gap: 20px;
+          padding: 0 32px 34px;
         }
         .pop-card {
-          border: 1px solid #e0e9ef;
-          border-radius: 13px;
-          padding: 18px 20px 17px;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 18px;
+          padding: 26px 28px 24px;
           transition: border-color .2s, box-shadow .2s;
           min-width: 0;
           background: #fff;
         }
         .pop-card:hover {
-          border-color: #bfdee7;
-          box-shadow: 0 4px 12px #182f4b06;
+          border-color: #f7d0df;
+          box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
         }
         .pop-cardtop {
           display: flex;
           justify-content: space-between;
-          gap: 7px;
+          gap: 12px;
           align-items: center;
         }
         .pop-code {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          background: #eef5f9;
-          border: 1px solid #dceaf0;
-          color: #225570;
-          border-radius: 7px;
-          padding: 5px 9px;
-          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-          font-size: 12.5px;
-          font-weight: 750;
+          gap: 8px;
+          background: #fdf2f6;
+          border: 1.5px solid #f7d0df;
+          color: #a7194d;
+          border-radius: 10px;
+          padding: 8px 14px;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+          font-size: 15px;
+          font-weight: 850;
           letter-spacing: 0.02em;
         }
         .pop-copy {
           border: 0;
           background: none;
-          color: #8c9cad;
-          font-size: 14px;
-          padding: 2px 4px;
+          color: #94a3b8;
+          font-size: 15px;
+          padding: 3px 5px;
           cursor: pointer;
           transition: color .15s;
         }
@@ -902,117 +922,127 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
           color: #a7194d;
         }
         .pop-category {
-          color: #8b5670;
-          background: #fff2f6;
-          font-size: 10px;
+          color: #a7194d;
+          background: #fdf2f6;
+          border: 1px solid #f7d0df;
+          font-size: 12px;
           font-weight: 850;
-          padding: 5px 8px;
-          border-radius: 6px;
+          padding: 6px 12px;
+          border-radius: 8px;
           white-space: nowrap;
           text-transform: uppercase;
           letter-spacing: 0.04em;
         }
         .pop-category.uti {
-          color: #385884;
-          background: #eff5ff;
+          color: #4338ca;
+          background: #eef2ff;
+          border-color: #c7d2fe;
         }
         .pop-card h4 {
-          font-size: 14.5px;
-          line-height: 1.45;
-          margin: 12px 0 12px;
-          color: #1b304a;
-          font-weight: 800;
+          font-size: 18px;
+          line-height: 1.4;
+          margin: 16px 0 14px;
+          color: #0f172a;
+          font-weight: 850;
           letter-spacing: -0.015em;
           text-transform: uppercase;
         }
         .pop-joint {
-          border-top: 1px solid #e9eef3;
-          padding-top: 12px;
+          border-top: 1px solid #e2e8f0;
+          padding-top: 14px;
           display: flex;
-          gap: 8px;
+          gap: 10px;
           align-items: center;
           flex-wrap: wrap;
         }
         .pop-joint .label {
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 850;
-          color: #667a8d;
+          color: #475569;
           letter-spacing: .04em;
           text-transform: uppercase;
         }
         .pop-joint .value {
-          font-size: 12px;
-          font-weight: 750;
-          color: #1d6d80;
-          background: #eaf8f9;
-          padding: 4px 8px;
-          border-radius: 6px;
-          border: 1px solid #bee6ec;
+          font-size: 14px;
+          font-weight: 850;
+          color: #0e7b86;
+          background: #ebf7f8;
+          padding: 6px 12px;
+          border-radius: 8px;
+          border: 1px solid #c4e5e8;
           font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
           letter-spacing: 0.01em;
         }
         .pop-joint .empty {
-          font-size: 12px;
-          color: #91a0aa;
+          font-size: 13px;
+          color: #94a3b8;
           font-weight: 500;
         }
         .pop-detail-grid {
           display: grid;
-          grid-template-columns: repeat(5, minmax(0, 1fr));
-          gap: 9px;
-          margin-top: 13px;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 16px;
+          margin-top: 18px;
         }
         .pop-detail {
           background: #f8fafc;
-          border: 1px solid #e9eff4;
-          border-radius: 8px;
-          padding: 10px 12px;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 14px;
+          padding: 16px 20px;
           min-width: 0;
+          box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+          transition: all 0.2s ease;
+        }
+        .pop-detail:hover {
+          background: #ffffff;
+          border-color: #cbd5e1;
         }
         .pop-detail b {
           display: block;
-          color: #637b90;
-          font-size: 11px;
-          letter-spacing: .02em;
-          margin-bottom: 4px;
-          font-weight: 750;
+          color: #475569;
+          font-size: 13px;
+          letter-spacing: .025em;
+          margin-bottom: 6px;
+          font-weight: 850;
+          text-transform: uppercase;
         }
         .pop-detail span {
           display: block;
-          font-size: 11px;
-          line-height: 1.45;
-          color: #283e52;
-          font-weight: 500;
+          font-size: 15.5px;
+          line-height: 1.6;
+          color: #0f172a;
+          font-weight: 650;
           overflow-wrap: anywhere;
+          word-break: break-word;
         }
         .pop-detail .missing {
-          color: #8292a1;
+          color: #94a3b8;
           font-style: italic;
-          font-weight: 400;
+          font-weight: 500;
         }
         .pop-empty-state {
           text-align: center;
-          color: #6d8091;
+          color: #64748b;
           padding: 50px 20px;
-          font-size: 13px;
+          font-size: 15px;
         }
         .pop-module {
-          margin: 0 26px 27px;
-          padding: 22px;
-          border: 1px solid #e1eaf0;
-          border-radius: 13px;
-          background: linear-gradient(135deg, #fff, #f9fcfd);
+          margin: 0 32px 34px;
+          padding: 26px;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 16px;
+          background: #fff;
         }
         .pop-module h4 {
-          font-size: 17px;
-          color: #19344d;
+          font-size: 19px;
+          color: #0f172a;
           margin: 0 0 8px;
-          font-weight: 800;
+          font-weight: 850;
           letter-spacing: -0.02em;
         }
         .pop-module p {
-          font-size: 13px;
-          color: #6b7e8e;
+          font-size: 15px;
+          color: #64748b;
           line-height: 1.55;
           margin: 0 0 18px;
           font-weight: 500;
@@ -1020,144 +1050,144 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
         .pop-module-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 11px;
+          gap: 14px;
         }
         .pop-module-item {
-          padding: 16px;
-          border-radius: 10px;
-          border: 1px solid #e3eaf0;
-          background: #fff;
+          padding: 18px;
+          border-radius: 12px;
+          border: 1.5px solid #e2e8f0;
+          background: #f8fafc;
         }
         .pop-module-item strong {
-          font-size: 13px;
-          color: #28435b;
+          font-size: 15px;
+          color: #0f172a;
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 8px;
           margin-bottom: 6px;
-          font-weight: 800;
+          font-weight: 850;
           letter-spacing: -0.01em;
         }
         .pop-module-item span {
-          font-size: 12px;
-          color: #77899a;
-          line-height: 1.45;
+          font-size: 14px;
+          color: #475569;
+          line-height: 1.5;
           display: block;
-          font-weight: 500;
+          font-weight: 550;
         }
         .pop-module-item i {
           font-style: normal;
-          color: #b02056;
+          color: #a7194d;
           margin-right: 4px;
         }
         .pop-footer-note {
-          padding: 13px 26px;
-          border-top: 1px solid #e9eef3;
-          color: #6d8192;
-          background: #fcfdfe;
-          font-size: 11.5px;
-          line-height: 1.5;
+          padding: 18px 32px;
+          border-top: 1px solid #e2e8f0;
+          color: #64748b;
+          background: #f8fafc;
+          font-size: 14px;
+          line-height: 1.6;
           font-weight: 500;
         }
         .pop-footer-note strong {
-          color: #38566d;
-          font-weight: 750;
+          color: #1e293b;
+          font-weight: 800;
         }
 
         /* Bloco Diretrizes de Centro Cirúrgico, OPME e Guia de Internação */
         .pop-guidelines-box {
-          margin: 10px 26px 26px;
-          padding: 22px;
-          border: 1px solid #dae5ed;
-          border-radius: 16px;
+          margin: 10px 32px 30px;
+          padding: 26px;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 18px;
           background: #fff;
-          box-shadow: 0 2px 10px rgba(18, 42, 70, 0.03);
+          box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
         }
         .pop-guidelines-head {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          gap: 12px;
-          margin-bottom: 16px;
+          gap: 14px;
+          margin-bottom: 18px;
           flex-wrap: wrap;
         }
         .pop-guidelines-head h3 {
-          font-size: 16px;
+          font-size: 18px;
           font-weight: 850;
-          color: #122a46;
+          color: #0f172a;
           margin: 0;
           letter-spacing: -0.02em;
         }
         .pop-guidelines-badge {
           display: inline-flex;
           align-items: center;
-          padding: 4px 12px;
-          border-radius: 8px;
-          background: #f0fafb;
-          border: 1px solid #bee6ec;
-          color: #0e7b86;
-          font-size: 12px;
-          font-weight: 800;
+          padding: 6px 14px;
+          border-radius: 10px;
+          background: #fdf2f6;
+          border: 1px solid #f7d0df;
+          color: #a7194d;
+          font-size: 13px;
+          font-weight: 850;
           letter-spacing: 0.03em;
           text-transform: uppercase;
         }
         .pop-guidelines-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 14px;
+          gap: 16px;
         }
         .pop-guidelines-card {
-          padding: 16px;
-          border: 1px solid #e2e8f0;
-          border-radius: 12px;
-          background: #fff;
+          padding: 18px 20px;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 14px;
+          background: #f8fafc;
         }
         .pop-guidelines-card small.teal {
           color: #0e7b86;
-          font-size: 11px;
-          font-weight: 800;
+          font-size: 12px;
+          font-weight: 850;
           letter-spacing: 0.04em;
           text-transform: uppercase;
-          margin-bottom: 4px;
+          margin-bottom: 5px;
           display: block;
         }
         .pop-guidelines-card small.berry {
-          color: #b01b52;
-          font-size: 11px;
-          font-weight: 800;
+          color: #a7194d;
+          font-size: 12px;
+          font-weight: 850;
           letter-spacing: 0.04em;
           text-transform: uppercase;
-          margin-bottom: 4px;
+          margin-bottom: 5px;
           display: block;
         }
         .pop-guidelines-card strong {
           color: #0f172a;
-          font-size: 14px;
-          font-weight: 800;
+          font-size: 16px;
+          font-weight: 850;
           letter-spacing: -0.01em;
-          margin-bottom: 5px;
+          margin-bottom: 6px;
           display: block;
         }
         .pop-guidelines-card p {
-          color: #64748b;
-          font-size: 12px;
-          line-height: 1.5;
+          color: #475569;
+          font-size: 14px;
+          line-height: 1.55;
           margin: 0;
           font-weight: 500;
         }
         .pop-guidelines-banner {
-          border: 1px solid #e2e8f0;
-          border-radius: 12px;
-          padding: 16px;
-          margin-top: 14px;
-          background: #fff;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 14px;
+          padding: 18px 20px;
+          margin-top: 16px;
+          background: #fdf2f6;
           display: flex;
           align-items: flex-start;
-          gap: 12px;
+          gap: 14px;
         }
         .pop-guidelines-banner strong {
-          color: #0f172a;
-          font-size: 12.5px;
+          color: #87143e;
+          font-size: 14px;
           font-weight: 850;
           letter-spacing: 0.02em;
           display: block;
@@ -1165,16 +1195,16 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
           text-transform: uppercase;
         }
         .pop-guidelines-banner p {
-          color: #64748b;
-          font-size: 12px;
-          line-height: 1.5;
+          color: #475569;
+          font-size: 14px;
+          line-height: 1.55;
           margin: 0;
-          font-weight: 500;
+          font-weight: 550;
         }
 
         @media(max-width:960px){
           .pop-detail-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: 1fr;
           }
         }
         @media(max-width:780px){
@@ -1224,7 +1254,7 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
             width: 100%;
           }
           .pop-topline {
-            font-size: 11px;
+            font-size: 13px;
           }
           .pop-hero-main {
             align-items: flex-start;
@@ -1233,7 +1263,7 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
             line-height: 1.4;
           }
           .pop-heading h1 {
-            font-size: 23px;
+            font-size: 24px;
           }
           .pop-guidelines-box {
             margin: 10px 16px 20px;
@@ -1663,16 +1693,16 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                             {/* Top row: Category tag & Code Pill */}
                             <div className="flex flex-wrap items-center justify-between gap-3 mb-2.5">
                               <div className="flex items-center gap-2">
-                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider ${
+                                <span className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider ${
                                   isUti 
                                     ? 'bg-indigo-50 border border-indigo-200 text-indigo-700' 
-                                    : 'bg-[#EBF7F8] border border-[#C4E5E8] text-[#0E7B86]'
+                                    : 'bg-[#FDF2F6] border border-[#F7D0DF] text-[#A7194D]'
                                 }`}>
-                                  {isUti ? <Activity className="w-3.5 h-3.5" /> : <Building2 className="w-3.5 h-3.5" />}
+                                  {isUti ? <Activity className="w-4 h-4" /> : <Building2 className="w-4 h-4" />}
                                   {isUti ? 'UTI Intensiva' : 'Internação Clínica'}
                                 </span>
 
-                                <span className="text-[11px] font-semibold text-slate-400 hidden sm:inline">
+                                <span className="text-xs font-bold text-slate-500 hidden sm:inline">
                                   {planDisplayName}
                                 </span>
                               </div>
@@ -1682,39 +1712,39 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => copyCodeToClipboard(item.code)}
-                                  className="group inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-[#EBF7F8] border border-slate-200 hover:border-[#0E7B86]/40 text-slate-800 hover:text-[#0E7B86] transition-all cursor-pointer shadow-2xs"
+                                  className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-[#FDF2F6] border border-slate-200 hover:border-[#A7194D]/40 text-slate-800 hover:text-[#A7194D] transition-all cursor-pointer shadow-2xs"
                                   title="Clique para copiar código TUSS"
                                 >
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-[#0E7B86]">Cód:</span>
-                                  <span className="font-mono text-xs sm:text-sm font-black tabular-nums">{item.code}</span>
+                                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500 group-hover:text-[#A7194D]">Cód:</span>
+                                  <span className="font-mono text-sm sm:text-base font-black tabular-nums">{item.code}</span>
                                   {copiedCode === item.code ? (
-                                    <span className="inline-flex items-center gap-1 text-emerald-600 text-xs font-bold">
-                                      <Check className="w-3.5 h-3.5" />
+                                    <span className="inline-flex items-center gap-1 text-emerald-600 text-xs sm:text-sm font-bold">
+                                      <Check className="w-4 h-4" />
                                     </span>
                                   ) : (
-                                    <Copy className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0E7B86]" />
+                                    <Copy className="w-4 h-4 text-slate-400 group-hover:text-[#A7194D]" />
                                   )}
                                 </button>
                               </div>
                             </div>
 
                             {/* Accommodation Name */}
-                            <h4 className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-snug my-2 uppercase">
+                            <h4 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-snug my-2.5 uppercase">
                               {item.acomodacao}
                             </h4>
 
                             {/* Directive: SOLICITAR JUNTO */}
                             {item.solicitarJunto ? (
-                              <div className="bg-sky-50/90 border border-sky-200 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 my-3.5 shadow-2xs">
-                                <div className="flex items-center gap-2.5 min-w-0">
-                                  <div className="w-7 h-7 rounded-lg bg-sky-600 text-white flex items-center justify-center flex-shrink-0 shadow-2xs">
+                              <div className="bg-sky-50/90 border border-sky-200 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 my-3.5 shadow-2xs">
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className="w-8 h-8 rounded-lg bg-sky-600 text-white flex items-center justify-center flex-shrink-0 shadow-2xs">
                                     <Link2 className="w-4 h-4" />
                                   </div>
                                   <div className="min-w-0">
-                                    <span className="text-[10px] font-black uppercase tracking-wider text-sky-800 block">
+                                    <span className="text-xs font-black uppercase tracking-wider text-sky-800 block">
                                       Código Vinculado Obrigatório (Solicitar Junto):
                                     </span>
-                                    <span className="font-mono font-black text-sm text-sky-950 truncate block">
+                                    <span className="font-mono font-black text-sm sm:text-base text-sky-950 truncate block">
                                       {item.solicitarJunto}
                                     </span>
                                   </div>
@@ -1723,27 +1753,27 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => copyCodeToClipboard(item.solicitarJunto || '')}
-                                  className="px-2.5 py-1 rounded-lg bg-white border border-sky-300 hover:bg-sky-100 text-sky-900 text-xs font-bold transition-colors flex items-center gap-1.5 w-fit flex-shrink-0 cursor-pointer shadow-2xs"
+                                  className="px-3 py-1.5 rounded-lg bg-white border border-sky-300 hover:bg-sky-100 text-sky-900 text-xs sm:text-sm font-bold transition-colors flex items-center gap-1.5 w-fit flex-shrink-0 cursor-pointer shadow-2xs"
                                   title="Copiar código vinculado"
                                 >
                                   {copiedCode === item.solicitarJunto ? (
                                     <>
-                                      <Check className="w-3 h-3 text-emerald-600" />
+                                      <Check className="w-3.5 h-3.5 text-emerald-600" />
                                       <span className="text-emerald-700">Copiado</span>
                                     </>
                                   ) : (
                                     <>
-                                      <Copy className="w-3 h-3" />
+                                      <Copy className="w-3.5 h-3.5" />
                                       <span>Copiar Vinculado</span>
                                     </>
                                   )}
                                 </button>
                               </div>
                             ) : (
-                              <div className="bg-slate-50/80 border border-slate-200/70 rounded-xl px-3.5 py-2 flex items-center gap-2 text-xs text-slate-500 my-3">
+                              <div className="bg-slate-50/80 border border-slate-200/70 rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs sm:text-sm text-slate-500 my-3">
                                 <CheckCircle2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                                <span className="text-xs font-medium">
-                                  <strong className="text-slate-700">Solicitar Junto:</strong> Sem código vinculado obrigatório na planilha.
+                                <span className="text-xs sm:text-sm font-medium">
+                                  <strong className="text-slate-700 font-bold">Solicitar Junto:</strong> Sem código vinculado obrigatório na planilha.
                                 </span>
                               </div>
                             )}
@@ -1755,29 +1785,29 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                                 return (
                                   <div
                                     key={p.key}
-                                    className={`p-4 rounded-xl border flex flex-col justify-between transition-all min-w-0 ${p.status.cardClass}`}
+                                    className={`p-4 sm:p-5 rounded-xl border flex flex-col justify-between transition-all min-w-0 ${p.status.cardClass}`}
                                   >
                                     <div>
-                                      {/* Header do Pilar: Linha 1 = Ícone + Título; Linha 2 = Tag de Status (sem sobreposição) */}
+                                      {/* Header do Pilar */}
                                       <div className="pb-3 mb-3 border-b border-black/10 flex flex-col gap-2">
                                         <div className="flex items-center gap-2">
                                           <div className="w-7 h-7 rounded-lg bg-white/90 shadow-2xs border border-slate-200/80 flex items-center justify-center flex-shrink-0">
-                                            <IconComp className="w-3.5 h-3.5 text-slate-700" />
+                                            <IconComp className="w-4 h-4 text-slate-700" />
                                           </div>
-                                          <span className="text-xs font-black text-slate-900 uppercase tracking-wide">
+                                          <span className="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-wide">
                                             {p.label}
                                           </span>
                                         </div>
 
                                         <div>
-                                          <span className={`inline-flex items-center text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md border shadow-2xs ${p.status.badgeClass}`}>
+                                          <span className={`inline-flex items-center text-[11px] sm:text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md border shadow-2xs ${p.status.badgeClass}`}>
                                             {p.status.badgeText}
                                           </span>
                                         </div>
                                       </div>
 
                                       {/* Texto descritivo da regra com fonte maior e alta legibilidade */}
-                                      <p className={`text-sm leading-relaxed m-0 font-medium break-words ${p.status.textClass}`}>
+                                      <p className={`text-sm sm:text-base leading-relaxed m-0 font-medium break-words ${p.status.textClass}`}>
                                         {p.val || 'Não informado na planilha'}
                                       </p>
                                     </div>
@@ -1788,8 +1818,8 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
 
                             {/* Card Footer: Metadata & Actions */}
                             <div className="mt-4 pt-3.5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                              <div className="flex items-center gap-2 text-xs text-slate-500">
-                                <span className={`w-2 h-2 rounded-full ${isUti ? 'bg-indigo-500' : 'bg-[#0E7B86]'}`}></span>
+                              <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500">
+                                <span className={`w-2 h-2 rounded-full ${isUti ? 'bg-indigo-500' : 'bg-[#A7194D]'}`}></span>
                                 <span>Regras oficiais: <strong className="text-slate-800">{planDisplayName}</strong></span>
                               </div>
 
@@ -1797,17 +1827,17 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => handleCopyCardSummary(item, isUti, planDisplayName)}
-                                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                                  className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
                                   title="Copiar regras completas desta acomodação para o prontuário ou portal"
                                 >
                                   {copiedCardSummary === cardKey ? (
                                     <>
-                                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                      <Check className="w-4 h-4 text-emerald-600" />
                                       <span className="text-emerald-700 font-bold">Resumo Copiado!</span>
                                     </>
                                   ) : (
                                     <>
-                                      <Copy className="w-3.5 h-3.5 text-slate-500" />
+                                      <Copy className="w-4 h-4 text-slate-500" />
                                       <span>Copiar Regras</span>
                                     </>
                                   )}
@@ -1817,11 +1847,11 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                                   <button
                                     type="button"
                                     onClick={() => onGeneratePreGuia(selectedPlanId, item.code, item.acomodacao)}
-                                    className="px-3.5 py-1.5 rounded-xl bg-[#0E7B86] hover:bg-[#095962] text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                                    className="px-4 py-2 rounded-xl bg-[#A7194D] hover:bg-[#87143E] text-white text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
                                     title="Preencher pré-guia com esta diária"
                                   >
                                     <span>Gerar Pré-Guia</span>
-                                    <ArrowUpRight className="w-3.5 h-3.5" />
+                                    <ArrowUpRight className="w-4 h-4" />
                                   </button>
                                 )}
                               </div>
@@ -1835,9 +1865,9 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                   /* Modo Tabela Comparativa Compacta */
                   <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
                     <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs border-collapse">
+                      <table className="w-full text-left text-xs sm:text-sm border-collapse">
                         <thead>
-                          <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 uppercase tracking-wider text-[10px] font-black">
+                          <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 uppercase tracking-wider text-xs font-black">
                             <th className="py-3 px-3.5">Código</th>
                             <th className="py-3 px-3.5">Acomodação</th>
                             <th className="py-3 px-3.5">Tipo</th>
@@ -1873,49 +1903,49 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                                   <button
                                     type="button"
                                     onClick={() => copyCodeToClipboard(item.code)}
-                                    className="font-mono font-black text-slate-900 bg-slate-100 hover:bg-[#EBF7F8] px-2 py-1 rounded-md border border-slate-200 hover:border-[#0E7B86]/40 transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                                    className="font-mono font-black text-slate-900 bg-slate-100 hover:bg-[#FDF2F6] px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-[#A7194D]/40 text-xs sm:text-sm transition-colors cursor-pointer inline-flex items-center gap-1.5"
                                     title="Copiar código"
                                   >
                                     <span>{item.code}</span>
                                     {copiedCode === item.code ? (
-                                      <Check className="w-3 h-3 text-emerald-600" />
+                                      <Check className="w-3.5 h-3.5 text-emerald-600" />
                                     ) : (
-                                      <Copy className="w-3 h-3 text-slate-400" />
+                                      <Copy className="w-3.5 h-3.5 text-slate-400" />
                                     )}
                                   </button>
                                 </td>
-                                <td className="py-3 px-3.5 font-bold text-slate-900 min-w-[200px]">
+                                <td className="py-3 px-3.5 font-bold text-slate-900 min-w-[200px] text-xs sm:text-sm">
                                   {item.acomodacao}
                                 </td>
                                 <td className="py-3 px-3.5 whitespace-nowrap">
-                                  <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
-                                    isUti ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]'
+                                  <span className={`inline-block px-2.5 py-1 rounded text-xs font-black uppercase tracking-wider ${
+                                    isUti ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-[#FDF2F6] text-[#A7194D] border border-[#F7D0DF]'
                                   }`}>
                                     {isUti ? 'UTI' : 'Internação'}
                                   </span>
                                 </td>
                                 <td className="py-3 px-3.5">
                                   {item.solicitarJunto ? (
-                                    <span className="font-mono font-bold text-sky-800 bg-sky-50 px-2 py-0.5 rounded border border-sky-200 block text-[11px]">
+                                    <span className="font-mono font-black text-sky-800 bg-sky-50 px-2 py-1 rounded border border-sky-200 block text-xs">
                                       {item.solicitarJunto}
                                     </span>
                                   ) : (
-                                    <span className="text-slate-400 italic text-[11px]">-</span>
+                                    <span className="text-slate-400 italic text-xs">-</span>
                                   )}
                                 </td>
-                                <td className="py-3 px-3.5 text-[11px] text-slate-700 max-w-[150px]">
+                                <td className="py-3 px-3.5 text-xs text-slate-700 max-w-[150px] font-medium">
                                   {valParecer || <span className="text-slate-400 italic">-</span>}
                                 </td>
-                                <td className="py-3 px-3.5 text-[11px] text-slate-700 max-w-[150px]">
+                                <td className="py-3 px-3.5 text-xs text-slate-700 max-w-[150px] font-medium">
                                   {valMatMed || <span className="text-slate-400 italic">-</span>}
                                 </td>
-                                <td className="py-3 px-3.5 text-[11px] text-slate-700 max-w-[150px]">
+                                <td className="py-3 px-3.5 text-xs text-slate-700 max-w-[150px] font-medium">
                                   {valExLab || <span className="text-slate-400 italic">-</span>}
                                 </td>
-                                <td className="py-3 px-3.5 text-[11px] text-slate-700 max-w-[150px]">
+                                <td className="py-3 px-3.5 text-xs text-slate-700 max-w-[150px] font-medium">
                                   {valExRad || <span className="text-slate-400 italic">-</span>}
                                 </td>
-                                <td className="py-3 px-3.5 text-[11px] text-slate-700 max-w-[150px]">
+                                <td className="py-3 px-3.5 text-xs text-slate-700 max-w-[150px] font-medium">
                                   {valFisio || <span className="text-slate-400 italic">-</span>}
                                 </td>
                                 <td className="py-3 px-3.5 text-right whitespace-nowrap">
@@ -1936,7 +1966,7 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
                                       <button
                                         type="button"
                                         onClick={() => onGeneratePreGuia(selectedPlanId, item.code, item.acomodacao)}
-                                        className="p-1.5 rounded-lg bg-[#0E7B86] hover:bg-[#095962] text-white transition-colors cursor-pointer shadow-2xs"
+                                        className="p-1.5 rounded-lg bg-[#A7194D] hover:bg-[#87143E] text-white transition-colors cursor-pointer shadow-2xs"
                                         title="Gerar Pré-Guia"
                                       >
                                         <ArrowUpRight className="w-3.5 h-3.5" />

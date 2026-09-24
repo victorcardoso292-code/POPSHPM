@@ -223,19 +223,19 @@ export const PreGuiaGenerator: React.FC<PreGuiaGeneratorProps> = ({
               </span>
               <span className="text-xs text-white/80 font-medium">Hospital Palmas Medical</span>
             </div>
-            <h2 className="text-2xl font-black tracking-tight text-white m-0">
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white m-0">
               Emissor de Pré-Guia & Justificativas
             </h2>
-            <p className="text-xs text-white/90 max-w-xl leading-relaxed m-0">
+            <p className="text-sm sm:text-base text-white/90 max-w-2xl leading-relaxed m-0">
               Elabore solicitações de autorização com justificativas clínicas formuladas por IA, prontas para inclusão nos portais de convênios.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <button
               type="button"
               onClick={handleSaveDraft}
-              className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs border border-white/20 transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-sm border border-white/20 transition-colors shadow-2xs"
             >
               <Save className="w-4 h-4" />
               <span>Salvar Rascunho</span>
@@ -243,7 +243,7 @@ export const PreGuiaGenerator: React.FC<PreGuiaGeneratorProps> = ({
             <button
               type="button"
               onClick={handlePrint}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#B01B52] hover:bg-[#971444] text-white font-bold text-xs shadow-xs transition-all active:scale-95 border border-[#F7D0DF]/30"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#B01B52] hover:bg-[#971444] text-white font-bold text-sm shadow-xs transition-all active:scale-95 border border-[#F7D0DF]/30"
             >
               <Printer className="w-4 h-4" />
               <span>Imprimir Pré-Guia</span>
@@ -251,47 +251,47 @@ export const PreGuiaGenerator: React.FC<PreGuiaGeneratorProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Form */}
-          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 sm:p-7 shadow-xs space-y-5">
             <div className="border-b border-slate-100 pb-3">
-              <h3 className="text-base font-black text-slate-900 m-0">
+              <h3 className="text-lg sm:text-xl font-black text-slate-900 m-0">
                 Dados da Solicitação
               </h3>
             </div>
 
-            <div className="space-y-3.5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[11px] font-bold text-slate-600 block mb-1 uppercase">Nome do Paciente *</label>
+                  <label className="text-xs sm:text-sm font-black text-slate-700 block mb-1.5 uppercase tracking-wide">Nome do Paciente *</label>
                   <input
                     type="text"
                     required
                     placeholder="Ex.: Maria Francisca da Silva"
                     value={patientName}
                     onChange={e => setPatientName(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-semibold text-slate-900 focus:ring-2 focus:ring-cyan-500 focus:bg-white transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-600 block mb-1 uppercase">Número da Carteirinha</label>
+                  <label className="text-xs sm:text-sm font-black text-slate-700 block mb-1.5 uppercase tracking-wide">Número da Carteirinha</label>
                   <input
                     type="text"
                     placeholder="Ex.: 00123456789012"
                     value={cardNumber}
                     onChange={e => setCardNumber(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-semibold text-slate-900 focus:ring-2 focus:ring-cyan-500 focus:bg-white transition-all"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="text-[11px] font-bold text-slate-600 block mb-1 uppercase">Convênio</label>
+                  <label className="text-xs sm:text-sm font-black text-slate-700 block mb-1.5 uppercase tracking-wide">Convênio</label>
                   <select
                     value={convenio}
                     onChange={e => setConvenio(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-bold text-slate-900 focus:ring-2 focus:ring-cyan-500 focus:bg-white transition-all"
                   >
                     <option value="SERVIR">SERVIR (Plano TO)</option>
                     {CONVENIOS_MASTER_LIST.map(c => (
@@ -300,79 +300,79 @@ export const PreGuiaGenerator: React.FC<PreGuiaGeneratorProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-600 block mb-1 uppercase">Caráter do Atendimento</label>
+                  <label className="text-xs sm:text-sm font-black text-slate-700 block mb-1.5 uppercase tracking-wide">Caráter do Atendimento</label>
                   <select
                     value={carater}
                     onChange={e => setCarater(e.target.value as any)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-bold text-slate-900 focus:ring-2 focus:ring-cyan-500 focus:bg-white transition-all"
                   >
                     <option value="Urgência">Urgência / Emergência</option>
                     <option value="Eletivo">Eletivo</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-600 block mb-1 uppercase">CID-10 Principal</label>
+                  <label className="text-xs sm:text-sm font-black text-slate-700 block mb-1.5 uppercase tracking-wide">CID-10 Principal</label>
                   <input
                     type="text"
                     placeholder="Ex.: K35.8"
                     value={cid}
                     onChange={e => setCid(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium font-mono focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-mono font-bold text-slate-900 focus:ring-2 focus:ring-cyan-500 focus:bg-white transition-all"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[11px] font-bold text-slate-600 block mb-1 uppercase">Médico Solicitante</label>
+                  <label className="text-xs sm:text-sm font-black text-slate-700 block mb-1.5 uppercase tracking-wide">Médico Solicitante</label>
                   <input
                     type="text"
                     placeholder="Ex.: Dr. Roberto Campos"
                     value={doctorName}
                     onChange={e => setDoctorName(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-semibold text-slate-900 focus:ring-2 focus:ring-cyan-500 focus:bg-white transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-600 block mb-1 uppercase">CRM do Médico</label>
+                  <label className="text-xs sm:text-sm font-black text-slate-700 block mb-1.5 uppercase tracking-wide">CRM do Médico</label>
                   <input
                     type="text"
                     placeholder="Ex.: 3421-TO"
                     value={doctorCrm}
                     onChange={e => setDoctorCrm(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-semibold text-slate-900 focus:ring-2 focus:ring-cyan-500 focus:bg-white transition-all"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="sm:col-span-2">
-                  <label className="text-[11px] font-bold text-slate-600 block mb-1 uppercase">Procedimento Solicitado *</label>
+                  <label className="text-xs sm:text-sm font-black text-slate-700 block mb-1.5 uppercase tracking-wide">Procedimento Solicitado *</label>
                   <input
                     type="text"
                     required
                     placeholder="Ex.: APENDICECTOMIA VIDEOLAPAROSCÓPICA"
                     value={procedimentoNome}
                     onChange={e => setProcedimentoNome(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-bold text-slate-900 focus:ring-2 focus:ring-cyan-500 focus:bg-white transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-600 block mb-1 uppercase">Código(s) TUSS</label>
+                  <label className="text-xs sm:text-sm font-black text-slate-700 block mb-1.5 uppercase tracking-wide">Código(s) TUSS</label>
                   <input
                     type="text"
                     placeholder="Ex.: 31001017"
                     value={codigos}
                     onChange={e => setCodigos(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-mono font-black text-slate-900 focus:ring-2 focus:ring-cyan-500 focus:bg-white transition-all"
                   />
                 </div>
               </div>
 
               {/* Justification with AI Generator Button */}
-              <div className="space-y-2 pt-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-bold text-slate-600 block uppercase">
+              <div className="space-y-2.5 pt-1">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label className="text-xs sm:text-sm font-black text-slate-700 block uppercase tracking-wide">
                     Justificativa Clínica (Laudo Técnico)
                   </label>
                   <div className="flex items-center gap-2">
@@ -380,16 +380,16 @@ export const PreGuiaGenerator: React.FC<PreGuiaGeneratorProps> = ({
                       type="button"
                       onClick={handleGenerateAiJustificativa}
                       disabled={isGeneratingAi}
-                      className="flex items-center gap-1.5 text-xs font-bold text-cyan-900 bg-cyan-100 hover:bg-cyan-200 px-3 py-1 rounded-lg transition-colors"
+                      className="flex items-center gap-2 text-xs sm:text-sm font-bold text-cyan-900 bg-cyan-100 hover:bg-cyan-200 px-3.5 py-1.5 rounded-xl transition-colors shadow-2xs"
                     >
                       {isGeneratingAi ? (
                         <>
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <RefreshCw className="w-4 h-4 animate-spin" />
                           <span>Gerando com IA...</span>
                         </>
                       ) : (
                         <>
-                          <Sparkles className="w-3.5 h-3.5 text-cyan-700" />
+                          <Sparkles className="w-4 h-4 text-cyan-700" />
                           <span>Gerar Justificativa com IA</span>
                         </>
                       )}
@@ -399,9 +399,9 @@ export const PreGuiaGenerator: React.FC<PreGuiaGeneratorProps> = ({
                       <button
                         type="button"
                         onClick={copyJustif}
-                        className="text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 px-2 py-1 rounded-lg flex items-center gap-1"
+                        className="text-xs sm:text-sm font-bold text-slate-700 hover:text-slate-900 bg-slate-100 px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-colors border border-slate-200"
                       >
-                        {copiedJustif ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                        {copiedJustif ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                         <span>Copiar</span>
                       </button>
                     )}
@@ -413,49 +413,49 @@ export const PreGuiaGenerator: React.FC<PreGuiaGeneratorProps> = ({
                   placeholder="Justificativa clínica técnica detalhando indicação médica, antecedentes e necessidade hospitalar..."
                   value={justificativa}
                   onChange={e => setJustificativa(e.target.value)}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-cyan-500 focus:bg-white leading-relaxed"
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-medium text-slate-900 focus:ring-2 focus:ring-cyan-500 focus:bg-white leading-relaxed"
                 />
               </div>
 
               {observacoes && (
-                <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs text-amber-900 font-medium">
-                  <strong>Observação de Auditoria:</strong> {observacoes}
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-sm text-amber-950 font-medium">
+                  <strong className="font-bold">Observação de Auditoria:</strong> {observacoes}
                 </div>
               )}
             </div>
           </div>
 
           {/* Saved Drafts History */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <span className="text-xs uppercase font-extrabold tracking-wider text-slate-400">
+                <span className="text-xs uppercase font-black tracking-wider text-slate-400">
                   Rascunhos Salvos
                 </span>
-                <h3 className="text-base font-black text-slate-900 m-0">
+                <h3 className="text-lg font-black text-slate-900 m-0">
                   Histórico Local ({savedGuias.length})
                 </h3>
               </div>
             </div>
 
             {savedGuias.length === 0 ? (
-              <div className="py-12 text-center text-slate-400 space-y-1">
-                <Clock className="w-8 h-8 mx-auto text-slate-300" />
-                <p className="text-xs font-medium m-0">Nenhum rascunho salvo.</p>
+              <div className="py-12 text-center text-slate-400 space-y-1.5">
+                <Clock className="w-9 h-9 mx-auto text-slate-300" />
+                <p className="text-sm font-medium m-0">Nenhum rascunho salvo.</p>
               </div>
             ) : (
-              <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
+              <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
                 {savedGuias.map((g) => (
                   <div
                     key={g.id}
-                    className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2 hover:border-cyan-400 transition-colors"
+                    className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2 hover:border-cyan-400 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <span className="text-xs font-extrabold text-slate-900 block leading-tight">
+                        <span className="text-sm sm:text-base font-black text-slate-900 block leading-tight">
                           {g.patientName}
                         </span>
-                        <span className="text-[10px] text-slate-500 font-semibold">
+                        <span className="text-xs text-slate-500 font-bold">
                           {g.convenio} • {new Date(g.createdAt).toLocaleDateString('pt-BR')}
                         </span>
                       </div>
@@ -465,18 +465,18 @@ export const PreGuiaGenerator: React.FC<PreGuiaGeneratorProps> = ({
                         className="text-slate-400 hover:text-rose-600 p-1"
                         title="Excluir rascunho"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
 
-                    <p className="text-xs text-slate-700 font-medium m-0 truncate">
+                    <p className="text-xs sm:text-sm text-slate-700 font-medium m-0 truncate">
                       {g.procedimentos[0]?.description}
                     </p>
 
                     <button
                       type="button"
                       onClick={() => handleLoadDraft(g)}
-                      className="w-full py-1 bg-cyan-50 hover:bg-cyan-100 text-cyan-900 text-[11px] font-bold rounded-lg transition-colors"
+                      className="w-full py-1.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-900 text-xs sm:text-sm font-bold rounded-lg transition-colors"
                     >
                       Carregar Formulário
                     </button>

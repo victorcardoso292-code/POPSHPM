@@ -340,12 +340,12 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
       </div>
 
       {/* Main Tabs Navigation */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-2 rounded-2xl border border-slate-200 shadow-2xs">
-        <div className="flex items-center gap-1.5 overflow-x-auto p-1">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="flex items-center gap-2 overflow-x-auto p-1">
           <button
             type="button"
             onClick={() => handleTabChange('geral')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-bold text-sm sm:text-base transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'geral'
                 ? 'bg-[#0E7B86] text-white shadow-2xs'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-[#EBF7F8]'
@@ -353,7 +353,7 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
           >
             <Stethoscope className="w-4 h-4" />
             <span>Tabela Geral (Plásticas, Gerais, Uro & Diárias)</span>
-            <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+            <span className={`text-xs px-2.5 py-0.5 rounded-full font-black ${
               activeTab === 'geral' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
             }`}>
               {PROCEDIMENTOS_GERAIS.length}
@@ -363,7 +363,7 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
           <button
             type="button"
             onClick={() => handleTabChange('medicos')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-bold text-sm sm:text-base transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'medicos'
                 ? 'bg-[#B01B52] text-white shadow-2xs'
                 : 'text-slate-600 hover:text-[#B01B52] hover:bg-[#FDF2F6]'
@@ -371,7 +371,7 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
           >
             <AlertTriangle className="w-4 h-4 text-amber-300" />
             <span>Tabela Médicos Específicos</span>
-            <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+            <span className={`text-xs px-2.5 py-0.5 rounded-full font-black ${
               activeTab === 'medicos' ? 'bg-white/20 text-white' : 'bg-[#FDF2F6] text-[#B01B52]'
             }`}>
               {PROCEDIMENTOS_MEDICOS_ESPECIFICOS.length}
@@ -381,7 +381,7 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
           <button
             type="button"
             onClick={() => handleTabChange('diarias')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-bold text-sm sm:text-base transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'diarias'
                 ? 'bg-[#0E7B86] text-white shadow-2xs'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-[#EBF7F8]'
@@ -389,7 +389,7 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
           >
             <BedDouble className="w-4 h-4" />
             <span>Diárias Globais & UTI</span>
-            <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+            <span className={`text-xs px-2.5 py-0.5 rounded-full font-black ${
               activeTab === 'diarias' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
             }`}>
               5
@@ -399,17 +399,17 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
 
         {/* Selected Items Counter in tab header */}
         {cartItems.length > 0 && (
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#FDF2F6] border border-[#F7D0DF] rounded-xl self-end sm:self-center">
-            <span className="text-xs font-bold text-[#B01B52]">
+          <div className="flex items-center gap-2 px-3.5 py-2 bg-[#FDF2F6] border border-[#F7D0DF] rounded-xl self-end sm:self-center">
+            <span className="text-xs sm:text-sm font-bold text-[#B01B52]">
               {totalItemsCount} {totalItemsCount === 1 ? 'item orçado' : 'itens orçados'}:
             </span>
-            <span className="text-xs font-mono font-black text-[#B01B52]">
+            <span className="text-xs sm:text-sm font-mono font-black text-[#B01B52]">
               {formatCurrencyBRL(cartTotal)}
             </span>
             <button
               type="button"
               onClick={() => setIsQuoteModalOpen(true)}
-              className="ml-1 text-[11px] font-extrabold text-[#0E7B86] underline hover:text-[#095962] cursor-pointer"
+              className="ml-1 text-xs font-black text-[#0E7B86] underline hover:text-[#095962] cursor-pointer"
             >
               Ver Orçamento
             </button>
@@ -455,17 +455,17 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
       )}
 
       {/* Search & Category Filter Controls */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-3.5">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           {/* Search Box */}
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Buscar por cirurgia, diária, acomodação ou médico..."
-              className="w-full pl-10 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none transition-all"
+              className="w-full pl-11 pr-9 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-semibold focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none transition-all text-slate-900"
             />
             {searchQuery && (
               <button
@@ -473,30 +473,30 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
                 onClick={() => setSearchQuery('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-4 h-4" />
               </button>
             )}
           </div>
 
-          <div className="text-xs font-bold text-slate-500 self-center whitespace-nowrap flex items-center gap-1.5">
+          <div className="text-xs sm:text-sm font-bold text-slate-500 self-center whitespace-nowrap flex items-center gap-1.5">
             <span>
-              Página <strong className="text-slate-800">{validCurrentPage}</strong> de {totalPages}
+              Página <strong className="text-slate-800 font-black">{validCurrentPage}</strong> de {totalPages}
             </span>
             <span className="text-slate-300">•</span>
             <span>
-              Total: <strong className="text-slate-800">{filteredProcedures.length}</strong> procedimentos
+              Total: <strong className="text-slate-800 font-black">{filteredProcedures.length}</strong> procedimentos
             </span>
           </div>
         </div>
 
         {/* Category Pills (if more than 1 category) */}
         {availableCategories.length > 1 && (
-          <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-400 uppercase mr-1">Filtrar por:</span>
+          <div className="flex items-center gap-2 flex-wrap pt-1.5 border-t border-slate-100">
+            <span className="text-xs font-black text-slate-400 uppercase mr-1">Filtrar por:</span>
             <button
               type="button"
               onClick={() => { setSelectedCategory('all'); setCurrentPage(1); }}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-colors cursor-pointer ${
                 selectedCategory === 'all'
                   ? 'bg-[#0E7B86] text-white shadow-2xs'
                   : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
@@ -511,7 +511,7 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
                   key={cat}
                   type="button"
                   onClick={() => { setSelectedCategory(cat); setCurrentPage(1); }}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                  className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-colors cursor-pointer ${
                     selectedCategory === cat
                       ? 'bg-[#0E7B86] text-white shadow-2xs'
                       : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
@@ -527,10 +527,10 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
 
       {/* Procedures Table / Grid */}
       <div className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs">
-        <div className="p-4 bg-gradient-to-r from-[#095962] to-[#0E7B86] text-white flex items-center justify-between">
+        <div className="p-4 sm:p-5 bg-gradient-to-r from-[#095962] to-[#0E7B86] text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <Stethoscope className="w-5 h-5 text-[#EBF7F8]" />
-            <h3 className="text-sm font-black uppercase tracking-wider m-0">
+            <h3 className="text-sm sm:text-base font-black uppercase tracking-wider m-0">
               {activeTab === 'geral' 
                 ? 'Procedimentos Cirúrgicos & Hospitalares Gerais'
                 : (activeTab === 'medicos' 
@@ -539,36 +539,36 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
             </h3>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-white/80 font-medium">
+            <span className="text-xs sm:text-sm text-white/90 font-medium">
               {filteredProcedures.length} registros
             </span>
-            <span className="bg-white/20 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-white/20">
+            <span className="bg-white/20 text-white text-xs font-bold px-2.5 py-0.5 rounded-full border border-white/20">
               Página {validCurrentPage} de {totalPages}
             </span>
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left text-xs">
+          <table className="w-full border-collapse text-left text-xs sm:text-sm">
             <thead>
-              <tr className="bg-slate-100 text-slate-700 border-b border-slate-200">
-                <th className="py-3 px-3.5 font-bold w-12 text-center">#</th>
-                <th className="py-3 px-4 font-bold">Procedimento Cirúrgico / Diária</th>
-                <th className="py-3 px-3 font-bold w-36">Categoria</th>
-                <th className="py-3 px-3 font-bold w-28 text-center">Diárias</th>
-                <th className="py-3 px-4 font-bold w-36 text-right">Valor do Hospital</th>
-                <th className="py-3 px-3.5 font-bold w-32 text-center">Orçamento</th>
+              <tr className="bg-slate-100 text-slate-700 border-b border-slate-200 text-xs sm:text-sm font-black">
+                <th className="py-3.5 px-3.5 font-black w-14 text-center">#</th>
+                <th className="py-3.5 px-4 font-black">Procedimento Cirúrgico / Diária</th>
+                <th className="py-3.5 px-3.5 font-black w-40">Categoria</th>
+                <th className="py-3.5 px-3.5 font-black w-32 text-center">Diárias</th>
+                <th className="py-3.5 px-4 font-black w-40 text-right">Valor do Hospital</th>
+                <th className="py-3.5 px-3.5 font-black w-36 text-center">Orçamento</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {paginatedProcedures.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-400">
-                    <p className="text-sm font-medium">Nenhum procedimento encontrado para &quot;{searchQuery}&quot;.</p>
+                    <p className="text-base font-medium">Nenhum procedimento encontrado para &quot;{searchQuery}&quot;.</p>
                     <button
                       type="button"
                       onClick={() => { setSearchQuery(''); setSelectedCategory('all'); setCurrentPage(1); }}
-                      className="mt-2 text-xs font-bold text-[#0E7B86] underline cursor-pointer"
+                      className="mt-2 text-sm font-bold text-[#0E7B86] underline cursor-pointer"
                     >
                       Limpar busca e filtros
                     </button>
@@ -587,31 +587,31 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
                         isSelected ? 'bg-[#FDF2F6]/50' : (idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40')
                       }`}
                     >
-                      <td className="py-3 px-3.5 text-center font-bold text-slate-400">
+                      <td className="py-4 px-3.5 text-center font-bold text-slate-400 text-sm">
                         {globalIndex}
                       </td>
 
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-4">
                         <div className="space-y-1">
-                          <div className="text-sm font-bold text-slate-900 leading-snug">
+                          <div className="text-sm sm:text-base font-bold text-slate-900 leading-snug">
                             {proc.description}
                           </div>
                           {proc.notes && (
-                            <div className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200/80 rounded-md px-2 py-0.5 inline-block font-medium">
+                            <div className="text-xs text-amber-800 bg-amber-50 border border-amber-200/80 rounded-md px-2 py-0.5 inline-block font-semibold">
                               ⚠️ {proc.notes}
                             </div>
                           )}
                         </div>
                       </td>
 
-                      <td className="py-3 px-3 text-slate-600">
-                        <span className="text-[11px] bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded border border-slate-200 inline-block">
+                      <td className="py-4 px-3.5 text-slate-600">
+                        <span className="text-xs bg-slate-100 text-slate-700 font-bold px-2.5 py-1 rounded-lg border border-slate-200 inline-block">
                           {proc.category}
                         </span>
                       </td>
 
-                      <td className="py-3 px-3 text-center">
-                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold ${
+                      <td className="py-4 px-3.5 text-center">
+                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-black ${
                           proc.diarias.includes('Apto') 
                             ? 'bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]'
                             : (proc.diarias.includes('Enf')
@@ -624,16 +624,16 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
                         </span>
                       </td>
 
-                      <td className="py-3 px-4 text-right">
-                        <div className="font-mono font-black text-sm text-slate-900">
+                      <td className="py-4 px-4 text-right">
+                        <div className="font-mono font-black text-sm sm:text-base text-slate-900">
                           {formatCurrencyBRL(proc.price)}
                         </div>
-                        <div className="text-[10px] text-slate-400 font-medium">
+                        <div className="text-xs text-slate-400 font-medium">
                           {proc.diarias === 'ao dia' ? 'por dia' : 'pacote hospital'}
                         </div>
                       </td>
 
-                      <td className="py-3 px-3.5 text-center">
+                      <td className="py-4 px-3.5 text-center">
                         {isSelected ? (
                           <div className="flex items-center justify-center gap-1.5">
                             <div className="flex items-center bg-white border border-[#B01B52] rounded-lg p-0.5 shadow-2xs">

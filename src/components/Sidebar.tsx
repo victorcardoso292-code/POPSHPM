@@ -122,16 +122,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <Icon className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <span className="block text-sm font-black truncate leading-tight">
+                    <span className="block text-sm sm:text-base font-black truncate leading-tight">
                       {item.label}
                     </span>
-                    <span className="block text-[11px] text-slate-500 truncate mt-0.5">
+                    <span className="block text-xs text-slate-500 font-medium truncate mt-0.5">
                       {item.subtitle}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0 ml-2">
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${item.badgeColor}`}>
+                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${item.badgeColor}`}>
                     {item.badge}
                   </span>
                   <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isActive ? 'text-[#B01B52] translate-x-0.5' : 'text-slate-400'}`} />

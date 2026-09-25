@@ -177,10 +177,18 @@ export const AiHospitalAssistant: React.FC<AiHospitalAssistantProps> = ({
     setIsLoadingCopilot(true);
 
     try {
+      const previousHistory = messages
+        .filter(m => !m.isStreaming && m.text !== '⚡ Buscando no sistema hospitalar...')
+        .slice(-8)
+        .map(m => ({
+          role: m.role === 'user' ? 'user' : 'model',
+          text: m.text
+        }));
+
       const res = await fetch('/api/ai/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q })
+        body: JSON.stringify({ question: q, history: previousHistory })
       });
 
       const data = await res.json();

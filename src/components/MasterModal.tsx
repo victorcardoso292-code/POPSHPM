@@ -142,7 +142,7 @@ export const MasterModal: React.FC<MasterModalProps> = ({
               <ShieldCheck className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
               <div>
                 <strong className="block font-bold">Você está autenticado como Master.</strong>
-                <span>Agora você pode adicionar, alterar valores particulares/MedPrev, excluir ou restaurar exames nas tabelas.</span>
+                <span>Agora você pode adicionar, alterar valores particulares, excluir ou restaurar exames nas tabelas.</span>
               </div>
             </div>
 

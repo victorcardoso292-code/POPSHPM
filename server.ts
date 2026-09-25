@@ -33,63 +33,110 @@ async function startServer() {
     res.json({ status: 'ok', time: new Date().toISOString() });
   });
 
-  // AI Hospital Copilot Ask Endpoint (Fast, Universal & Ultra-Concise)
+  // AI Hospital Copilot Ask Endpoint (Interactive, Multi-turn Chat & Universal Grounding)
   app.post('/api/ai/ask', async (req, res) => {
     try {
-      const { question } = req.body;
+      const { question, history } = req.body;
       if (!question) {
         return res.status(400).json({ error: 'Pergunta obrigatória' });
       }
 
-      // Universal hospital knowledge retrieval across all system datasets (exams, surgeries, ramais, portals, diárias)
-      const knowledge = retrieveHospitalKnowledge(question);
+      // Universal hospital knowledge retrieval across all system datasets with conversational history support
+      const knowledge = retrieveHospitalKnowledge(question, history);
       const ai = getGeminiClient();
 
-      const systemPrompt = `Você é o Assistente Oficial e Inteligência Universal do Hospital Palmas Medical.
-Você tem acesso a TODO o sistema do hospital:
-- Exames (mais de 430 exames com códigos TUSS, valores e preparos)
-- Diárias, Internações e Acomodações de TODOS os convênios
-- Cirurgias, Procedimentos e Valores de Pacotes Hospitalares
-- Ramais telefônicos internos e setores do hospital
-- Portais de autorização, links e orientações
-- Prontuários e kits de documentação
+      // If the query is ambiguous or incomplete, return clarification prompt directly
+      if (knowledge.isClarification && knowledge.directAnswer) {
+        return res.json({
+          answer: knowledge.directAnswer,
+          detectedConvenio: knowledge.detectedConvenio,
+          matchedCategory: knowledge.matchedCategory,
+          facts: [],
+          model: 'gemini-3.8-flash'
+        });
+      }
 
-REGRA SUPREMA: SEJA EXTREMAMENTE SUCINTO, DIRETO E OBJETIVO.
-1. Se o usuário pedir um código, ramal, valor, portal ou regra:
-   - Responda APENAS com a informação solicitada.
-   - NADA MAIS. NÃO adicione introduções ("Olá", "Com certeza"), NÃO adicione disclaimers, avisos de assinatura ou textos genéricos.
-   Exemplo para código:
-   **ANGIO RM ARTERIAL DE CRÂNIO**
-   • **Código TUSS:** \`41101537\`
-   • **Valor:** R$ 870,00 (Convênio) / R$ 685,00 (Particular)
+      const systemPrompt = `Você é a Assistente Inteligente Oficial da **Central de Autorizações & POPs Hospitalar** do Palmas Medical.
+Você é uma especialista em regras hospitalares, códigos TUSS, diárias, pacotes, autorizações de convênios, valores de exames/cirurgias, ramais e documentação.
 
-   Exemplo para ramal:
-   **UTI NEO**
-   • **Ramal:** \`1887\`
-   • **Local:** Bloco Crítico / 3º Andar
+DIRETRIZES FUNDAMENTAIS:
+1. BASE DE CONHECIMENTO ESTRITA (ANTI-ALUCINAÇÃO):
+   - Utilize única e exclusivamente os DADOS OFICIAIS fornecidos no contexto abaixo.
+   - NUNCA invente códigos TUSS, valores, regras de convênio, ramais, documentações ou portais que não estejam cadastrados.
+   - Se uma informação não estiver cadastrada no sistema, responda claramente: "Não encontrei essa informação cadastrada na base da Central de Autorizações. Por favor, verifique o POP do convênio ou confirme com a coordenação."
 
-2. Responda em no máximo 1 a 3 linhas diretas.
-3. Baseie-se ESTRITAMENTE nos dados oficiais do sistema abaixo:
+2. ESTRUTURAÇÃO EXECUTIVA DAS RESPOSTAS:
+   - Apresente respostas objetivas, limpas e de leitura rápida para a rotina hospitalar.
+   - Sempre que aplicável, utilize a formatação padrão:
+     **[CONVÊNIO] – [ÁREA / ATENDIMENTO]**
+     • **Acomodação / Procedimento:** ...
+     • **Código TUSS:** \`...\`
+     • **Solicitar junto:** ...
+     
+     **Documentos necessários:**
+     • Pedido médico / laudo com CID-10;
+     • Carteirinha do convênio;
+     • Documento com foto (RG/CPF);
+     • Kit de Prontuário obrigatório...
+     
+     **Autorização / Portal:**
+     • Portal: ...
+     • Login e Senha: ...
+     
+     ⚠️ **ATENÇÃO:** [Destaque regras críticas, alertas de glosa ou exigências de autorização prévia].
 
+3. CRUZAMENTO INTELIGENTE DE INFORMAÇÕES:
+   - Se o usuário perguntar: "Paciente ASSEFAZ vai internar na UTI. O que preciso solicitar?":
+     Cruze: Convênio (ASSEFAZ) + Internação UTI (Código 60001038) + Solicitar junto + Documentos necessários + Portal WebPlan + Alertas de exames.
+   - Se perguntar sobre valores (ex: "Qual o valor da TC de crânio?"):
+     Apresente o Procedimento, Código TUSS, e discrimine as tabelas disponíveis (Particular, Amor Saúde, MedPrev/Convênio).
+   - Se o usuário digitar apenas um código (ex: "10101039", "40101010", "60000999", "1874"):
+     Identifique imediatamente a que procedimento, diária ou setor o código pertence e apresente as orientações.
+
+4. MEMÓRIA CONVERSACIONAL E PERGUNTAS INCOMPLETAS:
+   - Mantenha o contexto dos turnos anteriores: se o usuário mencionou um convênio anteriormente (ex: ASSEFAZ) e depois perguntou "Como faço a internação?" ou "E se for para UTI?", mantenha o convênio ASSEFAZ como foco.
+   - Se a pergunta for incompleta (ex: "Qual o valor da tomografia?"), solicite a região anatômica desejada (crânio, tórax, abdome, etc.).
+
+DADOS OFICIAIS DO APLICATIVO RECUPERADOS PELO RAG:
 ${knowledge.groundingPromptText}`;
 
       let responseText = '';
 
       if (ai) {
         try {
+          const contents: any[] = [];
+
+          // Include previous conversation turns if provided
+          if (Array.isArray(history) && history.length > 0) {
+            for (const turn of history.slice(-6)) {
+              if (turn.text && turn.role) {
+                contents.push({
+                  role: turn.role === 'user' ? 'user' : 'model',
+                  parts: [{ text: turn.text }]
+                });
+              }
+            }
+          }
+
+          contents.push({
+            role: 'user',
+            parts: [{ text: question }]
+          });
+
           const geminiPromise = ai.models.generateContent({
             model: 'gemini-3.8-flash',
-            contents: [{ text: `${systemPrompt}\n\nDúvida / Solicitação:\n${question}` }],
+            contents,
             config: {
+              systemInstruction: systemPrompt,
               thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-              temperature: 0.1
+              temperature: 0.3
             }
           });
 
-          // 4.5 seconds timeout race to guarantee ultra-fast response
+          // 5 seconds timeout race to guarantee fast chat response
           let timeoutHandle: NodeJS.Timeout;
           const timeoutPromise = new Promise<{ text?: string }>((resolve) => {
-            timeoutHandle = setTimeout(() => resolve({ text: '' }), 4500);
+            timeoutHandle = setTimeout(() => resolve({ text: '' }), 5000);
           });
 
           const raceResult = await Promise.race([geminiPromise, timeoutPromise]);
@@ -119,15 +166,15 @@ ${knowledge.groundingPromptText}`;
     }
   });
 
-  // Helper for generating deterministic ground-truth answers when API is busy
+  // Helper for generating deterministic ground-truth answers when API is busy or offline
   function formatGroundingAnswer(knowledge: ReturnType<typeof retrieveHospitalKnowledge>, question: string): string {
     if (knowledge.directAnswer) {
       return knowledge.directAnswer;
     }
     if (knowledge.facts.length > 0) {
-      return knowledge.facts.map(f => `• **${f.title}:** ${f.details}`).join('\n');
+      return knowledge.facts.map(f => `• **${f.title}:** ${f.code ? `[Código: ${f.code}] ` : ''}${f.details}`).join('\n');
     }
-    return 'Informação não localizada na base institucional.';
+    return 'Não localizei essas informações na base institucional. Poderia me dar mais detalhes (como o nome do exame, convênio ou código)? Estou aqui para te ajudar!';
   }
 
   // AI Medical Order / Glosas & Rules Audit Endpoint

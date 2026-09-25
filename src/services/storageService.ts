@@ -125,16 +125,26 @@ function tupleToExamRow(r: [string, string, string, string, string]): ExamRow {
 }
 
 export function loadPsExams(): ExamRow[] {
+  const defaultList = PS_EXAM_DATA_ORIGINAL.map(tupleToExamRow);
   try {
     const saved = localStorage.getItem(PS_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const existingCodes = new Set(parsed.map((p: any) => p.code));
+        const missing = defaultList.filter(d => d.code && !existingCodes.has(d.code));
+        if (missing.length > 0) {
+          const merged = [...parsed, ...missing];
+          savePsExams(merged);
+          return merged;
+        }
+        return parsed;
+      }
     }
   } catch {
     // fallback
   }
-  return PS_EXAM_DATA_ORIGINAL.map(tupleToExamRow);
+  return defaultList;
 }
 
 export function savePsExams(exams: ExamRow[]): boolean {
@@ -147,16 +157,26 @@ export function savePsExams(exams: ExamRow[]): boolean {
 }
 
 export function loadAmorExams(): ExamRow[] {
+  const defaultList = AMOR_EXAM_DATA_ORIGINAL.map(tupleToExamRow);
   try {
     const saved = localStorage.getItem(AMOR_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const existingCodes = new Set(parsed.map((p: any) => p.code).filter(Boolean));
+        const missing = defaultList.filter(d => d.code && !existingCodes.has(d.code));
+        if (missing.length > 0) {
+          const merged = [...parsed, ...missing];
+          saveAmorExams(merged);
+          return merged;
+        }
+        return parsed;
+      }
     }
   } catch {
     // fallback
   }
-  return AMOR_EXAM_DATA_ORIGINAL.map(tupleToExamRow);
+  return defaultList;
 }
 
 export function saveAmorExams(exams: ExamRow[]): boolean {
@@ -169,16 +189,26 @@ export function saveAmorExams(exams: ExamRow[]): boolean {
 }
 
 export function loadLabExams(): ExamRow[] {
+  const defaultList = LAB_EXAM_DATA_ORIGINAL.map(tupleToExamRow);
   try {
     const saved = localStorage.getItem(LAB_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const existingCodes = new Set(parsed.map((p: any) => p.code));
+        const missing = defaultList.filter(d => d.code && !existingCodes.has(d.code));
+        if (missing.length > 0) {
+          const merged = [...parsed, ...missing];
+          saveLabExams(merged);
+          return merged;
+        }
+        return parsed;
+      }
     }
   } catch {
     // fallback
   }
-  return LAB_EXAM_DATA_ORIGINAL.map(tupleToExamRow);
+  return defaultList;
 }
 
 export function saveLabExams(exams: ExamRow[]): boolean {

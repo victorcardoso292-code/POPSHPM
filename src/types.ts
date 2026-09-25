@@ -63,6 +63,21 @@ export interface ConvenioPop {
   contacts?: string[];
 }
 
+export interface PopsPsMatrixItem {
+  id: string;
+  convenio: string;
+  examesLaboratoriais: 'SIM' | 'SIM AUTORIZAR' | 'SIM AUTORIZAR COVID E INFLUENZA' | 'NÃO' | string;
+  pacotePsAdulto?: string;
+  pacotePsPediatria?: string;
+  pacotePsGeral?: string;
+  imagemPacoteCapaTasy?: string;
+}
+
+export interface GeapCovidInfluenzaItem {
+  code: string;
+  description: string;
+}
+
 export interface ExamRow {
   code: string;
   description: string;

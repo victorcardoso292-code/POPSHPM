@@ -444,12 +444,9 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
 
                         <div className="flex items-center gap-3 self-end sm:self-auto flex-shrink-0">
                           <div className="text-right">
-                            <span className="text-[10px] text-slate-400 font-bold block uppercase">Particular / MedPrev</span>
+                            <span className="text-[10px] text-slate-400 font-bold block uppercase">Valor Particular</span>
                             <span className="text-xs font-black text-slate-800">
-                              {ex.particularPrice && ex.particularPrice !== '*' ? `R$ ${ex.particularPrice}` : 'Sob consulta'} 
-                              {ex.medPrevPrice && ex.medPrevPrice !== '*' && (
-                                <span className="text-teal-700 ml-1.5 font-bold">({`R$ ${ex.medPrevPrice}`})</span>
-                              )}
+                              {ex.particularPrice && ex.particularPrice !== '*' ? `R$ ${ex.particularPrice}` : 'Sob consulta'}
                             </span>
                           </div>
 

@@ -151,7 +151,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
     } else if (item.tableType === 'lab') {
       unit = parseMoneyValue(item.exam.particularPrice);
     } else {
-      unit = parseMoneyValue(psPriceMode === 'medPrev' ? item.exam.medPrevPrice : item.exam.particularPrice);
+      unit = parseMoneyValue(item.exam.particularPrice);
     }
     return unit;
   };
@@ -165,7 +165,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
 
   const cartTotal = useMemo(() => {
     return selectedList.reduce((acc, item) => acc + getItemTotal(item), 0);
-  }, [selectedList, psPriceMode]);
+  }, [selectedList]);
 
   const totalContrastCount = useMemo(() => {
     return selectedList.filter(item => item.hasContrast).length;
@@ -178,8 +178,8 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
   const tableRefName = useMemo(() => {
     if (activeTable === 'amor') return 'Tabela Amor Saúde Contratual 2026';
     if (activeTable === 'lab') return 'Tabela Laboratorial TUSS';
-    return `Pronto-Socorro / ${psPriceMode === 'medPrev' ? 'Tabela MedPrev' : 'Particular / Médica'}`;
-  }, [activeTable, psPriceMode]);
+    return 'Pronto-Socorro / Particular';
+  }, [activeTable]);
 
   const quoteItemsForExams: QuoteItem[] = useMemo(() => {
     return selectedList.map(item => {
@@ -274,7 +274,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
     if (patientNameQuote.trim()) {
       text += `👤 Paciente: ${patientNameQuote.trim()}\n`;
     }
-    text += `📋 Base/Tabela: ${activeTable === 'amor' ? 'Amor Saúde (Contratual)' : (activeTable === 'lab' ? 'Exames Laboratoriais' : `Pronto-Socorro / ${psPriceMode === 'medPrev' ? 'MedPrev' : 'Particular'}`)}\n`;
+    text += `📋 Base/Tabela: ${activeTable === 'amor' ? 'Amor Saúde (Contratual)' : (activeTable === 'lab' ? 'Exames Laboratoriais' : 'Pronto-Socorro / Particular')}\n`;
     text += `--------------------------------------------------\n`;
 
     selectedList.forEach((item, i) => {
@@ -337,7 +337,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
                   : 'bg-slate-100 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86]'
               }`}
             >
-              <span>Pronto-Socorro / MedPrev</span>
+              <span>Pronto-Socorro / Particular</span>
               <span className={`text-xs px-2 py-0.5 rounded-lg font-black ${
                 activeTable === 'ps' ? 'bg-[#095962] text-white' : 'bg-slate-200 text-slate-700'
               }`}>
@@ -430,32 +430,11 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
             />
           </div>
 
-          {/* Basis Switch for PS */}
+          {/* Basis Indicator for PS */}
           {activeTable === 'ps' && (
-            <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl">
-              <span className="text-xs sm:text-sm font-black text-slate-600 px-2">Base de Preço:</span>
-              <button
-                type="button"
-                onClick={() => setPsPriceMode('particular')}
-                className={`px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all ${
-                  psPriceMode === 'particular'
-                    ? 'bg-teal-700 text-white shadow-sm'
-                    : 'text-slate-700 hover:text-slate-900'
-                }`}
-              >
-                Particular / Médica
-              </button>
-              <button
-                type="button"
-                onClick={() => setPsPriceMode('medPrev')}
-                className={`px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all ${
-                  psPriceMode === 'medPrev'
-                    ? 'bg-teal-700 text-white shadow-sm'
-                    : 'text-slate-700 hover:text-slate-900'
-                }`}
-              >
-                MedPrev
-              </button>
+            <div className="flex items-center gap-2 bg-[#EBF7F8] border border-[#C4E5E8] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-[#0E7B86]">
+              <span className="text-slate-500 font-medium">Tabela:</span>
+              <span className="font-black text-[#095962]">Particular / PS</span>
             </div>
           )}
         </div>
@@ -594,10 +573,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
                   <th className="py-3.5 px-3.5 font-black w-32">Código TUSS</th>
                   <th className="py-3.5 px-4 font-black">Descrição Completa do Exame</th>
                   {activeTable === 'ps' && (
-                    <>
-                      <th className="py-3.5 px-3.5 font-black text-right w-32">Particular</th>
-                      <th className="py-3.5 px-3.5 font-black text-right w-32">MedPrev</th>
-                    </>
+                    <th className="py-3.5 px-3.5 font-black text-right w-36">Valor Particular</th>
                   )}
                   {activeTable === 'amor' && (
                     <th className="py-3.5 px-4 font-black text-right w-40">Valor Amor Saúde</th>
@@ -613,7 +589,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
               <tbody className="divide-y divide-slate-100">
                 {paginatedExams.length === 0 ? (
                   <tr>
-                    <td colSpan={activeTable === 'ps' ? 7 : 5} className="py-12 text-center text-slate-500 font-medium text-sm">
+                    <td colSpan={activeTable === 'ps' ? (isMaster ? 6 : 5) : (isMaster ? 5 : 4)} className="py-12 text-center text-slate-500 font-medium text-sm">
                       Nenhum exame encontrado com os critérios informados.
                     </td>
                   </tr>
@@ -721,22 +697,13 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
 
                         {/* PS Prices */}
                         {activeTable === 'ps' && (
-                          <>
-                            <td className="py-4 px-3.5 text-right font-mono font-black text-teal-900 text-sm sm:text-base">
-                              {exam.particularPrice === '*' ? (
-                                <span className="text-slate-400 font-normal text-xs">Consultar</span>
-                              ) : (
-                                `R$ ${exam.particularPrice}`
-                              )}
-                            </td>
-                            <td className="py-4 px-3.5 text-right font-mono font-black text-cyan-900 text-sm sm:text-base">
-                              {exam.medPrevPrice === '*' ? (
-                                <span className="text-slate-400 font-normal text-xs">Consultar</span>
-                              ) : (
-                                `R$ ${exam.medPrevPrice}`
-                              )}
-                            </td>
-                          </>
+                          <td className="py-4 px-3.5 text-right font-mono font-black text-teal-900 text-sm sm:text-base">
+                            {exam.particularPrice === '*' ? (
+                              <span className="text-slate-400 font-normal text-xs">Consultar</span>
+                            ) : (
+                              `R$ ${exam.particularPrice}`
+                            )}
+                          </td>
                         )}
 
                         {/* Amor Saúde Price */}
@@ -1156,7 +1123,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
                   <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
                     <span className="text-[11px] font-bold text-slate-500 uppercase block">Tabela Referência</span>
                     <div className="text-xs font-extrabold text-slate-800 mt-2 truncate">
-                      {activeTable === 'amor' ? 'Amor Saúde' : (activeTable === 'lab' ? 'Laboratorial' : `PS (${psPriceMode === 'medPrev' ? 'MedPrev' : 'Particular'})`)}
+                      {activeTable === 'amor' ? 'Amor Saúde' : (activeTable === 'lab' ? 'Laboratorial' : 'Pronto-Socorro / Particular')}
                     </div>
                   </div>
                 </div>
@@ -1256,7 +1223,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
                               </td>
                               <td className="py-3 px-3 text-center">
                                 <span className="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-1 rounded">
-                                  {item.tableType === 'amor' ? 'Amor Saúde' : (item.tableType === 'lab' ? 'Laboratório' : 'PS / MedPrev')}
+                                  {item.tableType === 'amor' ? 'Amor Saúde' : (item.tableType === 'lab' ? 'Laboratório' : 'Pronto-Socorro')}
                                 </span>
                               </td>
                               <td className="py-3 px-3 text-center">

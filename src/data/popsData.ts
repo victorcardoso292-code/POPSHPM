@@ -1,4 +1,4 @@
-import { ConvenioPop, PopCardItem } from '../types';
+import { ConvenioPop, PopCardItem, PopsPsMatrixItem, GeapCovidInfluenzaItem } from '../types';
 
 export const SERVIR_DATA: { [key: string]: PopCardItem[] } = {
   'Internação / UTI': [
@@ -306,6 +306,225 @@ export const SERVIR_DATA: { [key: string]: PopCardItem[] } = {
   ]
 };
 
+// ========================================================
+// OFICIAL: RELAÇÃO DE CONVÊNIOS DO PRONTO SOCORRO (POPS PS)
+// CNPJ Pronto Socorro: 12955953000192 | CBO Clínico Geral: 225125
+// ========================================================
+export const POPS_PS_INSTITUTIONAL_HEADER = {
+  title: 'RELAÇÃO DE CONVÊNIOS PARA REALIZAÇÃO DE EXAMES LABORATORIAIS | CÓDIGOS PACOTES PS | EXAMES IMAGEM PACOTE IMPRIMIR CAPA TASY',
+  cnpj: '12955953000192',
+  cnpjFormatado: '12.955.953/0001-92',
+  cboClinicoGeral: '225125',
+  cboDescricao: 'CBO Clínico Geral 225125 - Urgência / Emergência',
+  regrasGerais: [
+    'Exames de imagem e laboratório que não são pacotes, solicitar autorização convênio!',
+    'Colher assinatura paciente ou responsável em todas as GUIAS AUTORIZADAS e nas fichas de atendimentos. Na Internação sempre que ocorrer!!'
+  ],
+  especialidadesSobreavisoPs: [
+    'Urologista',
+    'Cardiologista',
+    'Nefrologista',
+    'Neurologista',
+    'Neurocirurgião'
+  ]
+};
+
+// Tabela Amarela: Códigos exames Influenza e Covid para convênio GEAP
+export const GEAP_COVID_INFLUENZA_EXAMS: GeapCovidInfluenzaItem[] = [
+  { code: '40306216', description: 'ANTICORPOS ANTI-INFLUENZA A, IGG-PESQUISA E/OU DOSAGEM' },
+  { code: '40306224', description: 'ANTICORPOS ANTI-INFLUENZA A, IGG-PESQUISA E/OU DOSAGEM' },
+  { code: '40306232', description: 'ANTICORPOS ANTI-INFLUENZA B, IGG-PESQUISA E/OU DOSAGEM' },
+  { code: '40306240', description: 'ANTICORPOS ANTI-INFLUENZA B, IGG-PESQUISA E/OU DOSAGEM' },
+  { code: '40314618', description: 'SARS - (COVID-19) PESQUISA DE ANTICORPOS (NOVO CÓDIGO)' }
+];
+
+// Matriz Completa Oficial de Convênios do Pronto Socorro (29 Convênios)
+export const POPS_PS_MATRIX_DATA: PopsPsMatrixItem[] = [
+  {
+    id: 'AMIL',
+    convenio: 'AMIL',
+    examesLaboratoriais: 'SIM AUTORIZAR',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'ASSEFAZ',
+    convenio: 'ASSEFAZ',
+    examesLaboratoriais: 'SIM AUTORIZAR',
+    imagemPacoteCapaTasy: 'RAIO X'
+  },
+  {
+    id: 'BEST SAÚDE',
+    convenio: 'BEST SAÚDE',
+    examesLaboratoriais: 'SIM AUTORIZAR',
+    pacotePsAdulto: '84000406',
+    pacotePsPediatria: '84000147',
+    imagemPacoteCapaTasy: 'RAIO X e Tomografia'
+  },
+  {
+    id: 'BRADESCO',
+    convenio: 'BRADESCO',
+    examesLaboratoriais: 'SIM',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'CAPESAÚDE',
+    convenio: 'CAPESAÚDE',
+    examesLaboratoriais: 'SIM',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'CASSI',
+    convenio: 'CASSI',
+    examesLaboratoriais: 'SIM AUTORIZAR',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'CONAB',
+    convenio: 'CONAB',
+    examesLaboratoriais: 'SIM',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'E-VIDA',
+    convenio: 'E-VIDA',
+    examesLaboratoriais: 'SIM AUTORIZAR',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'FUSEX',
+    convenio: 'FUSEX',
+    examesLaboratoriais: 'SIM',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'GAMASAÚDE',
+    convenio: 'GAMASAÚDE',
+    examesLaboratoriais: 'SIM',
+    pacotePsAdulto: '98910094',
+    pacotePsPediatria: '98910043',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'GEAP',
+    convenio: 'GEAP',
+    examesLaboratoriais: 'SIM AUTORIZAR COVID E INFLUENZA',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'GOLDEN CROSS',
+    convenio: 'GOLDEN CROSS',
+    examesLaboratoriais: 'SIM',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'LIFE SAÚDE',
+    convenio: 'LIFE SAÚDE',
+    examesLaboratoriais: 'SIM AUTORIZAR',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'MARINHA',
+    convenio: 'MARINHA',
+    examesLaboratoriais: 'SIM',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'NOTRE DAME',
+    convenio: 'NOTRE DAME',
+    examesLaboratoriais: 'NÃO',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'OMINT',
+    convenio: 'OMINT',
+    examesLaboratoriais: 'SIM',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'PASA VALE',
+    convenio: 'PASA VALE',
+    examesLaboratoriais: 'SIM',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'PETROBRAS',
+    convenio: 'PETROBRAS',
+    examesLaboratoriais: 'NÃO',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'PLAN ASSISTE',
+    convenio: 'PLAN ASSISTE',
+    examesLaboratoriais: 'SIM AUTORIZAR',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'POSTAL SAÚDE',
+    convenio: 'POSTAL SAÚDE',
+    examesLaboratoriais: 'SIM',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'PRO SOCIAL',
+    convenio: 'PRO SOCIAL',
+    examesLaboratoriais: 'SIM AUTORIZAR',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'PRO TOCANTINS',
+    convenio: 'PRO TOCANTINS',
+    examesLaboratoriais: 'SIM AUTORIZAR',
+    imagemPacoteCapaTasy: 'RAIO X'
+  },
+  {
+    id: 'SAÚDE CAIXA',
+    convenio: 'SAÚDE CAIXA',
+    examesLaboratoriais: 'SIM AUTORIZAR',
+    pacotePsGeral: '98800124 + 10101039',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'SEPACO',
+    convenio: 'SEPACO',
+    examesLaboratoriais: 'NÃO',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'SERVIR',
+    convenio: 'SERVIR',
+    examesLaboratoriais: 'SIM',
+    pacotePsAdulto: '10101037',
+    pacotePsPediatria: '10101038',
+    imagemPacoteCapaTasy: 'Raio X e Ressonância'
+  },
+  {
+    id: 'SUL AMÉRICA',
+    convenio: 'SUL AMÉRICA',
+    examesLaboratoriais: 'SIM',
+    pacotePsGeral: '64620107',
+    imagemPacoteCapaTasy: 'Raio X e Tomografia'
+  },
+  {
+    id: 'SUS',
+    convenio: 'SUS',
+    examesLaboratoriais: 'NÃO',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'TRE',
+    convenio: 'TRE',
+    examesLaboratoriais: 'SIM',
+    imagemPacoteCapaTasy: '—'
+  },
+  {
+    id: 'VALE PASA',
+    convenio: 'VALE PASA',
+    examesLaboratoriais: '—',
+    pacotePsGeral: '98001620',
+    imagemPacoteCapaTasy: '—'
+  }
+];
+
 export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
   {
     id: 'SERVIR',
@@ -314,9 +533,9 @@ export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
     category: 'Estadual',
     cnpj: '12.955.953/0001-92',
     portalUrl: 'https://servir.facilinformatica.com.br',
-    labUrgencia: 'Incluso no Pacote PS',
-    pacotePs: '10101037 (Pediatria) / 10101038 (Adulto)',
-    imagemUrgencia: 'RX e RM Inclusos no Pacote (Sem autorização)',
+    labUrgencia: 'SIM (Incluso no Pacote PS)',
+    pacotePs: '10101037 ADULTO / 10101038 PEDIATRIA',
+    imagemUrgencia: 'Raio X e Ressonância (Imprimir Capa TASY)',
     accessCredentials: [
       ['Portal Servir', 'https://servir.facilinformatica.com.br'],
       ['Login', '12955953000192'],
@@ -327,8 +546,9 @@ export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
         id: 'ps',
         label: 'Pronto-Socorro',
         textItems: [
-          'Consulta Pronto Socorro Adulto: 10101038.',
-          'Consulta Pronto Socorro Pediatria: 10101037.',
+          'Consulta Pronto Socorro Adulto: 10101037.',
+          'Consulta Pronto Socorro Pediatria: 10101038.',
+          'Raio X e Ressonância inclusos no pacote do Pronto-Socorro — Imprimir capa TASY.',
           'Não precisa pegar autorização para RX e RM pois o pacote está incluso.',
           'Obrigatório pegar assinatura na guia e colocar a capa juntos.'
         ]

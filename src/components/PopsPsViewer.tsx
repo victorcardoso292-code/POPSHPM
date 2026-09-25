@@ -22,9 +22,25 @@ import {
   CheckCircle2, 
   AlertCircle, 
   Info,
-  ShieldAlert
+  ShieldAlert,
+  Table,
+  LayoutGrid,
+  ArrowRight,
+  ArrowLeft,
+  XCircle,
+  FileCheck2,
+  Syringe,
+  Activity,
+  FileSpreadsheet,
+  Layers
 } from 'lucide-react';
-import { SERVIR_DATA, CONVENIOS_MASTER_LIST } from '../data/popsData';
+import { 
+  SERVIR_DATA, 
+  CONVENIOS_MASTER_LIST,
+  POPS_PS_MATRIX_DATA,
+  POPS_PS_INSTITUTIONAL_HEADER,
+  GEAP_COVID_INFLUENZA_EXAMS
+} from '../data/popsData';
 import { PORTAIS_CREDENCIAIS, PortalCredential } from '../data/portaisData';
 
 interface PopsPsViewerProps {
@@ -41,11 +57,13 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
   initialPlanId
 }) => {
   const [selectedPlanId, setSelectedPlanId] = useState<string>(initialPlanId || '');
-  const [viewMode, setViewMode] = useState<'grid' | 'details'>(initialPlanId ? 'details' : 'grid');
+  const [viewMode, setViewMode] = useState<'matrix' | 'grid' | 'details'>(initialPlanId ? 'details' : 'matrix');
   const [activeTab, setActiveTab] = useState<PsActiveTab>('atendimento');
   const [query, setQuery] = useState<string>('');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [planSearch, setPlanSearch] = useState<string>('');
+  const [matrixSearch, setMatrixSearch] = useState<string>('');
+  const [matrixFilter, setMatrixFilter] = useState<'all' | 'pacotes' | 'capa-tasy' | 'sim-autorizar' | 'nao'>('all');
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('Todos');
   const [revealedPasswords, setRevealedPasswords] = useState<{ [id: string]: boolean }>({});
   const [copiedCredential, setCopiedCredential] = useState<{ id: string; field: 'login' | 'senha' } | null>(null);
@@ -222,12 +240,446 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
   }, [isServir, activeConvenioObj, matchingCredentials]);
 
   // ==========================================
-  // VIEW 1: SELETOR DE CONVÊNIOS EM GRID (PS)
-  // (100% IDÊNTICO AO POPS INTERNAÇÃO)
+  // FILTRAGEM DA TABELA MATRIZ OFICIAL (29 CONVÊNIOS)
+  // ==========================================
+  const filteredMatrixData = useMemo(() => {
+    return POPS_PS_MATRIX_DATA.filter(item => {
+      const q = matrixSearch.toLowerCase().trim();
+      const matchSearch = !q || 
+        item.convenio.toLowerCase().includes(q) ||
+        (item.pacotePsAdulto && item.pacotePsAdulto.includes(q)) ||
+        (item.pacotePsPediatria && item.pacotePsPediatria.includes(q)) ||
+        (item.pacotePsGeral && item.pacotePsGeral.toLowerCase().includes(q)) ||
+        item.examesLaboratoriais.toLowerCase().includes(q) ||
+        (item.imagemPacoteCapaTasy && item.imagemPacoteCapaTasy.toLowerCase().includes(q));
+
+      if (!matchSearch) return false;
+
+      if (matrixFilter === 'pacotes') {
+        return Boolean(item.pacotePsAdulto || item.pacotePsPediatria || item.pacotePsGeral);
+      }
+      if (matrixFilter === 'capa-tasy') {
+        return Boolean(item.imagemPacoteCapaTasy && item.imagemPacoteCapaTasy !== '—');
+      }
+      if (matrixFilter === 'sim-autorizar') {
+        return item.examesLaboratoriais.includes('AUTORIZAR');
+      }
+      if (matrixFilter === 'nao') {
+        return item.examesLaboratoriais === 'NÃO';
+      }
+
+      return true;
+    });
+  }, [matrixSearch, matrixFilter]);
+
+  // ==========================================
+  // VIEW 1: TABELA MATRIZ OFICIAL DO PRONTO-SOCORRO
+  // (DOCUMENTO MATRIZ: 29 CONVÊNIOS, CBO 225125, CAPA TASY)
+  // ==========================================
+  if (viewMode === 'matrix') {
+    return (
+      <div className="space-y-6 w-full max-w-[1700px] mx-auto pb-16">
+        {/* Switcher de Visão: Matriz Oficial vs Cards */}
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-white border border-slate-200 rounded-2xl p-3 shadow-xs">
+          <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+            <button
+              type="button"
+              onClick={() => setViewMode('matrix')}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-black transition-all cursor-pointer bg-[#0E7B86] text-white shadow-xs"
+            >
+              <Table className="w-4 h-4" />
+              <span>Tabela Matriz Oficial (29 Convênios)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition-all cursor-pointer"
+            >
+              <LayoutGrid className="w-4 h-4" />
+              <span>Modelos em Cards (Por Plano)</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
+            >
+              <Printer className="w-3.5 h-3.5 text-slate-600" />
+              <span>Imprimir Matriz</span>
+            </button>
+            {onOpenAiWithPrompt && (
+              <button
+                type="button"
+                onClick={() => onOpenAiWithPrompt('Quais convênios possuem pacotes e exames inclusos no Pronto-Socorro?')}
+                className="flex items-center gap-1.5 px-3 py-2 bg-[#B01B52] text-white rounded-xl text-xs font-bold hover:bg-[#8e1542] transition-colors cursor-pointer shadow-2xs"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Perguntar à IA</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Cabeçalho Institucional Oficial */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-7 shadow-xs space-y-4">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8] flex items-center gap-1.5">
+                  <Ambulance className="w-3 h-3 text-[#0E7B86]" />
+                  <span>Matriz Oficial de Convênios do Pronto-Socorro</span>
+                </span>
+                <span className="px-2 py-0.5 bg-slate-100 border border-slate-200 rounded-md text-[11px] font-bold text-slate-700">
+                  CNPJ: 12.955.953/0001-92
+                </span>
+                <span className="px-2 py-0.5 bg-slate-100 border border-slate-200 rounded-md text-[11px] font-bold text-slate-700">
+                  CBO Clínico Geral: 225125
+                </span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight m-0">
+                RELAÇÃO DE CONVÊNIOS PARA REALIZAÇÃO DE EXAMES LABORATORIAIS | CÓDIGOS PACOTES PS | EXAMES IMAGEM PACOTE IMPRIMIR CAPA TASY
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-600 mt-1.5 m-0 font-medium">
+                Tabela de diretrizes rápidas para liberação, conferência de pacotes de urgência e impressão de capa Tasy na recepção do PS.
+              </p>
+            </div>
+          </div>
+
+          {/* Banner das 5 Especialidades de Sobreaviso */}
+          <div className="bg-gradient-to-r from-teal-50 via-cyan-50 to-sky-50 border border-teal-200 rounded-xl p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-lg bg-[#0E7B86] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                <Stethoscope className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[11px] font-black uppercase tracking-wider text-[#0E7B86] block">
+                  Diretriz Médica de Retaguarda
+                </span>
+                <span className="text-sm font-black text-slate-900">
+                  ESPECIALIDADES DE SOBREAVISO NO PS:
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              {POPS_PS_INSTITUTIONAL_HEADER.especialidadesSobreavisoPs.map(esp => (
+                <span 
+                  key={esp} 
+                  className="px-2.5 py-1 bg-white border border-teal-200/90 rounded-lg text-xs font-black text-slate-800 shadow-2xs flex items-center gap-1"
+                >
+                  <Activity className="w-3 h-3 text-[#0E7B86]" />
+                  <span>{esp}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Caixa Amarela Oficial: GEAP Influenza e COVID */}
+          <div className="bg-amber-50/90 border-2 border-amber-300 rounded-xl p-4 shadow-xs">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-amber-200/80">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center flex-shrink-0 font-black shadow-xs">
+                  ⚠️
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-amber-950 uppercase tracking-tight m-0">
+                    Códigos exames Influenza e covid para convênio Geap
+                  </h3>
+                  <p className="text-xs text-amber-800 font-semibold m-0">
+                    No convênio GEAP é obrigatório autorizar previamente no PS os seguintes códigos para exames respiratórios:
+                  </p>
+                </div>
+              </div>
+              <span className="px-2.5 py-1 bg-amber-200/70 border border-amber-400 rounded-md text-[11px] font-black text-amber-950 self-start md:self-auto">
+                SIM AUTORIZAR COVID E INFLUENZA
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 mt-3">
+              {GEAP_COVID_INFLUENZA_EXAMS.map(item => (
+                <div 
+                  key={item.code} 
+                  className="bg-white border border-amber-200 rounded-lg p-2.5 flex items-center justify-between gap-2 shadow-2xs hover:border-amber-400 transition-colors"
+                >
+                  <div className="min-w-0">
+                    <span className="font-mono text-xs font-black text-slate-900 bg-amber-100/70 px-1.5 py-0.5 rounded border border-amber-200">
+                      {item.code}
+                    </span>
+                    <p className="text-[11px] font-bold text-slate-700 mt-1 truncate m-0" title={item.description}>
+                      {item.description}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => copyCodeToClipboard(item.code)}
+                    className="p-1.5 text-slate-500 hover:text-amber-800 hover:bg-amber-50 rounded transition-colors cursor-pointer flex-shrink-0"
+                    title="Copiar código TUSS"
+                  >
+                    {copiedCode === item.code ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-600 font-bold" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Barra de Filtros e Busca da Tabela */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
+            {[
+              { id: 'all', label: `Todos (${POPS_PS_MATRIX_DATA.length})` },
+              { id: 'pacotes', label: 'Com Pacote PS (7)' },
+              { id: 'capa-tasy', label: 'Capa TASY Imagem (5)' },
+              { id: 'sim-autorizar', label: 'Sim Autorizar (12)' },
+              { id: 'nao', label: 'Não Atende Lab (4)' }
+            ].map(f => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setMatrixFilter(f.id as any)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                  matrixFilter === f.id
+                    ? 'bg-[#0E7B86] text-white shadow-xs'
+                    : 'bg-slate-100 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86]'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="relative w-full md:w-80">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="search"
+              placeholder="Buscar por convênio ou código..."
+              value={matrixSearch}
+              onChange={e => setMatrixSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#0E7B86] focus:bg-white text-slate-900 placeholder:text-slate-400"
+            />
+          </div>
+        </div>
+
+        {/* Tabela Matriz Interativa dos 29 Convênios */}
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs sm:text-sm">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 uppercase tracking-wider text-[11px] font-black">
+                  <th className="py-3 px-4 sm:px-6">Convênios</th>
+                  <th className="py-3 px-4 sm:px-6">Exames Laboratoriais (Urgência / Emergência)</th>
+                  <th className="py-3 px-4 sm:px-6">Códigos Pacotes PS (CBO 225125)</th>
+                  <th className="py-3 px-4 sm:px-6">Exames Imagem Pacote (Imprimir Capa TASY)</th>
+                  <th className="py-3 px-4 text-center">Modelo Detalhado</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredMatrixData.map((item, idx) => {
+                  const hasPacote = Boolean(item.pacotePsAdulto || item.pacotePsPediatria || item.pacotePsGeral);
+                  const hasCapaTasy = Boolean(item.imagemPacoteCapaTasy && item.imagemPacoteCapaTasy !== '—');
+
+                  return (
+                    <tr 
+                      key={item.id || item.convenio}
+                      className={`hover:bg-slate-50/80 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}
+                    >
+                      {/* Coluna 1: Nome do Convênio */}
+                      <td className="py-3.5 px-4 sm:px-6">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-lg bg-[#0E7B86] text-white flex items-center justify-center font-black text-xs shadow-2xs flex-shrink-0">
+                            {item.convenio.slice(0, 2).toUpperCase()}
+                          </div>
+                          <div>
+                            <span className="font-black text-slate-900 block text-sm">
+                              {item.convenio}
+                            </span>
+                            {hasCapaTasy && (
+                              <span className="text-[10px] font-black text-cyan-700 bg-cyan-50 px-1.5 py-0.2 rounded border border-cyan-200 inline-block mt-0.5">
+                                Imprime Capa TASY
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Coluna 2: Exames Laboratoriais */}
+                      <td className="py-3.5 px-4 sm:px-6">
+                        {item.examesLaboratoriais === 'SIM' ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <Check className="w-3.5 h-3.5 text-emerald-600 font-bold" />
+                            <span>SIM</span>
+                          </span>
+                        ) : item.examesLaboratoriais === 'NÃO' ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-black bg-rose-50 text-rose-700 border border-rose-200">
+                            <XCircle className="w-3.5 h-3.5 text-rose-600" />
+                            <span>NÃO ATENDE NO PS</span>
+                          </span>
+                        ) : item.examesLaboratoriais === 'SIM AUTORIZAR COVID E INFLUENZA' ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-black bg-amber-100 text-amber-900 border border-amber-300">
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-700" />
+                            <span>SIM AUTORIZAR COVID E INFLUENZA</span>
+                          </span>
+                        ) : item.examesLaboratoriais.includes('AUTORIZAR') ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-black bg-amber-50 text-amber-800 border border-amber-200">
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                            <span>SIM AUTORIZAR</span>
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 font-bold">—</span>
+                        )}
+                      </td>
+
+                      {/* Coluna 3: Códigos Pacotes PS */}
+                      <td className="py-3.5 px-4 sm:px-6">
+                        {hasPacote ? (
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                            {item.pacotePsAdulto && (
+                              <button
+                                type="button"
+                                onClick={() => copyCodeToClipboard(item.pacotePsAdulto!)}
+                                className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-md font-mono text-xs font-black text-slate-900 transition-colors cursor-pointer"
+                                title="Clique para copiar código Adulto"
+                              >
+                                <span className="text-slate-900 font-bold">{item.pacotePsAdulto}</span>
+                                <span className="text-[10px] uppercase font-bold text-slate-500">ADULTO</span>
+                                {copiedCode === item.pacotePsAdulto ? (
+                                  <Check className="w-3 h-3 text-emerald-600 font-bold" />
+                                ) : (
+                                  <Copy className="w-3 h-3 text-slate-400" />
+                                )}
+                              </button>
+                            )}
+
+                            {item.pacotePsPediatria && (
+                              <button
+                                type="button"
+                                onClick={() => copyCodeToClipboard(item.pacotePsPediatria!)}
+                                className="inline-flex items-center gap-1.5 px-2 py-1 bg-rose-50 hover:bg-rose-100 border border-rose-300 rounded-md font-mono text-xs font-black text-rose-800 transition-colors cursor-pointer"
+                                title="Clique para copiar código Pediatria"
+                              >
+                                <span className="text-rose-700 font-black">{item.pacotePsPediatria}</span>
+                                <span className="text-[10px] uppercase font-black text-rose-600">PEDIATRIA</span>
+                                {copiedCode === item.pacotePsPediatria ? (
+                                  <Check className="w-3 h-3 text-emerald-600 font-bold" />
+                                ) : (
+                                  <Copy className="w-3 h-3 text-rose-400" />
+                                )}
+                              </button>
+                            )}
+
+                            {item.pacotePsGeral && (
+                              <button
+                                type="button"
+                                onClick={() => copyCodeToClipboard(item.pacotePsGeral!)}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-teal-50 hover:bg-teal-100 border border-teal-300 rounded-md font-mono text-xs font-black text-teal-900 transition-colors cursor-pointer"
+                                title="Clique para copiar pacote PS"
+                              >
+                                <span>{item.pacotePsGeral}</span>
+                                {copiedCode === item.pacotePsGeral ? (
+                                  <Check className="w-3 h-3 text-emerald-600 font-bold" />
+                                ) : (
+                                  <Copy className="w-3 h-3 text-teal-600" />
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 font-semibold">— (Sem pacote pré-definido)</span>
+                        )}
+                      </td>
+
+                      {/* Coluna 4: Exames Imagem Pacote (Imprimir Capa TASY) */}
+                      <td className="py-3.5 px-4 sm:px-6">
+                        {hasCapaTasy ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-black bg-cyan-50 text-cyan-800 border border-cyan-300 shadow-2xs">
+                            <Printer className="w-3.5 h-3.5 text-cyan-600" />
+                            <span>{item.imagemPacoteCapaTasy}</span>
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 font-medium">— (Solicitar autorização)</span>
+                        )}
+                      </td>
+
+                      {/* Coluna 5: Ação / Modelo */}
+                      <td className="py-3.5 px-4 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleSelectPlan(item.convenio)}
+                          className="px-2.5 py-1 text-xs font-bold text-[#0E7B86] hover:text-white bg-[#EBF7F8] hover:bg-[#0E7B86] border border-[#C4E5E8] rounded-md transition-all cursor-pointer inline-flex items-center gap-1"
+                        >
+                          <span>Guia</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Rodapé Oficial: Alertas e Regras Institucionais */}
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-2.5 shadow-2xs">
+          <div className="flex items-start gap-2 text-xs font-bold text-slate-800">
+            <span className="text-base leading-none">⚠️</span>
+            <span>
+              <strong>Exames de imagem e laboratório que não são pacotes:</strong> É obrigatório solicitar autorização com o convênio antes da realização!
+            </span>
+          </div>
+
+          <div className="flex items-start gap-2 text-xs font-bold text-slate-800">
+            <span className="text-base leading-none">✍️</span>
+            <span>
+              <strong>Assinatura Obrigatória:</strong> Colher assinatura do paciente ou responsável em todas as <strong>GUIAS AUTORIZADAS</strong> e nas fichas de atendimentos. Na Internação sempre que ocorrer!!
+            </span>
+          </div>
+
+          <div className="flex items-start gap-2 text-xs font-bold text-[#0E7B86]">
+            <span className="text-base leading-none">🩺</span>
+            <span>
+              <strong>ESPECIALIDADES DE SOBREAVISO NO PS:</strong> Urologista, Cardiologista, Nefrologista, Neurologista e Neurocirurgião.
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // VIEW 2: SELETOR DE CONVÊNIOS EM GRID (PS)
   // ==========================================
   if (viewMode === 'grid') {
     return (
       <div className="space-y-6 w-full max-w-[1700px] mx-auto pb-16">
+        {/* Switcher de Visão: Matriz Oficial vs Cards */}
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-white border border-slate-200 rounded-2xl p-3 shadow-xs">
+          <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+            <button
+              type="button"
+              onClick={() => setViewMode('matrix')}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition-all cursor-pointer"
+            >
+              <Table className="w-4 h-4" />
+              <span>Tabela Matriz Oficial (29 Convênios)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-black transition-all cursor-pointer bg-[#0E7B86] text-white shadow-xs"
+            >
+              <LayoutGrid className="w-4 h-4" />
+              <span>Modelos em Cards (Por Plano)</span>
+            </button>
+          </div>
+        </div>
+
         <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs">
           <div className="max-w-3xl space-y-2">
             <div className="flex items-center gap-2">

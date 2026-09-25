@@ -434,10 +434,10 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
             {[
               { id: 'all', label: `Todos (${POPS_PS_MATRIX_DATA.length})` },
-              { id: 'pacotes', label: 'Com Pacote PS (7)' },
-              { id: 'capa-tasy', label: 'Capa TASY Imagem (5)' },
-              { id: 'sim-autorizar', label: 'Sim Autorizar (12)' },
-              { id: 'nao', label: 'Não Atende Lab (4)' }
+              { id: 'pacotes', label: `Com Pacote PS (${POPS_PS_MATRIX_DATA.filter(i => Boolean(i.pacotePsAdulto || i.pacotePsPediatria || i.pacotePsGeral)).length})` },
+              { id: 'capa-tasy', label: `Capa TASY Imagem (${POPS_PS_MATRIX_DATA.filter(i => Boolean(i.imagemPacoteCapaTasy && i.imagemPacoteCapaTasy !== '—')).length})` },
+              { id: 'sim-autorizar', label: `Sim Autorizar (${POPS_PS_MATRIX_DATA.filter(i => i.examesLaboratoriais.includes('AUTORIZAR')).length})` },
+              { id: 'nao', label: `Não Atende Lab (${POPS_PS_MATRIX_DATA.filter(i => i.examesLaboratoriais === 'NÃO').length})` }
             ].map(f => (
               <button
                 key={f.id}

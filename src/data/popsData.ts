@@ -332,9 +332,9 @@ export const POPS_PS_INSTITUTIONAL_HEADER = {
 // Tabela Amarela: Códigos exames Influenza e Covid para convênio GEAP
 export const GEAP_COVID_INFLUENZA_EXAMS: GeapCovidInfluenzaItem[] = [
   { code: '40306216', description: 'ANTICORPOS ANTI-INFLUENZA A, IGG-PESQUISA E/OU DOSAGEM' },
-  { code: '40306224', description: 'ANTICORPOS ANTI-INFLUENZA A, IGG-PESQUISA E/OU DOSAGEM' },
+  { code: '40306224', description: 'ANTICORPOS ANTI-INFLUENZA A, IGM-PESQUISA E/OU DOSAGEM' },
   { code: '40306232', description: 'ANTICORPOS ANTI-INFLUENZA B, IGG-PESQUISA E/OU DOSAGEM' },
-  { code: '40306240', description: 'ANTICORPOS ANTI-INFLUENZA B, IGG-PESQUISA E/OU DOSAGEM' },
+  { code: '40306240', description: 'ANTICORPOS ANTI-INFLUENZA B, IGM-PESQUISA E/OU DOSAGEM' },
   { code: '40314618', description: 'SARS - (COVID-19) PESQUISA DE ANTICORPOS (NOVO CÓDIGO)' }
 ];
 
@@ -350,21 +350,21 @@ export const POPS_PS_MATRIX_DATA: PopsPsMatrixItem[] = [
     id: 'ASSEFAZ',
     convenio: 'ASSEFAZ',
     examesLaboratoriais: 'SIM AUTORIZAR',
-    imagemPacoteCapaTasy: 'RAIO X'
+    imagemPacoteCapaTasy: '—'
   },
   {
     id: 'BEST SAÚDE',
     convenio: 'BEST SAÚDE',
     examesLaboratoriais: 'SIM AUTORIZAR',
-    pacotePsAdulto: '84000406',
-    pacotePsPediatria: '84000147',
-    imagemPacoteCapaTasy: 'RAIO X e Tomografia'
+    imagemPacoteCapaTasy: 'RAIO X'
   },
   {
     id: 'BRADESCO',
     convenio: 'BRADESCO',
     examesLaboratoriais: 'SIM',
-    imagemPacoteCapaTasy: '—'
+    pacotePsAdulto: '84000406',
+    pacotePsPediatria: '84000147',
+    imagemPacoteCapaTasy: 'RAIO X e Tomografia'
   },
   {
     id: 'CAPESAÚDE',
@@ -400,14 +400,14 @@ export const POPS_PS_MATRIX_DATA: PopsPsMatrixItem[] = [
     id: 'GAMASAÚDE',
     convenio: 'GAMASAÚDE',
     examesLaboratoriais: 'SIM',
-    pacotePsAdulto: '98910094',
-    pacotePsPediatria: '98910043',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'GEAP',
     convenio: 'GEAP',
     examesLaboratoriais: 'SIM AUTORIZAR COVID E INFLUENZA',
+    pacotePsAdulto: '989100094',
+    pacotePsPediatria: '98910043',
     imagemPacoteCapaTasy: '—'
   },
   {
@@ -474,14 +474,14 @@ export const POPS_PS_MATRIX_DATA: PopsPsMatrixItem[] = [
     id: 'PRO TOCANTINS',
     convenio: 'PRO TOCANTINS',
     examesLaboratoriais: 'SIM AUTORIZAR',
-    imagemPacoteCapaTasy: 'RAIO X'
+    imagemPacoteCapaTasy: '—'
   },
   {
     id: 'SAÚDE CAIXA',
     convenio: 'SAÚDE CAIXA',
     examesLaboratoriais: 'SIM AUTORIZAR',
     pacotePsGeral: '98800124 + 10101039',
-    imagemPacoteCapaTasy: '—'
+    imagemPacoteCapaTasy: 'RAIO X'
   },
   {
     id: 'SEPACO',

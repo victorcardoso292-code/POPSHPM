@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Printer, 
   FileText, 
@@ -20,7 +20,15 @@ import {
   Mail,
   MapPin,
   CreditCard,
-  FileCheck
+  FileCheck,
+  Search,
+  ExternalLink,
+  ChevronRight,
+  ShieldAlert,
+  ArrowRight,
+  SlidersHorizontal,
+  Eye,
+  Edit3
 } from 'lucide-react';
 
 export interface FichaContingenciaData {
@@ -58,22 +66,50 @@ export interface FichaContingenciaData {
 
 const STORAGE_KEY = 'hpm_fichas_contingencia_v1';
 
-const CONVENIOS_SUGESTOES = [
+const CONVENIOS_RAPIDOS = [
   'SERVIR (Governo do Tocantins)',
   'FA-SAUDE (PRO-TOCANTINS)',
-  'UNIMED PALMAS / INTERCÂMBIO',
+  'UNIMED PALMAS',
   'BRADESCO SAÚDE',
-  'CASSI (Banco do Brasil)',
+  'CASSI',
   'GEAP SAÚDE',
   'AMIL',
   'POSTAL SAÚDE',
-  'ASSEFAZ',
   'SAÚDE CAIXA',
+  'ASSEFAZ',
   'SUL AMÉRICA',
-  'BEST SAÚDE',
-  'FUSEX',
   'PARTICULAR'
 ];
+
+// Utilitários de Máscara para digitação fluida
+function maskCpf(val: string): string {
+  const digits = val.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+}
+
+function maskDate(val: string): string {
+  const digits = val.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+}
+
+function maskPhone(val: string): string {
+  const digits = val.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 2) return digits.length ? `(${digits}` : '';
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
+function maskCep(val: string): string {
+  const digits = val.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+}
 
 export const PlanoContingenciaViewer: React.FC = () => {
   // Obter data e hora atuais formatadas
@@ -124,6 +160,8 @@ export const PlanoContingenciaViewer: React.FC = () => {
   const [copiedText, setCopiedText] = useState(false);
   const [salvoStatus, setSalvoStatus] = useState(false);
   const [modoImpressaoEmBranco, setModoImpressaoEmBranco] = useState(false);
+  const [activeTab, setActiveTab] = useState<'formulario' | 'espelho' | 'historico'>('formulario');
+  const [buscaHistorico, setBuscaHistorico] = useState('');
 
   // Carregar histórico local
   useEffect(() => {
@@ -137,9 +175,41 @@ export const PlanoContingenciaViewer: React.FC = () => {
     }
   }, []);
 
-  const handleChange = (field: keyof FichaContingenciaData, value: string) => {
+  const handleChange = (field: keyof FichaContingenciaData, rawValue: string) => {
+    let value = rawValue;
+    if (field === 'cpf' || field === 'cpfResponsavel') {
+      value = maskCpf(rawValue);
+    } else if (field === 'dataNascimento' || field === 'dataNascimentoResponsavel' || field === 'dataAtendimento') {
+      value = maskDate(rawValue);
+    } else if (field === 'telefone1' || field === 'telefone2' || field === 'telefone1Responsavel' || field === 'telefone2Responsavel') {
+      value = maskPhone(rawValue);
+    } else if (field === 'cep') {
+      value = maskCep(rawValue);
+    } else if (field === 'estado') {
+      value = rawValue.toUpperCase().slice(0, 2);
+    }
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  // Cálculo de campos essenciais preenchidos
+  const progressoPreenchimento = useMemo(() => {
+    const obrigatorios = [
+      formData.nomePaciente,
+      formData.nomeMae,
+      formData.dataNascimento,
+      formData.cpf,
+      formData.convenio,
+      formData.numeroCarteira,
+      formData.endereco,
+      formData.telefone1
+    ];
+    const preenchidos = obrigatorios.filter(val => val && val.trim().length > 0).length;
+    return {
+      total: obrigatorios.length,
+      preenchidos,
+      porcentagem: Math.round((preenchidos / obrigatorios.length) * 100)
+    };
+  }, [formData]);
 
   // Salvar no histórico
   const handleSalvarFicha = () => {
@@ -163,12 +233,13 @@ export const PlanoContingenciaViewer: React.FC = () => {
     }
 
     setSalvoStatus(true);
-    setTimeout(() => setSalvoStatus(false), 3000);
+    setTimeout(() => setSalvoStatus(false), 2500);
   };
 
   // Carregar ficha do histórico
   const handleCarregarFicha = (ficha: FichaContingenciaData) => {
     setFormData(ficha);
+    setActiveTab('formulario');
   };
 
   // Excluir ficha do histórico
@@ -279,343 +350,447 @@ export const PlanoContingenciaViewer: React.FC = () => {
     }, 150);
   };
 
+  // Filtragem de histórico
+  const historicoFiltrado = useMemo(() => {
+    if (!buscaHistorico.trim()) return historicoFichas;
+    const q = buscaHistorico.toLowerCase();
+    return historicoFichas.filter(f => 
+      f.nomePaciente.toLowerCase().includes(q) ||
+      f.cpf.includes(q) ||
+      f.convenio.toLowerCase().includes(q) ||
+      f.numeroCarteira.includes(q)
+    );
+  }, [historicoFichas, buscaHistorico]);
+
   return (
     <div className="space-y-6">
       {/* ========================================================
-          CABEÇALHO DO MÓDULO (OCULTO NA IMPRESSÃO)
+          BARRA DE COMANDO DA CONTINGÊNCIA (REESTILIZADA & MODERNA)
       ======================================================== */}
-      <div className="no-print bg-gradient-to-r from-slate-900 via-[#0E7B86] to-[#0A565D] rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
-        <div className="absolute right-0 top-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="no-print bg-slate-900 text-white rounded-3xl p-6 sm:p-7 border border-slate-800 shadow-xl relative overflow-hidden">
+        {/* Glow sutil de fundo */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-[#0E7B86]/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-10 w-60 h-60 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="bg-red-500/20 text-red-200 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider border border-red-400/30 flex items-center gap-1.5">
-                <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
-                Operação de Contingência
+        <div className="relative z-10 space-y-5">
+          {/* Linha superior: Alertas de status e metadados oficiais */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-500/15 border border-red-500/30 text-red-300 rounded-full text-xs font-semibold">
+                <span className="w-2 h-2 rounded-full bg-red-400 animate-ping" />
+                <span>Protocolo de Contingência Ativo</span>
+              </div>
+              <span className="text-xs text-slate-400">
+                Código: <strong className="text-slate-200">HPM.FM</strong> · Versão 000
               </span>
-              <span className="bg-white/10 text-white text-xs font-bold px-3 py-1 rounded-full border border-white/20">
-                Código: HPM.FM • Versão 000
-              </span>
-              <span className="bg-cyan-400/20 text-cyan-200 text-xs font-bold px-3 py-1 rounded-full border border-cyan-300/30">
-                Atendimento Manual / Tasy Offline
+              <span className="text-xs text-slate-400">
+                Área: <strong className="text-slate-200">Atendimento / Recepção</strong>
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white m-0">
-              Plano de Contingência — Ficha de Atendimento Manual
-            </h1>
-
-            <p className="text-slate-200 text-sm sm:text-base font-medium max-w-3xl leading-relaxed m-0">
-              Formulário oficial do Hospital Palmas Medical (Kora Saúde) para admissão e cadastro manual de pacientes em caso de indisponibilidade do sistema TASY, queda de energia ou contingência de rede.
-            </p>
+            {/* Medidor de progresso de preenchimento */}
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-slate-400">
+                Campos Essenciais: <strong className="text-emerald-400">{progressoPreenchimento.preenchidos}/{progressoPreenchimento.total}</strong>
+              </span>
+              <div className="w-24 sm:w-32 h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-300 ${
+                    progressoPreenchimento.porcentagem === 100 
+                      ? 'bg-emerald-400' 
+                      : progressoPreenchimento.porcentagem >= 50 
+                        ? 'bg-amber-400' 
+                        : 'bg-red-400'
+                  }`}
+                  style={{ width: `${progressoPreenchimento.porcentagem}%` }}
+                />
+              </div>
+            </div>
           </div>
 
-          {/* Botões de Ação Rápida */}
-          <div className="flex items-center gap-2.5 flex-wrap md:flex-col md:items-end flex-shrink-0">
-            <button
-              type="button"
-              onClick={() => handleImprimir(false)}
-              className="inline-flex items-center gap-2 px-5 py-3 bg-white text-slate-900 hover:bg-slate-100 rounded-xl text-xs sm:text-sm font-black transition-all shadow-md cursor-pointer group"
-            >
-              <Printer className="w-4 h-4 text-[#0E7B86] group-hover:scale-110 transition-transform" />
-              <span>Imprimir Ficha Preenchida</span>
-            </button>
+          {/* Título principal e botões de ação mestres */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+            <div className="space-y-1.5 max-w-2xl">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white m-0">
+                Ficha de Atendimento Manual (Plano de Contingência)
+              </h1>
+              <p className="text-slate-300 text-xs sm:text-sm font-normal leading-relaxed m-0">
+                Preencha os dados cadastrais do paciente quando o TASY ou a rede estiverem indisponíveis. Gere a folha de atendimento oficial do Hospital Palmas Medical pronta para assinatura física e arquivamento.
+              </p>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => handleImprimir(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all border border-white/20 cursor-pointer"
-              title="Gera o formulário vazio para impressão de cópias de segurança"
-            >
-              <FileText className="w-4 h-4 text-slate-300" />
-              <span>Imprimir Ficha em Branco</span>
-            </button>
-          </div>
-        </div>
+            {/* Ações principais de impressão e cópia */}
+            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => handleImprimir(false)}
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#0E7B86] hover:bg-[#0A565D] text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all cursor-pointer"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Imprimir Ficha Preenchida</span>
+              </button>
 
-        {/* Barra de utilitários rápidos */}
-        <div className="mt-6 pt-5 border-t border-white/15 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={handleSalvarFicha}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-black transition-colors cursor-pointer shadow-xs"
-            >
-              <Save className="w-3.5 h-3.5" />
-              <span>{salvoStatus ? 'Salvo no Histórico!' : 'Salvar Registro'}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleCopiarResumoTasy}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-lg font-bold transition-colors cursor-pointer border border-white/20"
-            >
-              {copiedText ? (
-                <>
-                  <Check className="w-3.5 h-3.5 text-emerald-300" />
-                  <span>Copiado!</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Copiar para Tasy</span>
-                </>
-              )}
-            </button>
-
-            <button
-              type="button"
-              onClick={handlePreencherExemplo}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-slate-200 rounded-lg font-bold transition-colors cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>Preencher Exemplo</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleLimpar}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-red-500/30 text-slate-200 hover:text-white rounded-lg font-bold transition-colors cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Limpar</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => handleImprimir(true)}
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-semibold rounded-xl border border-slate-700 transition-all cursor-pointer"
+                title="Imprime formulário em branco para ter cópias físicas impressas na gaveta"
+              >
+                <FileText className="w-4 h-4 text-slate-400" />
+                <span>Folha em Branco</span>
+              </button>
+            </div>
           </div>
 
-          <div className="text-slate-300 font-medium">
-            Histórico salvo neste navegador: <strong>{historicoFichas.length} fichas</strong>
+          {/* Barra de navegação por modos e utilitários rápidos */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-3">
+            {/* Segmented control para abas */}
+            <div className="inline-flex p-1 bg-slate-800/80 rounded-xl border border-slate-700/60">
+              <button
+                type="button"
+                onClick={() => setActiveTab('formulario')}
+                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                  activeTab === 'formulario'
+                    ? 'bg-[#0E7B86] text-white shadow-xs'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>Formulário de Entrada</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('espelho')}
+                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                  activeTab === 'espelho'
+                    ? 'bg-[#0E7B86] text-white shadow-xs'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>Espelho da Ficha Oficial (A4)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('historico')}
+                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                  activeTab === 'historico'
+                    ? 'bg-[#0E7B86] text-white shadow-xs'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Clock className="w-3.5 h-3.5" />
+                <span>Histórico ({historicoFichas.length})</span>
+              </button>
+            </div>
+
+            {/* Ações secundárias */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleSalvarFicha}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                title="Salva localmente para não perder os dados em caso de reinício da máquina"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>{salvoStatus ? 'Salvo!' : 'Salvar Ficha'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleCopiarResumoTasy}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium border border-slate-700 transition-colors cursor-pointer"
+                title="Copia os dados formatados em bloco para colar no TASY"
+              >
+                {copiedText ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Copiado!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copiar p/ Tasy</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={handlePreencherExemplo}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium border border-slate-700 transition-colors cursor-pointer"
+                title="Preenche campos de teste para conferência rápida"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>Exemplo</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleLimpar}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-red-500/20 text-slate-300 hover:text-red-300 rounded-lg text-xs font-medium border border-slate-700 transition-colors cursor-pointer"
+                title="Limpar formulário"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Limpar</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* ========================================================
-          ÁREA DE FORMULÁRIO DE ENTRADA (NO-PRINT)
+          ABA 1: FORMULÁRIO DE ENTRADA (ERGONÔMICO & ÁGIL)
       ======================================================== */}
-      <div className="no-print grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Painel de Edição dos Dados */}
-        <div className="lg:col-span-8 space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs space-y-6">
-            {/* Bloco 1: Data e Hora do Atendimento */}
-            <div className="border-b border-slate-100 pb-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Calendar className="w-4 h-4 text-[#0E7B86]" />
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider m-0">
-                  Data & Hora da Contingência
+      {activeTab === 'formulario' && (
+        <div className="no-print space-y-6 animate-in fade-in duration-150">
+          {/* Card Seção 1: Dados do Atendimento */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs p-5 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg bg-[#0E7B86]/10 text-[#0E7B86] flex items-center justify-center font-bold text-xs">
+                  01
+                </span>
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider m-0">
+                  Data, Hora & Identificação do Atendimento
                 </h3>
               </div>
+              <span className="text-xs text-slate-400 font-medium">Obrigatório</span>
+            </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  Data do Atendimento *
+                </label>
+                <input
+                  type="text"
+                  value={formData.dataAtendimento}
+                  onChange={e => handleChange('dataAtendimento', e.target.value)}
+                  placeholder="DD/MM/AAAA"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  Hora do Atendimento *
+                </label>
+                <input
+                  type="text"
+                  value={formData.horaAtendimento}
+                  onChange={e => handleChange('horaAtendimento', e.target.value)}
+                  placeholder="HH:MM"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  Recepcionista Responsável
+                </label>
+                <input
+                  type="text"
+                  value={formData.nomeRecepcionista || ''}
+                  onChange={e => handleChange('nomeRecepcionista', e.target.value)}
+                  placeholder="Ex: Recepção Central / Ana Paula"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Card Seção 2: Identificação do Paciente */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs p-5 sm:p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg bg-[#0E7B86]/10 text-[#0E7B86] flex items-center justify-center font-bold text-xs">
+                  02
+                </span>
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider m-0">
+                  Identificação do Paciente
+                </h3>
+              </div>
+              <span className="text-xs text-slate-400 font-medium">Dados Principais</span>
+            </div>
+
+            {/* Linha 1: Nome do Paciente e Nome da Mãe */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2">
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  Nome Completo do Paciente *
+                </label>
+                <input
+                  type="text"
+                  value={formData.nomePaciente}
+                  onChange={e => handleChange('nomePaciente', e.target.value)}
+                  placeholder="Informe o nome completo do paciente"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  Nome da Mãe *
+                </label>
+                <input
+                  type="text"
+                  value={formData.nomeMae}
+                  onChange={e => handleChange('nomeMae', e.target.value)}
+                  placeholder="Nome completo da mãe do paciente"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  Data de Nascimento *
+                </label>
+                <input
+                  type="text"
+                  value={formData.dataNascimento}
+                  onChange={e => handleChange('dataNascimento', e.target.value)}
+                  placeholder="DD/MM/AAAA"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  Naturalidade (Cidade - UF)
+                </label>
+                <input
+                  type="text"
+                  value={formData.naturalidade}
+                  onChange={e => handleChange('naturalidade', e.target.value)}
+                  placeholder="Ex: Palmas - TO"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  CPF do Paciente *
+                </label>
+                <input
+                  type="text"
+                  value={formData.cpf}
+                  onChange={e => handleChange('cpf', e.target.value)}
+                  placeholder="000.000.000-00"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  RG (Identidade)
+                </label>
+                <input
+                  type="text"
+                  value={formData.rg}
+                  onChange={e => handleChange('rg', e.target.value)}
+                  placeholder="Número e órgão emissor"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Linha de Convênio com Botões Rápidos */}
+            <div className="pt-2 border-t border-slate-100 space-y-3">
+              <label className="text-xs font-semibold text-slate-700 block">
+                Convênio / Plano de Saúde *
+              </label>
+
+              {/* Botões rápidos de convênio para agilidade máxima */}
+              <div className="flex flex-wrap gap-1.5">
+                {CONVENIOS_RAPIDOS.map(conv => {
+                  const isSel = formData.convenio.toLowerCase().includes(conv.toLowerCase().slice(0, 6));
+                  return (
+                    <button
+                      key={conv}
+                      type="button"
+                      onClick={() => handleChange('convenio', conv)}
+                      className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-colors cursor-pointer border ${
+                        isSel
+                          ? 'bg-[#0E7B86] text-white border-[#0E7B86] shadow-2xs'
+                          : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+                      }`}
+                    >
+                      {conv.split(' ')[0]}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                 <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    Data do Atendimento *
-                  </label>
                   <input
                     type="text"
-                    value={formData.dataAtendimento}
-                    onChange={e => handleChange('dataAtendimento', e.target.value)}
-                    placeholder="DD/MM/AAAA"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                    value={formData.convenio}
+                    onChange={e => handleChange('convenio', e.target.value)}
+                    placeholder="Nome do convênio (ou digite aqui caso não esteja acima)"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    Hora do Atendimento *
-                  </label>
                   <input
                     type="text"
-                    value={formData.horaAtendimento}
-                    onChange={e => handleChange('horaAtendimento', e.target.value)}
-                    placeholder="HH:MM"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    Nome do Recepcionista
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.nomeRecepcionista || ''}
-                    onChange={e => handleChange('nomeRecepcionista', e.target.value)}
-                    placeholder="Ex: Ana Paula (Recepção PS)"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                    value={formData.numeroCarteira}
+                    onChange={e => handleChange('numeroCarteira', e.target.value)}
+                    placeholder="Nº da Carteira do Convênio *"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none font-mono"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Bloco 2: Identificação do Paciente */}
-            <div className="border-b border-slate-100 pb-5 space-y-4">
-              <div className="flex items-center gap-2">
-                <User className="w-4 h-4 text-[#0E7B86]" />
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider m-0">
-                  Identificação do Paciente
-                </h3>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    Nome Completo do Paciente *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.nomePaciente}
-                    onChange={e => handleChange('nomePaciente', e.target.value)}
-                    placeholder="Nome completo do paciente"
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    Nome da Mãe *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.nomeMae}
-                    onChange={e => handleChange('nomeMae', e.target.value)}
-                    placeholder="Nome completo da mãe"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    Data de Nascimento *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.dataNascimento}
-                    onChange={e => handleChange('dataNascimento', e.target.value)}
-                    placeholder="DD/MM/AAAA"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    Naturalidade
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.naturalidade}
-                    onChange={e => handleChange('naturalidade', e.target.value)}
-                    placeholder="Ex: Palmas - TO"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    CPF *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.cpf}
-                    onChange={e => handleChange('cpf', e.target.value)}
-                    placeholder="000.000.000-00"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    RG
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.rg}
-                    onChange={e => handleChange('rg', e.target.value)}
-                    placeholder="Número e órgão emissor"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    Convênio / Plano de Saúde *
-                  </label>
-                  <div className="space-y-1.5">
-                    <input
-                      type="text"
-                      value={formData.convenio}
-                      onChange={e => handleChange('convenio', e.target.value)}
-                      placeholder="Ex: SERVIR, UNIMED, BRADESCO..."
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
-                    />
-                    <select
-                      onChange={e => {
-                        if (e.target.value) handleChange('convenio', e.target.value);
-                      }}
-                      className="w-full px-2 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-semibold text-slate-700 outline-none cursor-pointer"
-                      defaultValue=""
-                    >
-                      <option value="" disabled>Ou selecione um convênio cadastrado...</option>
-                      {CONVENIOS_SUGESTOES.map(c => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    Nº Carteira do Convênio *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.numeroCarteira}
-                    onChange={e => handleChange('numeroCarteira', e.target.value)}
-                    placeholder="Número da carteirinha"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none font-mono"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
+            {/* Linha de Endereço */}
+            <div className="pt-2 border-t border-slate-100 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
+                <div className="sm:col-span-8">
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">
                     Endereço Completo
                   </label>
                   <input
                     type="text"
                     value={formData.endereco}
                     onChange={e => handleChange('endereco', e.target.value)}
-                    placeholder="Rua, avenida, número, complemento"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                    placeholder="Quadra, rua, alameda, lote, número e complemento"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
                   />
                 </div>
 
-                <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
+                <div className="sm:col-span-4">
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">
                     Bairro
                   </label>
                   <input
                     type="text"
                     value={formData.bairro}
                     onChange={e => handleChange('bairro', e.target.value)}
-                    placeholder="Bairro"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                    placeholder="Bairro ou setor"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
                   />
                 </div>
 
-                <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
+                <div className="sm:col-span-4">
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">
                     CEP
                   </label>
                   <input
                     type="text"
                     value={formData.cep}
                     onChange={e => handleChange('cep', e.target.value)}
-                    placeholder="00000-000"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                    placeholder="77000-000"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none font-mono"
                   />
                 </div>
 
-                <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
+                <div className="sm:col-span-5">
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">
                     Cidade
                   </label>
                   <input
@@ -623,12 +798,12 @@ export const PlanoContingenciaViewer: React.FC = () => {
                     value={formData.cidade}
                     onChange={e => handleChange('cidade', e.target.value)}
                     placeholder="Cidade"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
                   />
                 </div>
 
-                <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
+                <div className="sm:col-span-3">
+                  <label className="text-xs font-semibold text-slate-700 block mb-1">
                     Estado (UF)
                   </label>
                   <input
@@ -637,258 +812,324 @@ export const PlanoContingenciaViewer: React.FC = () => {
                     onChange={e => handleChange('estado', e.target.value)}
                     placeholder="TO"
                     maxLength={2}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none uppercase"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    E-mail do Paciente
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={e => handleChange('email', e.target.value)}
-                    placeholder="paciente@exemplo.com"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    Telefone 1 *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.telefone1}
-                    onChange={e => handleChange('telefone1', e.target.value)}
-                    placeholder="(63) 90000-0000"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    Telefone 2
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.telefone2}
-                    onChange={e => handleChange('telefone2', e.target.value)}
-                    placeholder="(63) 0000-0000"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none uppercase"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Bloco 3: Identificação do Responsável / Acompanhante */}
-            <div className="space-y-4">
+            {/* Linha de Contatos */}
+            <div className="pt-2 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  E-mail do Paciente
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={e => handleChange('email', e.target.value)}
+                  placeholder="paciente@exemplo.com"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  Telefone Principal *
+                </label>
+                <input
+                  type="text"
+                  value={formData.telefone1}
+                  onChange={e => handleChange('telefone1', e.target.value)}
+                  placeholder="(63) 90000-0000"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  Telefone Secundário / Recado
+                </label>
+                <input
+                  type="text"
+                  value={formData.telefone2}
+                  onChange={e => handleChange('telefone2', e.target.value)}
+                  placeholder="(63) 3000-0000"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none font-mono"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Card Seção 3: Identificação do Responsável / Acompanhante */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs p-5 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-[#0E7B86]" />
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider m-0">
+                <span className="w-7 h-7 rounded-lg bg-[#0E7B86]/10 text-[#0E7B86] flex items-center justify-center font-bold text-xs">
+                  03
+                </span>
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider m-0">
                   Identificação do Responsável / Acompanhante
                 </h3>
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    Nome Completo do Responsável
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.nomeResponsavel}
-                    onChange={e => handleChange('nomeResponsavel', e.target.value)}
-                    placeholder="Nome do responsável ou acompanhante"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    Data de Nascimento do Responsável
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.dataNascimentoResponsavel}
-                    onChange={e => handleChange('dataNascimentoResponsavel', e.target.value)}
-                    placeholder="DD/MM/AAAA"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    CPF do Responsável
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.cpfResponsavel}
-                    onChange={e => handleChange('cpfResponsavel', e.target.value)}
-                    placeholder="000.000.000-00"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none font-mono"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    E-mail do Responsável
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.emailResponsavel}
-                    onChange={e => handleChange('emailResponsavel', e.target.value)}
-                    placeholder="responsavel@exemplo.com"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    Telefone 1 do Responsável
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.telefone1Responsavel}
-                    onChange={e => handleChange('telefone1Responsavel', e.target.value)}
-                    placeholder="(63) 90000-0000"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-600 block mb-1">
-                    Telefone 2 do Responsável
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.telefone2Responsavel}
-                    onChange={e => handleChange('telefone2Responsavel', e.target.value)}
-                    placeholder="(63) 0000-0000"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
-                  />
-                </div>
-              </div>
+              <span className="text-xs text-slate-400 font-medium">Se aplicável</span>
             </div>
 
-            {/* Cláusula / OBS Institucional */}
-            <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 text-xs text-amber-950 space-y-1">
-              <span className="font-black text-amber-900 uppercase block tracking-wider text-[11px]">
-                Cláusula Obrigatória do Formulário HPM.FM:
-              </span>
-              <p className="font-medium text-amber-900 m-0 leading-relaxed italic">
-                &ldquo;OBS.: Caso o convênio esteja em carência ou procedimento negado, o pagamento de todo o atendimento será cobrado &quot;particular&quot;.&rdquo;
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2">
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  Nome Completo do Responsável ou Acompanhante
+                </label>
+                <input
+                  type="text"
+                  value={formData.nomeResponsavel}
+                  onChange={e => handleChange('nomeResponsavel', e.target.value)}
+                  placeholder="Nome da pessoa responsável pelo paciente"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  Data de Nascimento do Responsável
+                </label>
+                <input
+                  type="text"
+                  value={formData.dataNascimentoResponsavel}
+                  onChange={e => handleChange('dataNascimentoResponsavel', e.target.value)}
+                  placeholder="DD/MM/AAAA"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  CPF do Responsável
+                </label>
+                <input
+                  type="text"
+                  value={formData.cpfResponsavel}
+                  onChange={e => handleChange('cpfResponsavel', e.target.value)}
+                  placeholder="000.000.000-00"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none font-mono"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  E-mail do Responsável
+                </label>
+                <input
+                  type="email"
+                  value={formData.emailResponsavel}
+                  onChange={e => handleChange('emailResponsavel', e.target.value)}
+                  placeholder="responsavel@exemplo.com"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  Telefone Principal do Responsável
+                </label>
+                <input
+                  type="text"
+                  value={formData.telefone1Responsavel}
+                  onChange={e => handleChange('telefone1Responsavel', e.target.value)}
+                  placeholder="(63) 90000-0000"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">
+                  Telefone Secundário do Responsável
+                </label>
+                <input
+                  type="text"
+                  value={formData.telefone2Responsavel}
+                  onChange={e => handleChange('telefone2Responsavel', e.target.value)}
+                  placeholder="(63) 0000-0000"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-[#0E7B86] focus:bg-white outline-none font-mono"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Cláusula de Carência & Aviso Anti-Glosa */}
+          <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 sm:p-5 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" />
+            <div className="space-y-1 text-xs">
+              <strong className="text-amber-950 font-bold block uppercase tracking-wider text-[11px]">
+                Cláusula Contratual Obrigatória do Formulário:
+              </strong>
+              <p className="text-amber-900 font-medium leading-relaxed m-0 italic">
+                &ldquo;OBS.: Caso o convênio esteja em carência ou procedimento negado, o pagamento de todo o atendimento será cobrado &apos;particular&apos;.&rdquo;
               </p>
             </div>
           </div>
-        </div>
 
-        {/* Painel Lateral: Prévia e Histórico Recente */}
-        <div className="lg:col-span-4 space-y-5">
-          {/* Card de Impressão Direta */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4">
-            <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider m-0 flex items-center gap-2">
-              <Printer className="w-4 h-4 text-[#0E7B86]" />
-              Opções de Impressão
-            </h3>
+          {/* Barra inferior flutuante de ações rápidas */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              <span>Dados salvos em tempo real na sessão atual.</span>
+            </div>
 
-            <p className="text-xs text-slate-600 leading-relaxed m-0 font-medium">
-              O layout de impressão foi calibrado conforme o formulário original da <strong>Kora Saúde / Hospital Palmas Medical</strong>, cabendo exatamente em 1 página A4 com os campos institucionais, assinaturas e rodapé de qualidade.
-            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab('espelho')}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+              >
+                Visualizar Impressão A4
+              </button>
 
-            <div className="space-y-2 pt-1">
               <button
                 type="button"
                 onClick={() => handleImprimir(false)}
-                className="w-full py-3 px-4 bg-[#0E7B86] hover:bg-[#0A565D] text-white rounded-xl text-xs font-black transition-all shadow-xs cursor-pointer flex items-center justify-center gap-2"
+                className="px-5 py-2 bg-[#0E7B86] hover:bg-[#0A565D] text-white rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-xs flex items-center gap-2"
               >
-                <Printer className="w-4 h-4" />
-                <span>Imprimir com os Dados Preenchidos</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleImprimir(true)}
-                className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
-              >
-                <FileText className="w-4 h-4 text-slate-500" />
-                <span>Imprimir Folha em Branco (Manual)</span>
+                <Printer className="w-3.5 h-3.5" />
+                <span>Imprimir Agora</span>
               </button>
             </div>
           </div>
+        </div>
+      )}
 
-          {/* Histórico de Fichas Salvas neste Dispositivo */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider m-0">
-                Atendimentos de Contingência
-              </h3>
-              <span className="text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded-full text-slate-600">
-                {historicoFichas.length}
-              </span>
+      {/* ========================================================
+          ABA 2: HISTÓRICO LOCAL DE FICHAS SALVAS
+      ======================================================== */}
+      {activeTab === 'historico' && (
+        <div className="no-print space-y-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-base font-bold text-slate-900 m-0">
+                  Fichas Registradas Neste Computador
+                </h3>
+                <p className="text-xs text-slate-500 m-0 mt-0.5 font-medium">
+                  {historicoFichas.length} atendimentos manuais arquivados na memória local do navegador.
+                </p>
+              </div>
+
+              {/* Campo de pesquisa no histórico */}
+              <div className="relative w-full sm:w-72">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={buscaHistorico}
+                  onChange={e => setBuscaHistorico(e.target.value)}
+                  placeholder="Buscar por paciente, CPF ou convênio..."
+                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-[#0E7B86] outline-none"
+                />
+              </div>
             </div>
 
-            {historicoFichas.length === 0 ? (
-              <p className="text-xs text-slate-400 py-4 text-center font-medium m-0">
-                Nenhum atendimento salvo no histórico local ainda.
-              </p>
+            {historicoFiltrado.length === 0 ? (
+              <div className="py-12 text-center text-slate-400 text-xs font-medium space-y-2">
+                <FileText className="w-8 h-8 text-slate-300 mx-auto" />
+                <p>Nenhuma ficha encontrada no histórico local.</p>
+              </div>
             ) : (
-              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-                {historicoFichas.map(f => (
+              <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden">
+                {historicoFiltrado.map(ficha => (
                   <div
-                    key={f.id}
-                    className="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 flex items-center justify-between gap-2 transition-colors"
+                    key={ficha.id}
+                    className="p-4 bg-white hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                   >
-                    <div
-                      className="cursor-pointer flex-1 min-w-0"
-                      onClick={() => handleCarregarFicha(f)}
-                      title="Clique para carregar dados desta ficha"
-                    >
-                      <h4 className="text-xs font-black text-slate-900 truncate m-0">
-                        {f.nomePaciente}
-                      </h4>
-                      <p className="text-[10px] text-slate-500 truncate m-0 mt-0.5 font-medium">
-                        {f.convenio || 'Sem convênio'} • {f.dataAtendimento} {f.horaAtendimento}
-                      </p>
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-bold text-slate-900 truncate m-0">
+                          {ficha.nomePaciente || 'Sem nome informado'}
+                        </h4>
+                        {ficha.convenio && (
+                          <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                            {ficha.convenio}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1 font-medium">
+                        <span>CPF: {ficha.cpf || 'Não informado'}</span>
+                        <span aria-hidden="true">·</span>
+                        <span>Carteira: {ficha.numeroCarteira || '—'}</span>
+                        <span aria-hidden="true">·</span>
+                        <span>Atendimento: {ficha.dataAtendimento} às {ficha.horaAtendimento}</span>
+                      </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleExcluirFicha(f.id)}
-                      className="text-slate-400 hover:text-red-600 p-1 rounded-md transition-colors cursor-pointer"
-                      title="Remover do histórico"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-2 self-end sm:self-center">
+                      <button
+                        type="button"
+                        onClick={() => handleCarregarFicha(ficha)}
+                        className="px-3 py-1.5 bg-[#0E7B86]/10 hover:bg-[#0E7B86]/20 text-[#0E7B86] rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                      >
+                        Carregar na Tela
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData(ficha);
+                          handleImprimir(false);
+                        }}
+                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                        title="Imprimir direto"
+                      >
+                        <Printer className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleExcluirFicha(ficha.id)}
+                        className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg transition-colors cursor-pointer"
+                        title="Excluir do histórico"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
         </div>
-      </div>
+      )}
 
       {/* ========================================================
-          DOCUMENTO OFICIAL IMPRESSO (LAYOUT A4 OFICIAL KORA)
-          Visível na tela como prévia e formatado para impressão
+          DOCUMENTO FÍSICO OFICIAL HPM.FM (VISUALIZAÇÃO & IMPRESSÃO)
+          Sempre pronto no DOM para window.print(), e visível na aba Espelho
       ======================================================== */}
-      <div className="print-area bg-white border border-slate-300 rounded-2xl shadow-sm p-4 sm:p-8 max-w-4xl mx-auto text-slate-900 font-sans text-xs">
-        {/* Banner de cabeçalho da prévia na tela (oculto na impressão) */}
-        <div className="no-print bg-slate-100 border border-slate-200 rounded-xl p-3 mb-6 flex items-center justify-between text-xs">
+      <div className={`print-area ${activeTab !== 'espelho' ? 'hidden print:block' : 'block'} bg-white border border-slate-300 rounded-2xl shadow-sm p-4 sm:p-8 max-w-4xl mx-auto text-slate-900 font-sans text-xs`}>
+        
+        {/* Barra superior de controle visual na aba Espelho (oculta na impressão) */}
+        <div className="no-print bg-slate-50 border border-slate-200 rounded-xl p-3 mb-6 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-            <span className="font-bold text-slate-700">
-              Prévia Visual do Documento Físico Oficial HPM.FM (A4)
+            <span className="w-2.5 h-2.5 rounded-full bg-[#0E7B86]" />
+            <span className="font-bold text-slate-800">
+              Visualização Fiel do Formulário Físico A4 Oficial (Código HPM.FM)
             </span>
           </div>
-          <button
-            type="button"
-            onClick={() => handleImprimir(false)}
-            className="px-3 py-1 bg-[#0E7B86] text-white rounded-lg font-bold text-xs hover:bg-[#0A565D] transition-colors cursor-pointer"
-          >
-            Imprimir Agora
-          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab('formulario')}
+              className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg font-semibold text-xs transition-colors cursor-pointer"
+            >
+              Editar Dados
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleImprimir(false)}
+              className="px-4 py-1.5 bg-[#0E7B86] hover:bg-[#0A565D] text-white rounded-lg font-bold text-xs transition-colors cursor-pointer shadow-xs flex items-center gap-1.5"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>Imprimir Ficha</span>
+            </button>
+          </div>
         </div>
 
         {/* ========================================================
@@ -956,7 +1197,7 @@ export const PlanoContingenciaViewer: React.FC = () => {
             SEÇÃO: IDENTIFICAÇÃO DO PACIENTE
         ======================================================== */}
         <div className="border-2 border-black mb-3">
-          <div className="bg-slate-100 border-b-2 border-black px-2 py-1 font-black text-[11px] uppercase tracking-wider">
+          <div className="bg-slate-100 border-b-2 border-black px-2 py-1 font-black text-[11px] uppercase tracking-wider text-black">
             IDENTIFICAÇÃO DO PACIENTE:
           </div>
 
@@ -1061,7 +1302,7 @@ export const PlanoContingenciaViewer: React.FC = () => {
             SEÇÃO: IDENTIFICAÇÃO DO RESPONSÁVEL / ACOMPANHANTE
         ======================================================== */}
         <div className="border-2 border-black mb-3">
-          <div className="bg-slate-100 border-b-2 border-black px-2 py-1 font-black text-[11px] uppercase tracking-wider">
+          <div className="bg-slate-100 border-b-2 border-black px-2 py-1 font-black text-[11px] uppercase tracking-wider text-black">
             IDENTIFICAÇÃO DO RESPONSÁVEL/ACOMPANHANTE:
           </div>
 
@@ -1200,7 +1441,7 @@ export const PlanoContingenciaViewer: React.FC = () => {
             width: 100% !important;
             max-width: 100% !important;
             margin: 0 !important;
-            padding: 12mm 15mm !important;
+            padding: 10mm 14mm !important;
             box-shadow: none !important;
             border: none !important;
             border-radius: 0 !important;

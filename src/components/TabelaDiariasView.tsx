@@ -127,7 +127,7 @@ export const TabelaDiariasView: React.FC<TabelaDiariasViewProps> = ({
             <Info className="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" />
             <div className="text-xs text-amber-900 leading-tight">
               <span className="font-extrabold block mb-0.5">APENAS ENFERMARIA:</span>
-              <span className="font-medium text-amber-800">Fusex (Soldado), Postal Saúde, Servir (padrão) e Pró-Tocantins.</span>
+              <span className="font-medium text-amber-800">Fusex (Soldado), Postal Saúde, Servir (padrão) e FA-Saúde (Pró-Tocantins).</span>
             </div>
           </div>
 

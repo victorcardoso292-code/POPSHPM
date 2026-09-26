@@ -388,7 +388,7 @@ export const PORTAIS_CREDENCIAIS: PortalCredential[] = [
   {
     id: 'pro-tocantins-antigo',
     hospital: 'Medical',
-    convenio: 'Pró-Tocantins (Site Antigo FamSaúde)',
+    convenio: 'FA-SAÚDE (PRÓ-TOCANTINS) - Site Antigo',
     category: 'Convênio',
     siteName: 'WebPlan FamSaúde (Fácil Informática)',
     portalUrl: 'https://novowebplanfamsaude.facilinformatica.com.br/GuiasTISS/Logon',
@@ -398,7 +398,7 @@ export const PORTAIS_CREDENCIAIS: PortalCredential[] = [
   {
     id: 'pro-tocantins-fa-saude-medical',
     hospital: 'Medical',
-    convenio: 'Pró-Tocantins // FA SAÚDE (NOVO SITE)',
+    convenio: 'FA-SAÚDE (PRÓ-TOCANTINS) - NOVO SITE',
     category: 'Convênio',
     siteName: 'Portal Prestador FA Saúde Novo',
     portalUrl: 'https://servicos.fasaudefpto.com.br/prestador/index.php',
@@ -409,7 +409,7 @@ export const PORTAIS_CREDENCIAIS: PortalCredential[] = [
   {
     id: 'pro-tocantins-fa-saude-st',
     hospital: 'Santa Thereza',
-    convenio: 'Pró-Tocantins // FA SAÚDE (NOVO SITE)',
+    convenio: 'FA-SAÚDE (PRÓ-TOCANTINS) - NOVO SITE',
     category: 'Convênio',
     siteName: 'Portal Prestador FA Saúde Santa Thereza',
     portalUrl: 'https://servicos.fasaudefpto.com.br/prestador/index.php',

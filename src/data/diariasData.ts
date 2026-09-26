@@ -2085,11 +2085,11 @@ export const TABELA_DIARIAS_DATA: ConvenioDiariasRules[] = [
     ]
   },
 
-  // 19. PRÓ-TOCANTINS
+  // 19. FA-SAÚDE (PRÓ-TOCANTINS)
   {
     convenioId: 'PRO TOCANTINS',
-    convenioName: 'Pró-Tocantins',
-    badge: 'PT',
+    convenioName: 'FA-SAUDE (PRO-TOCANTINS)',
+    badge: 'FS',
     category: 'Militar',
     criticalRule: 'PACIENTE SÓ TEM DIRETO A ENFERMARIA',
     parecer: 'Solicita com o código 10102011',
@@ -2101,8 +2101,8 @@ export const TABELA_DIARIAS_DATA: ConvenioDiariasRules[] = [
       {
         id: 'protoc-1',
         convenioId: 'PRO TOCANTINS',
-        convenioName: 'Pró-Tocantins',
-        badge: 'PT',
+        convenioName: 'FA-SAUDE (PRO-TOCANTINS)',
+        badge: 'FS',
         category: 'Militar',
         code: '60000783',
         acomodacao: 'HOSPITAL DIA ENFERMARIAL (ATENÇÃO) PELO SERVIR NÃO É DIA.',
@@ -2117,8 +2117,8 @@ export const TABELA_DIARIAS_DATA: ConvenioDiariasRules[] = [
       {
         id: 'protoc-2',
         convenioId: 'PRO TOCANTINS',
-        convenioName: 'Pró-Tocantins',
-        badge: 'PT',
+        convenioName: 'FA-SAUDE (PRO-TOCANTINS)',
+        badge: 'FS',
         category: 'Militar',
         code: '60000686',
         acomodacao: 'DIÁRIA DE ISOLAMENTO DE APARTAMENTO STANDARD',
@@ -2132,8 +2132,8 @@ export const TABELA_DIARIAS_DATA: ConvenioDiariasRules[] = [
       {
         id: 'protoc-3',
         convenioId: 'PRO TOCANTINS',
-        convenioName: 'Pró-Tocantins',
-        badge: 'PT',
+        convenioName: 'FA-SAUDE (PRO-TOCANTINS)',
+        badge: 'FS',
         category: 'Militar',
         code: '60000775',
         acomodacao: 'DIÁRIA DE HOSPITAL DIA APARTAMENTO',
@@ -2147,8 +2147,8 @@ export const TABELA_DIARIAS_DATA: ConvenioDiariasRules[] = [
       {
         id: 'protoc-4',
         convenioId: 'PRO TOCANTINS',
-        convenioName: 'Pró-Tocantins',
-        badge: 'PT',
+        convenioName: 'FA-SAUDE (PRO-TOCANTINS)',
+        badge: 'FS',
         category: 'Militar',
         code: '60000732',
         acomodacao: 'DIARIA DE ENFERMARIA DE 4 OU MAIS LEITO',
@@ -2163,8 +2163,8 @@ export const TABELA_DIARIAS_DATA: ConvenioDiariasRules[] = [
       {
         id: 'protoc-5',
         convenioId: 'PRO TOCANTINS',
-        convenioName: 'Pró-Tocantins',
-        badge: 'PT',
+        convenioName: 'FA-SAUDE (PRO-TOCANTINS)',
+        badge: 'FS',
         category: 'Militar',
         code: '60001038',
         acomodacao: 'DIARIA UTI',
@@ -2179,8 +2179,8 @@ export const TABELA_DIARIAS_DATA: ConvenioDiariasRules[] = [
       {
         id: 'protoc-6',
         convenioId: 'PRO TOCANTINS',
-        convenioName: 'Pró-Tocantins',
-        badge: 'PT',
+        convenioName: 'FA-SAUDE (PRO-TOCANTINS)',
+        badge: 'FS',
         category: 'Militar',
         code: '60001054',
         acomodacao: 'DIARIA DE UTI INFANTIL/PEDIATRICA',
@@ -2194,8 +2194,8 @@ export const TABELA_DIARIAS_DATA: ConvenioDiariasRules[] = [
       {
         id: 'protoc-7',
         convenioId: 'PRO TOCANTINS',
-        convenioName: 'Pró-Tocantins',
-        badge: 'PT',
+        convenioName: 'FA-SAUDE (PRO-TOCANTINS)',
+        badge: 'FS',
         category: 'Militar',
         code: '60001062',
         acomodacao: 'DIARIA DE UTI NEONATAL',

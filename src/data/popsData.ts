@@ -491,7 +491,7 @@ export const POPS_PS_MATRIX_DATA: PopsPsMatrixItem[] = [
   },
   {
     id: 'PRO TOCANTINS',
-    convenio: 'PRO TOCANTINS',
+    convenio: 'FA-SAUDE (PRO-TOCANTINS)',
     examesLaboratoriais: 'SIM AUTORIZAR',
     pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
@@ -1464,17 +1464,17 @@ export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
   },
   {
     id: 'PRO TOCANTINS',
-    name: 'PRO-TOCANTINS (FAM SAÚDE)',
-    badge: 'PT',
+    name: 'FA-SAUDE (PRO-TOCANTINS)',
+    badge: 'FS',
     category: 'Estadual',
     labUrgencia: 'SIM AUTORIZAR',
     pacotePs: '10101039 CONSULTA EM PRONTO SOCORRO',
     imagemUrgencia: 'Solicitar Autorização em todos os pedidos.',
     accessCredentials: [
-      ['Portal Novo', 'https://servicos.fasaudefpto.com.br/prestador/index.php'],
+      ['Portal Novo (FA Saúde)', 'https://servicos.fasaudefpto.com.br/prestador/index.php'],
       ['Login', 'MEDICAL'],
       ['Senha', '123456'],
-      ['Portal Antigo', 'https://novowebplanfamsaude.facilinformatica.com.br/GuiasTISS/Logon']
+      ['Portal Antigo (FamSaúde)', 'https://novowebplanfamsaude.facilinformatica.com.br/GuiasTISS/Logon']
     ],
     sections: {
       ps: {
@@ -1482,7 +1482,7 @@ export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
         label: 'Pronto-Socorro',
         textItems: [
           '10101039 — Consulta em Pronto Socorro.',
-          'Utilizar o novo portal com usuário e senha do prestador.'
+          'Utilizar o novo portal FA Saúde com usuário e senha do prestador.'
         ]
       }
     }

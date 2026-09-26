@@ -177,7 +177,7 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
       (norm === 'BRADESCO' && r.convenioId === 'BRADESCO') ||
       (norm === 'SERVIR' && r.convenioId === 'SERVIR') ||
       (norm.includes('CAIXA') && r.convenioId === 'SAÚDE CAIXA') ||
-      (norm.includes('TOCANTINS') && r.convenioId === 'PRO TOCANTINS') ||
+      ((norm.includes('TOCANTINS') || norm.includes('FA-SAUDE') || norm.includes('FA SAUDE') || norm.includes('FASAUDE')) && r.convenioId === 'PRO TOCANTINS') ||
       (norm.includes('SOCIAL') && r.convenioId === 'PRO SOCIAL') ||
       (norm.includes('POSTAL') && r.convenioId === 'POSTAL SAÚDE') ||
       (norm.includes('GAMA') && r.convenioId === 'GAMASAÚDE') ||

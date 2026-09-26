@@ -15,7 +15,8 @@ import {
   Sun,
   Sparkles,
   Bot,
-  UserCheck
+  UserCheck,
+  ClipboardList
 } from 'lucide-react';
 import { AppMode } from '../types';
 
@@ -66,6 +67,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: UserCheck,
       badge: 'Urgência & UTI',
       badgeColor: 'bg-purple-50 text-purple-900 border border-purple-200'
+    },
+    {
+      id: 'plano-contingencia' as AppMode,
+      label: 'Plano de Contingência',
+      subtitle: 'Ficha de Atendimento Manual',
+      icon: ClipboardList,
+      badge: 'HPM.FM',
+      badgeColor: 'bg-red-50 text-red-700 border border-red-200'
     },
     {
       id: 'ai-assistant' as AppMode,

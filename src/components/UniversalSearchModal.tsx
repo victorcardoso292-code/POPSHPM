@@ -27,6 +27,7 @@ interface UniversalSearchModalProps {
   onNavigateToRamais: (searchQuery?: string) => void;
   onNavigateToRelatorios: (tipo?: 'PARTICULAR' | 'URGÊNCIA' | 'ELETIVO') => void;
   onNavigateToParecer?: (convenioId?: string) => void;
+  onNavigateToContingencia?: () => void;
   psExams: ExamRow[];
   amorExams: ExamRow[];
   labExams: ExamRow[];
@@ -40,6 +41,7 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
   onNavigateToRamais,
   onNavigateToRelatorios,
   onNavigateToParecer,
+  onNavigateToContingencia,
   psExams,
   amorExams,
   labExams
@@ -171,6 +173,17 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
         desc: 'Protocolo completo de solicitação, códigos TUSS (Servir 40601130/40601120, Cassi 10102019, FA-Saúde 10102011) e regras anti-glosa.',
         action: () => {
           if (onNavigateToParecer) onNavigateToParecer();
+          onClose();
+        }
+      });
+    }
+
+    if ('contingencia'.includes(q) || 'contingência'.includes(q) || 'hpm.fm'.includes(q) || 'ficha'.includes(q) || 'manual'.includes(q) || 'offline'.includes(q)) {
+      rules.push({
+        title: 'Plano de Contingência — Ficha de Atendimento Manual (HPM.FM)',
+        desc: 'Formulário oficial do Hospital Palmas Medical (Kora Saúde) para admissão e cadastro manual quando o Tasy estiver offline, com impressão A4.',
+        action: () => {
+          if (onNavigateToContingencia) onNavigateToContingencia();
           onClose();
         }
       });

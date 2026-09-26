@@ -6,6 +6,7 @@ import { PopsInternacaoViewer } from './components/PopsInternacaoViewer';
 import { ExamValuesViewer } from './components/ExamValuesViewer';
 import { ProcedureValuesViewer } from './components/ProcedureValuesViewer';
 import { FluxoParecerViewer } from './components/FluxoParecerViewer';
+import { PlanoContingenciaViewer } from './components/PlanoContingenciaViewer';
 import { HospitalReportsViewer } from './components/HospitalReportsViewer';
 import { HospitalExtensionsViewer } from './components/HospitalExtensionsViewer';
 import { AiHospitalAssistant } from './components/AiHospitalAssistant';
@@ -243,6 +244,10 @@ export default function App() {
     setActiveMode('fluxo-parecer');
   };
 
+  const handleNavigateToContingencia = () => {
+    setActiveMode('plano-contingencia');
+  };
+
   const handleSelectMode = (mode: AppMode) => {
     if (mode === 'pops-ps' || mode === 'pops-internacao' || mode === 'pops') {
       setSelectedPlanForPops('');
@@ -351,6 +356,10 @@ export default function App() {
             />
           )}
 
+          {activeMode === 'plano-contingencia' && (
+            <PlanoContingenciaViewer />
+          )}
+
           {activeMode === 'relatorios' && (
             <HospitalReportsViewer
               initialType={relatoriosTypeInitial}
@@ -433,6 +442,7 @@ export default function App() {
           onNavigateToRamais={handleNavigateToRamais}
           onNavigateToRelatorios={handleNavigateToRelatorios}
           onNavigateToParecer={handleNavigateToParecer}
+          onNavigateToContingencia={handleNavigateToContingencia}
           psExams={psExams}
           amorExams={amorExams}
           labExams={labExams}

@@ -754,6 +754,31 @@ export function getUnifiedHospitalDatabase(): HospitalUnifiedItem[] {
     });
   }
 
+  // 12. PLANO DE CONTINGÊNCIA - FICHA DE ATENDIMENTO MANUAL (HPM.FM)
+  items.push({
+    id: 'contingencia-hpm-fm',
+    convenioId: 'TODOS',
+    convenioName: 'Hospital Palmas Medical (Kora Saúde)',
+    area: 'pronto_socorro',
+    subarea: 'kit_documentos',
+    title: 'Plano de Contingência — Ficha de Atendimento Manual (HPM.FM)',
+    code: 'HPM.FM (Versão 000)',
+    description: 'Protocolo de contingência para atendimento manual quando o sistema TASY estiver fora do ar ou sem energia. Preenchimento obrigatório da Ficha HPM.FM com dados do paciente, responsável e assinatura. Cláusula mandatória: Caso o convênio esteja em carência ou procedimento negado, o atendimento será particular.',
+    documentos: [
+      'Ficha de Atendimento Manual HPM.FM impressa',
+      'Assinatura do responsável ou beneficiário',
+      'Assinatura legível do recepcionista',
+      'Cópia da carteirinha e documento com foto do paciente'
+    ],
+    alertas: [
+      'Em caso de queda do Tasy ou instabilidade de rede, abrir a aba Plano de Contingência no sistema.',
+      'Preencher todos os campos (Nome, CPF, Mãe, Nascimento, Convênio, Carteirinha, Telefones).',
+      'Coletar assinatura física antes do atendimento.',
+      'Após o restabelecimento do Tasy, digitar as fichas retroativas imediatamente.'
+    ],
+    searchTokens: 'contingencia plano de contingencia tasy fora do ar sistema caiu queda energia ficha atendimento manual hpm fm kora recepcao'
+  });
+
   UNIFIED_DATABASE_CACHE = items;
   return items;
 }

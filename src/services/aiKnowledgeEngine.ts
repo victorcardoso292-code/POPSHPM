@@ -10,6 +10,7 @@ import { PORTAIS_CREDENCIAIS, PORTAIS_RULES, PortalCredential } from '../data/po
 import { PS_EXAM_DATA_ORIGINAL, LAB_EXAM_DATA_ORIGINAL, AMOR_EXAM_DATA_ORIGINAL } from '../data/examData';
 import { PROCEDIMENTOS_GERAIS, PROCEDIMENTOS_MEDICOS_ESPECIFICOS, PROCEDURES_METADATA } from '../data/proceduresData';
 import { HOSPITAL_EXTENSIONS, HOSPITAL_REPORTS } from '../data/hospitalData';
+import { PARECERES_CONVENIOS_DATA, PARECER_WORKFLOW_STEPS, ERROS_CRITICOS_GLOSA_PARECER } from '../data/pareceresData';
 
 // ----------------------------------------------------
 // UNIFIED HOSPITAL KNOWLEDGE ITEM SCHEMA
@@ -732,6 +733,24 @@ export function getUnifiedHospitalDatabase(): HospitalUnifiedItem[] {
       description: `Tipo: ${rep.tipo} | ${rep.description}\nItens Obrigatórios:\n${Object.entries(rep.documentDetails).map(([k, v]) => `• Item ${k}: ${v}`).join('\n')}`,
       documentos: Object.values(rep.documentDetails),
       searchTokens: `prontuario documento kit documentos papelada pasta termo ${rep.tipo} ${rep.description}`
+    });
+  }
+
+  // 11. FLUXO DE PARECERES & INTERCONSULTAS MÉDICAS
+  for (const pr of PARECERES_CONVENIOS_DATA) {
+    items.push({
+      id: `parecer-${pr.convenioId}`,
+      convenioId: pr.convenioId,
+      convenioName: pr.convenioName,
+      area: 'internacao',
+      subarea: 'parecer',
+      title: `Fluxo de Parecer Médico — ${pr.convenioName}`,
+      code: `${pr.tussPs} / ${pr.tussInternacao}`,
+      description: `Convênio: ${pr.convenioName} | TUSS PS: ${pr.tussPs} | TUSS Internação: ${pr.tussInternacao} | Exige Autorização: ${pr.requiresAuth} | Regra: ${pr.regraGeral} | Documentos: ${pr.documentosObrigatorios.join(', ')}`,
+      parecer: pr.regraGeral,
+      documentos: pr.documentosObrigatorios,
+      alertas: pr.alertasCriticos,
+      searchTokens: `parecer interconsulta medico especialista avaliacao ${pr.convenioId} ${pr.convenioName} ${pr.tussPs} ${pr.tussInternacao} ${pr.regraGeral}`
     });
   }
 

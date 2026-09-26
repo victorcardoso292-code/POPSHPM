@@ -14,7 +14,8 @@ import {
   Moon,
   Sun,
   Sparkles,
-  Bot
+  Bot,
+  UserCheck
 } from 'lucide-react';
 import { AppMode } from '../types';
 
@@ -57,6 +58,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: Building2,
       badge: 'Internação',
       badgeColor: 'bg-[#FDF2F6] text-[#B01B52] border border-[#F7D0DF]'
+    },
+    {
+      id: 'fluxo-parecer' as AppMode,
+      label: 'Fluxo de Parecer',
+      subtitle: 'Interconsultas, TUSS e regras',
+      icon: UserCheck,
+      badge: 'Urgência & UTI',
+      badgeColor: 'bg-purple-50 text-purple-900 border border-purple-200'
     },
     {
       id: 'ai-assistant' as AppMode,

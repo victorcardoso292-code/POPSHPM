@@ -26,6 +26,7 @@ interface UniversalSearchModalProps {
   onNavigateToExames: (searchQuery?: string) => void;
   onNavigateToRamais: (searchQuery?: string) => void;
   onNavigateToRelatorios: (tipo?: 'PARTICULAR' | 'URGÊNCIA' | 'ELETIVO') => void;
+  onNavigateToParecer?: (convenioId?: string) => void;
   psExams: ExamRow[];
   amorExams: ExamRow[];
   labExams: ExamRow[];
@@ -38,6 +39,7 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
   onNavigateToExames,
   onNavigateToRamais,
   onNavigateToRelatorios,
+  onNavigateToParecer,
   psExams,
   amorExams,
   labExams
@@ -163,6 +165,17 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
       });
     }
 
+    if ('parecer'.includes(q) || 'interconsulta'.includes(q) || 'especialista'.includes(q) || '40601130'.includes(q) || '40601120'.includes(q) || '10102019'.includes(q) || '10102011'.includes(q)) {
+      rules.push({
+        title: 'Fluxo de Pareceres & Interconsultas Médicas',
+        desc: 'Protocolo completo de solicitação, códigos TUSS (Servir 40601130/40601120, Cassi 10102019, FA-Saúde 10102011) e regras anti-glosa.',
+        action: () => {
+          if (onNavigateToParecer) onNavigateToParecer();
+          onClose();
+        }
+      });
+    }
+
     return {
       convenios: matchingConvenios,
       diarias: matchingDiarias,
@@ -238,7 +251,7 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
               
               {/* Quick suggestions pills */}
               <div className="pt-3 flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
-                {['Amil', 'Bradesco', 'Unimed', 'Tomografia', 'Hemograma', 'UTI', 'Farmácia', 'Relatório 2', 'Contraste'].map(item => (
+                {['Amil', 'Bradesco', 'Unimed', 'Parecer Médico', 'Tomografia', 'Hemograma', 'UTI', 'Farmácia', 'Relatório 2', 'Contraste'].map(item => (
                   <button
                     key={item}
                     type="button"

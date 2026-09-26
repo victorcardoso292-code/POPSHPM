@@ -5,6 +5,7 @@ import { PopsPsViewer } from './components/PopsPsViewer';
 import { PopsInternacaoViewer } from './components/PopsInternacaoViewer';
 import { ExamValuesViewer } from './components/ExamValuesViewer';
 import { ProcedureValuesViewer } from './components/ProcedureValuesViewer';
+import { FluxoParecerViewer } from './components/FluxoParecerViewer';
 import { HospitalReportsViewer } from './components/HospitalReportsViewer';
 import { HospitalExtensionsViewer } from './components/HospitalExtensionsViewer';
 import { AiHospitalAssistant } from './components/AiHospitalAssistant';
@@ -53,6 +54,7 @@ export default function App() {
   const [examSearchInitial, setExamSearchInitial] = useState<string>('');
   const [ramaisSearchInitial, setRamaisSearchInitial] = useState<string>('');
   const [relatoriosTypeInitial, setRelatoriosTypeInitial] = useState<'PARTICULAR' | 'URGÊNCIA' | 'ELETIVO'>('URGÊNCIA');
+  const [parecerConvenioInitial, setParecerConvenioInitial] = useState<string>('SERVIR');
 
   // Exams datasets
   const [psExams, setPsExams] = useState<ExamRow[]>(() => loadPsExams());
@@ -234,6 +236,13 @@ export default function App() {
     setActiveMode('relatorios');
   };
 
+  const handleNavigateToParecer = (convenioId?: string) => {
+    if (convenioId) {
+      setParecerConvenioInitial(convenioId);
+    }
+    setActiveMode('fluxo-parecer');
+  };
+
   const handleSelectMode = (mode: AppMode) => {
     if (mode === 'pops-ps' || mode === 'pops-internacao' || mode === 'pops') {
       setSelectedPlanForPops('');
@@ -335,6 +344,13 @@ export default function App() {
             <ProcedureValuesViewer />
           )}
 
+          {activeMode === 'fluxo-parecer' && (
+            <FluxoParecerViewer
+              onOpenAiWithPrompt={handleOpenAiWithPrompt}
+              initialConvenioId={parecerConvenioInitial}
+            />
+          )}
+
           {activeMode === 'relatorios' && (
             <HospitalReportsViewer
               initialType={relatoriosTypeInitial}
@@ -416,6 +432,7 @@ export default function App() {
           onNavigateToExames={handleNavigateToExames}
           onNavigateToRamais={handleNavigateToRamais}
           onNavigateToRelatorios={handleNavigateToRelatorios}
+          onNavigateToParecer={handleNavigateToParecer}
           psExams={psExams}
           amorExams={amorExams}
           labExams={labExams}

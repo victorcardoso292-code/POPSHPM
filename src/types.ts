@@ -1,4 +1,4 @@
-export type AppMode = 'pops-ps' | 'pops-internacao' | 'pops' | 'exames' | 'procedimentos' | 'relatorios' | 'ramais' | 'ai-assistant' | 'pre-guia';
+export type AppMode = 'pops-ps' | 'pops-internacao' | 'pops' | 'exames' | 'procedimentos' | 'relatorios' | 'ramais' | 'ai-assistant' | 'pre-guia' | 'fluxo-parecer';
 
 export type ExamTableType = 'ps' | 'amor' | 'lab';
 

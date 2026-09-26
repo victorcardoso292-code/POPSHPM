@@ -19,6 +19,7 @@ import {
   ClipboardList
 } from 'lucide-react';
 import { AppMode } from '../types';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface SidebarProps {
   activeMode: AppMode;
@@ -239,6 +240,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <span>Bloquear / Sair do Sistema</span>
           </button>
         )}
+
+        {/* PWA Install Button for Offline Use */}
+        <PWAInstallButton variant="sidebar" />
       </div>
 
       {/* Protocol Quick Reminder Card */}

@@ -15,6 +15,7 @@ import { PreGuiaGenerator } from './components/PreGuiaGenerator';
 import { MasterModal } from './components/MasterModal';
 import { UniversalSearchModal } from './components/UniversalSearchModal';
 import { SmartRuleDrawer } from './components/SmartRuleDrawer';
+import { OfflineBanner } from './components/OfflineBanner';
 import { Footer } from './components/Footer';
 import { LoginScreen } from './components/LoginScreen';
 import { Sparkles } from 'lucide-react';
@@ -268,6 +269,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#F4F8F9] text-slate-900 flex flex-col font-sans selection:bg-[#B01B52] selection:text-white print:bg-white print:min-h-0 print:p-0 print:m-0 print:w-full">
+      {/* Offline Status Alert Banner */}
+      <OfflineBanner onNavigateToContingencia={handleNavigateToContingencia} />
+
       {/* Top Header */}
       <div className="print:hidden">
         <Header

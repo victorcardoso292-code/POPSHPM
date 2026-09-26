@@ -185,14 +185,36 @@ export const AiHospitalAssistant: React.FC<AiHospitalAssistantProps> = ({
           text: m.text
         }));
 
-      const res = await fetch('/api/ai/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q, history: previousHistory })
-      });
+      let replyText = '';
+      try {
+        if (!navigator.onLine) {
+          throw new Error('Offline');
+        }
 
-      const data = await res.json();
-      const replyText = data.answer || localKnowledge.directAnswer || 'Informação não localizada.';
+        const res = await fetch('/api/ai/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: q, history: previousHistory })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          replyText = data.answer || localKnowledge.directAnswer || '';
+        } else {
+          throw new Error(`Server status ${res.status}`);
+        }
+      } catch (networkErr) {
+        // Fallback local robusto para quando a rede hospitalar estiver fora do ar
+        if (localKnowledge.facts && localKnowledge.facts.length > 0) {
+          const factsBlocks = localKnowledge.facts.slice(0, 3).map(f => 
+            `**${f.title}**\n${f.code ? `• Código TUSS/POP: \`${f.code}\`\n` : ''}• ${f.details}`
+          ).join('\n\n');
+
+          replyText = `⚡ **Modo Offline — Base Local Hospital Palmas Medical**\n\n${localKnowledge.directAnswer ? `${localKnowledge.directAnswer}\n\n` : ''}${factsBlocks}\n\n*Regras obtidas diretamente da memória local do sistema (Rede Offline).*`;
+        } else {
+          replyText = '⚡ **Modo Offline Ativo**: Conexão com o servidor de IA indisponível. Para consultar regras deste convênio, utilize as abas de POPs no menu lateral ou a Ficha de Contingência.';
+        }
+      }
 
       setMessages(prev => prev.map(m => {
         if (m.id === assistantMsgId) {
@@ -209,7 +231,7 @@ export const AiHospitalAssistant: React.FC<AiHospitalAssistantProps> = ({
         if (m.id === assistantMsgId) {
           return {
             ...m,
-            text: 'Ocorreu um erro de comunicação com o servidor de IA. As informações oficiais do banco de dados foram mantidas acima.',
+            text: 'Informações locais carregadas nos cartões de referência rápida acima.',
             isStreaming: false
           };
         }

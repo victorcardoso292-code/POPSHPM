@@ -9,6 +9,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { AppMode } from '../types';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface HeaderProps {
   activeMode: AppMode;
@@ -162,6 +163,9 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>{selectedExamsCount} Exame{selectedExamsCount > 1 ? 's' : ''}</span>
               </button>
             )}
+
+            {/* PWA Install Button */}
+            <PWAInstallButton variant="header" />
 
             {/* System Logout / Lock Button */}
             {onLogoutSystem && (

@@ -127,14 +127,35 @@ export const AiChatDrawer: React.FC<AiChatDrawerProps> = ({
           text: m.text
         }));
 
-      const res = await fetch('/api/ai/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q, history: previousHistory })
-      });
+      let answerText = '';
+      try {
+        if (!navigator.onLine) {
+          throw new Error('Offline');
+        }
 
-      const data = await res.json();
-      const answerText = data.answer || localKnowledge.directAnswer || 'Informação não localizada.';
+        const res = await fetch('/api/ai/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: q, history: previousHistory })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          answerText = data.answer || localKnowledge.directAnswer || 'Informação não localizada.';
+        } else {
+          throw new Error(`Server status ${res.status}`);
+        }
+      } catch (networkErr) {
+        if (localKnowledge.facts && localKnowledge.facts.length > 0) {
+          const factsBlocks = localKnowledge.facts.slice(0, 2).map(f => 
+            `**${f.title}**\n${f.code ? `• Código TUSS/POP: \`${f.code}\`\n` : ''}• ${f.details}`
+          ).join('\n\n');
+
+          answerText = `⚡ **Modo Offline Ativo** (Base Hospitalar Local)\n\n${localKnowledge.directAnswer ? `${localKnowledge.directAnswer}\n\n` : ''}${factsBlocks}\n\n*Resposta gerada sem internet a partir do banco de dados de POPs e convênios.*`;
+        } else {
+          answerText = localKnowledge.directAnswer || '⚡ **Modo Offline**: Rede hospitalar indisponível. Consulte as regras diretamente no menu lateral de POPs ou na Ficha de Contingência.';
+        }
+      }
 
       setMessages(prev => prev.map(m => {
         if (m.id === assistantMsgId) {

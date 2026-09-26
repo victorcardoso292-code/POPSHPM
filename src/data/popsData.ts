@@ -344,18 +344,21 @@ export const POPS_PS_MATRIX_DATA: PopsPsMatrixItem[] = [
     id: 'AMIL',
     convenio: 'AMIL',
     examesLaboratoriais: 'SIM AUTORIZAR',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'ASSEFAZ',
     convenio: 'ASSEFAZ',
     examesLaboratoriais: 'SIM AUTORIZAR',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'BEST SAÚDE',
     convenio: 'BEST SAÚDE',
     examesLaboratoriais: 'SIM AUTORIZAR',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: 'RAIO X'
   },
   {
@@ -370,36 +373,42 @@ export const POPS_PS_MATRIX_DATA: PopsPsMatrixItem[] = [
     id: 'CAPESAÚDE',
     convenio: 'CAPESAÚDE',
     examesLaboratoriais: 'SIM',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'CASSI',
     convenio: 'CASSI',
     examesLaboratoriais: 'SIM AUTORIZAR',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'CONAB',
     convenio: 'CONAB',
     examesLaboratoriais: 'SIM',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'E-VIDA',
     convenio: 'E-VIDA',
     examesLaboratoriais: 'SIM AUTORIZAR',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'FUSEX',
     convenio: 'FUSEX',
     examesLaboratoriais: 'SIM',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'GAMASAÚDE',
     convenio: 'GAMASAÚDE',
     examesLaboratoriais: 'SIM',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
@@ -414,66 +423,77 @@ export const POPS_PS_MATRIX_DATA: PopsPsMatrixItem[] = [
     id: 'GOLDEN CROSS',
     convenio: 'GOLDEN CROSS',
     examesLaboratoriais: 'SIM',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'LIFE SAÚDE',
     convenio: 'LIFE SAÚDE',
     examesLaboratoriais: 'SIM AUTORIZAR',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'MARINHA',
     convenio: 'MARINHA',
     examesLaboratoriais: 'SIM',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'NOTRE DAME',
     convenio: 'NOTRE DAME',
     examesLaboratoriais: 'NÃO',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'OMINT',
     convenio: 'OMINT',
     examesLaboratoriais: 'SIM',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'PASA VALE',
     convenio: 'PASA VALE',
     examesLaboratoriais: 'SIM',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'PETROBRAS',
     convenio: 'PETROBRAS',
     examesLaboratoriais: 'NÃO',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'PLAN ASSISTE',
     convenio: 'PLAN ASSISTE',
     examesLaboratoriais: 'SIM AUTORIZAR',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'POSTAL SAÚDE',
     convenio: 'POSTAL SAÚDE',
     examesLaboratoriais: 'SIM',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'PRO SOCIAL',
     convenio: 'PRO SOCIAL',
     examesLaboratoriais: 'SIM AUTORIZAR',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'PRO TOCANTINS',
     convenio: 'PRO TOCANTINS',
     examesLaboratoriais: 'SIM AUTORIZAR',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
@@ -487,6 +507,7 @@ export const POPS_PS_MATRIX_DATA: PopsPsMatrixItem[] = [
     id: 'SEPACO',
     convenio: 'SEPACO',
     examesLaboratoriais: 'NÃO',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
@@ -508,12 +529,14 @@ export const POPS_PS_MATRIX_DATA: PopsPsMatrixItem[] = [
     id: 'SUS',
     convenio: 'SUS',
     examesLaboratoriais: 'NÃO',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
     id: 'TRE',
     convenio: 'TRE',
     examesLaboratoriais: 'SIM',
+    pacotePsGeral: '10101039',
     imagemPacoteCapaTasy: '—'
   },
   {
@@ -1546,7 +1569,7 @@ export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
     badge: 'ND',
     category: 'Privado',
     labUrgencia: 'A preencher',
-    pacotePs: 'A preencher',
+    pacotePs: '10101039 CONSULTA EM PRONTO SOCORRO',
     imagemUrgencia: 'A preencher',
     accessCredentials: [
       ['Portal GNDI / Savi', 'https://savi.hapvida.com.br/savi-atendimento/'],
@@ -1574,7 +1597,7 @@ export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
     badge: 'OM',
     category: 'Seguradora',
     labUrgencia: 'A preencher',
-    pacotePs: 'A preencher',
+    pacotePs: '10101039 CONSULTA EM PRONTO SOCORRO',
     imagemUrgencia: 'A preencher',
     accessCredentials: [
       ['Portal Credenciado Omint', 'https://www.omint.com.br/credenciado/'],
@@ -1600,7 +1623,7 @@ export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
     badge: 'SUS',
     category: 'Estadual',
     labUrgencia: 'A preencher',
-    pacotePs: 'A preencher',
+    pacotePs: '10101039 CONSULTA EM PRONTO SOCORRO',
     imagemUrgencia: 'A preencher',
     accessCredentials: [
       ['Sistema / Regulação', 'SISREG / CNES / BPA'],
@@ -1627,7 +1650,7 @@ export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
     badge: 'SM',
     category: 'Estadual',
     labUrgencia: 'A preencher',
-    pacotePs: 'A preencher',
+    pacotePs: '10101039 CONSULTA EM PRONTO SOCORRO',
     imagemUrgencia: 'A preencher',
     accessCredentials: [
       ['Regulação SEMUS', 'Central de Regulação de Urgência de Palmas'],

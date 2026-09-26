@@ -597,7 +597,11 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
                             {proc.description}
                           </div>
                           {proc.notes && (
-                            <div className="text-xs text-amber-800 bg-amber-50 border border-amber-200/80 rounded-md px-2 py-0.5 inline-block font-semibold">
+                            <div className={`text-xs rounded-md px-2.5 py-1 inline-block font-semibold ${
+                              proc.id === 'pg-3'
+                                ? 'text-amber-950 bg-amber-100/90 border border-amber-300 shadow-2xs leading-relaxed max-w-xl'
+                                : 'text-amber-800 bg-amber-50 border border-amber-200/80'
+                            }`}>
                               ⚠️ {proc.notes}
                             </div>
                           )}
@@ -618,9 +622,17 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
                                 ? 'bg-slate-100 text-slate-700 border border-slate-200'
                                 : (proc.diarias === '0'
                                     ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                                    : 'bg-teal-50 text-teal-800 border border-teal-200'))
+                                    : (proc.id === 'pg-3'
+                                        ? 'bg-[#FDF2F6] text-[#B01B52] border border-[#F7D0DF]'
+                                        : 'bg-teal-50 text-teal-800 border border-teal-200')))
                         }`}>
-                          {proc.diarias === '0' ? 'Leito Dia (0)' : (proc.diarias === 'ao dia' ? 'Ao dia' : `${proc.diarias} diária(s)`)}
+                          {proc.diarias === '0'
+                            ? 'Leito Dia (0)'
+                            : (proc.diarias === 'ao dia'
+                                ? 'Ao dia'
+                                : (proc.diarias.toLowerCase().includes('diária')
+                                    ? proc.diarias
+                                    : `${proc.diarias} diária(s)`))}
                         </span>
                       </td>
 
@@ -628,8 +640,10 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
                         <div className="font-mono font-black text-sm sm:text-base text-slate-900">
                           {formatCurrencyBRL(proc.price)}
                         </div>
-                        <div className="text-xs text-slate-400 font-medium">
-                          {proc.diarias === 'ao dia' ? 'por dia' : 'pacote hospital'}
+                        <div className="text-xs text-slate-500 font-bold">
+                          {proc.id === 'pg-3'
+                            ? '5 diárias obrigatórias'
+                            : (proc.diarias === 'ao dia' ? 'por dia' : 'pacote hospital')}
                         </div>
                       </td>
 

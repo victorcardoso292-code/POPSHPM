@@ -159,11 +159,11 @@ export const PROCEDIMENTOS_GERAIS: HospitalProcedure[] = [
   {
     id: 'pg-3',
     description: 'Diária Global de UTI',
-    diarias: 'ao dia',
-    price: 9600.00,
+    diarias: '5 diárias (obrigatórias)',
+    price: 50000.00,
     category: 'Diárias & Acomodações',
     tableType: 'geral',
-    notes: 'Receber conforme prescrição médica.'
+    notes: 'Obrigatório cobrar o valor de R$ 50.000,00 referente a 5 diárias. Caso o paciente fique menos dias e receba alta, o setor financeiro entrará em contato para fazer o estorno do valor.'
   },
   {
     id: 'pg-4',

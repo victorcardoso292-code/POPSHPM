@@ -63,7 +63,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [planSearch, setPlanSearch] = useState<string>('');
   const [matrixSearch, setMatrixSearch] = useState<string>('');
-  const [matrixFilter, setMatrixFilter] = useState<'all' | 'pacotes' | 'capa-tasy' | 'sim-autorizar' | 'nao'>('all');
+  const [matrixFilter, setMatrixFilter] = useState<'all' | 'pacotes' | 'padrao' | 'capa-tasy' | 'sim-autorizar' | 'nao'>('all');
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('Todos');
   const [revealedPasswords, setRevealedPasswords] = useState<{ [id: string]: boolean }>({});
   const [copiedCredential, setCopiedCredential] = useState<{ id: string; field: 'login' | 'senha' } | null>(null);
@@ -256,7 +256,10 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
       if (!matchSearch) return false;
 
       if (matrixFilter === 'pacotes') {
-        return Boolean(item.pacotePsAdulto || item.pacotePsPediatria || item.pacotePsGeral);
+        return Boolean(item.pacotePsAdulto || item.pacotePsPediatria || (item.pacotePsGeral && item.pacotePsGeral !== '10101039'));
+      }
+      if (matrixFilter === 'padrao') {
+        return item.pacotePsGeral === '10101039';
       }
       if (matrixFilter === 'capa-tasy') {
         return Boolean(item.imagemPacoteCapaTasy && item.imagemPacoteCapaTasy !== '—');
@@ -434,7 +437,8 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
             {[
               { id: 'all', label: `Todos (${POPS_PS_MATRIX_DATA.length})` },
-              { id: 'pacotes', label: `Com Pacote PS (${POPS_PS_MATRIX_DATA.filter(i => Boolean(i.pacotePsAdulto || i.pacotePsPediatria || i.pacotePsGeral)).length})` },
+              { id: 'pacotes', label: `Pacotes Exclusivos (${POPS_PS_MATRIX_DATA.filter(i => Boolean(i.pacotePsAdulto || i.pacotePsPediatria || (i.pacotePsGeral && i.pacotePsGeral !== '10101039'))).length})` },
+              { id: 'padrao', label: `Padrão 10101039 (${POPS_PS_MATRIX_DATA.filter(i => i.pacotePsGeral === '10101039').length})` },
               { id: 'capa-tasy', label: `Capa TASY Imagem (${POPS_PS_MATRIX_DATA.filter(i => Boolean(i.imagemPacoteCapaTasy && i.imagemPacoteCapaTasy !== '—')).length})` },
               { id: 'sim-autorizar', label: `Sim Autorizar (${POPS_PS_MATRIX_DATA.filter(i => i.examesLaboratoriais.includes('AUTORIZAR')).length})` },
               { id: 'nao', label: `Não Atende Lab (${POPS_PS_MATRIX_DATA.filter(i => i.examesLaboratoriais === 'NÃO').length})` }
@@ -577,20 +581,40 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
                               <button
                                 type="button"
                                 onClick={() => copyCodeToClipboard(item.pacotePsGeral!)}
-                                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-teal-50 hover:bg-teal-100 border border-teal-300 rounded-md font-mono text-xs font-black text-teal-900 transition-colors cursor-pointer"
-                                title="Clique para copiar pacote PS"
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-mono text-xs font-black transition-colors cursor-pointer ${
+                                  item.pacotePsGeral === '10101039'
+                                    ? 'bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-900'
+                                    : 'bg-teal-50 hover:bg-teal-100 border border-teal-300 text-teal-900'
+                                }`}
+                                title={`Clique para copiar código ${item.pacotePsGeral}`}
                               >
                                 <span>{item.pacotePsGeral}</span>
+                                {item.pacotePsGeral === '10101039' && (
+                                  <span className="text-[10px] uppercase font-bold text-slate-500">CONSULTA</span>
+                                )}
                                 {copiedCode === item.pacotePsGeral ? (
                                   <Check className="w-3 h-3 text-emerald-600 font-bold" />
                                 ) : (
-                                  <Copy className="w-3 h-3 text-teal-600" />
+                                  <Copy className={`w-3 h-3 ${item.pacotePsGeral === '10101039' ? 'text-slate-400' : 'text-teal-600'}`} />
                                 )}
                               </button>
                             )}
                           </div>
                         ) : (
-                          <span className="text-slate-400 font-semibold">— (Sem pacote pré-definido)</span>
+                          <button
+                            type="button"
+                            onClick={() => copyCodeToClipboard('10101039')}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-md font-mono text-xs font-black text-slate-900 transition-colors cursor-pointer"
+                            title="Clique para copiar código padrão 10101039"
+                          >
+                            <span>10101039</span>
+                            <span className="text-[10px] uppercase font-bold text-slate-500">CONSULTA</span>
+                            {copiedCode === '10101039' ? (
+                              <Check className="w-3 h-3 text-emerald-600 font-bold" />
+                            ) : (
+                              <Copy className="w-3 h-3 text-slate-400" />
+                            )}
+                          </button>
                         )}
                       </td>
 

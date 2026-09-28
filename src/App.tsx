@@ -55,6 +55,7 @@ export default function App() {
   // Navigation target states (defaults to empty so user sees the clean grid of plans)
   const [selectedPlanForPops, setSelectedPlanForPops] = useState<string>('');
   const [selectedPlanForCobertura, setSelectedPlanForCobertura] = useState<string>('');
+  const [coberturaKey, setCoberturaKey] = useState<number>(0);
   const [examSearchInitial, setExamSearchInitial] = useState<string>('');
   const [ramaisSearchInitial, setRamaisSearchInitial] = useState<string>('');
   const [relatoriosTypeInitial, setRelatoriosTypeInitial] = useState<'PARTICULAR' | 'URGÊNCIA' | 'ELETIVO'>('URGÊNCIA');
@@ -253,6 +254,7 @@ export default function App() {
 
   const handleNavigateToCobertura = (planId?: string) => {
     setSelectedPlanForCobertura(planId || '');
+    setCoberturaKey(prev => prev + 1);
     setActiveMode('cobertura-convenios');
   };
 
@@ -262,6 +264,7 @@ export default function App() {
     }
     if (mode === 'cobertura-convenios') {
       setSelectedPlanForCobertura('');
+      setCoberturaKey(prev => prev + 1);
     }
     setActiveMode(mode);
   };
@@ -372,9 +375,11 @@ export default function App() {
 
           {activeMode === 'cobertura-convenios' && (
             <CoberturaConveniosViewer
+              key={`cobertura-${coberturaKey}`}
               onNavigateToPops={handleNavigateToConvenio}
               onNavigateToContingencia={handleNavigateToContingencia}
               initialPlanId={selectedPlanForCobertura}
+              onClearInitialPlan={() => setSelectedPlanForCobertura('')}
             />
           )}
 

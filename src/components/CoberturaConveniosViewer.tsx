@@ -44,12 +44,14 @@ interface CoberturaConveniosViewerProps {
   onNavigateToPops?: (mode: 'pops-ps' | 'pops-internacao', planId?: string) => void;
   onNavigateToContingencia?: () => void;
   initialPlanId?: string;
+  onClearInitialPlan?: () => void;
 }
 
 export const CoberturaConveniosViewer: React.FC<CoberturaConveniosViewerProps> = ({
   onNavigateToPops,
   onNavigateToContingencia,
-  initialPlanId
+  initialPlanId,
+  onClearInitialPlan
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('TODAS');
@@ -67,6 +69,18 @@ export const CoberturaConveniosViewer: React.FC<CoberturaConveniosViewerProps> =
       setModalPlan(null);
     }
   }, [initialPlanId]);
+
+  // Close modal on ESC key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && modalPlan) {
+        setModalPlan(null);
+        onClearInitialPlan?.();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [modalPlan, onClearInitialPlan]);
 
   const categories = ['TODAS', 'Seguradora', 'Autogestão', 'Estadual / Regional', 'Militar', 'Privado', 'Clínica / Cartão', 'Público'];
 
@@ -131,8 +145,20 @@ export const CoberturaConveniosViewer: React.FC<CoberturaConveniosViewerProps> =
     setTimeout(() => setCopiedText(null), 2000);
   };
 
-  const handlePrint = () => {
-    window.print();
+  // Imprime exclusivamente a ficha oficial do plano selecionado
+  const handlePrintSelectedPlan = () => {
+    if (modalPlan) {
+      window.print();
+    }
+  };
+
+  // Dispara a impressão direta de um plano específico a partir do card
+  const handlePrintPlanDirectly = (p: PlanoCoberturaCompleta, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setModalPlan(p);
+    setTimeout(() => {
+      window.print();
+    }, 120);
   };
 
   // Helper para renderizar badge de status do exame
@@ -226,53 +252,302 @@ export const CoberturaConveniosViewer: React.FC<CoberturaConveniosViewerProps> =
   return (
     <div className="space-y-6">
       {/* ========================================================
-          CABEÇALHO OFICIAL: COBERTURA POR CONVÊNIOS (MODELO EM CARDS)
+          ÁREA EXCLUSIVA DE IMPRESSÃO A4 (APENAS O PLANO SELECIONADO)
+          Garante que na impressão saia EXCLUSIVAMENTE a ficha do plano escolhido
+          e NENHUM outro plano ou card de fundo seja impresso.
       ======================================================== */}
-      <div className="bg-gradient-to-r from-slate-900 via-[#0A565D] to-[#006B70] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
-        <div className="absolute right-0 top-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+      {modalPlan && (
+        <div id="print-plano-selecionado" className="hidden print:block font-sans text-slate-900 w-full m-0 p-0">
+          <div className="bg-white p-6 text-slate-900 space-y-4 text-xs">
+            {/* Cabeçalho Hospitalar Oficial */}
+            <div className="flex items-start justify-between border-b-2 border-slate-900 pb-3">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-black text-[#B01B52] tracking-tight">
+                    HOSPITAL PALMAS MEDICAL
+                  </span>
+                  <span className="text-xs font-bold text-slate-500">• Kora Saúde</span>
+                </div>
+                <div className="text-[11px] font-bold text-slate-700">
+                  HOSPITAL SANTA THEREZA (HST) • CENTRAL DE AUTORIZAÇÕES & REGULAÇÃO
+                </div>
+                <div className="text-[10px] text-slate-500 font-medium">
+                  Diretrizes Oficiais de Atendimento & Coberturas Hospitalares 2026
+                </div>
+              </div>
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="bg-emerald-500/20 text-emerald-200 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider border border-emerald-400/30 flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                Planilhas 1 & 2 Consolidadas
-              </span>
-              <span className="bg-white/10 text-white text-xs font-bold px-3 py-1 rounded-full border border-white/20">
-                Hospital Palmas Medical • HST
-              </span>
-              <span className="bg-amber-400/20 text-amber-200 text-xs font-bold px-3 py-1 rounded-full border border-amber-300/30">
-                42 Planos de Saúde Mapeados
-              </span>
+              <div className="text-right text-[10px] text-slate-600">
+                <div className="font-bold text-slate-900 uppercase">Ficha Individual de Convênio</div>
+                <div>Emissão: {new Date().toLocaleDateString('pt-BR')} às {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+                <div className="font-mono text-[9px] text-slate-500">ID: {modalPlan.id}</div>
+              </div>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white m-0">
-              Cobertura por Convênios
-            </h1>
+            {/* Banner de Identificação do Convênio Selecionado */}
+            <div className="border border-slate-300 rounded-lg p-3 bg-slate-50 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-[#006B70] text-white flex items-center justify-center font-black text-sm">
+                  {modalPlan.badge}
+                </div>
+                <div>
+                  <h1 className="text-lg font-black text-slate-900 m-0">
+                    {modalPlan.nomeExibicao}
+                  </h1>
+                  <div className="flex items-center gap-2 text-[11px] mt-0.5">
+                    <span className="font-bold text-slate-700">Categoria: {modalPlan.categoria}</span>
+                    <span>•</span>
+                    <span className="font-bold">
+                      Situação:{' '}
+                      <strong className={
+                        modalPlan.situacao === 'ATIVO' ? 'text-emerald-700' : 
+                        modalPlan.situacao === 'SUSPENSO' ? 'text-rose-700' : 'text-red-700'
+                      }>
+                        {modalPlan.situacao === 'ATIVO' ? 'Credenciado / Ativo' : 
+                         modalPlan.situacao === 'SUSPENSO' ? 'Suspenso na Planilha' : 'Descredenciado'}
+                      </strong>
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-            <p className="text-slate-200 text-sm sm:text-base font-medium max-w-3xl leading-relaxed m-0">
-              Exibição oficial no <strong>Modelo em Cards por Plano</strong>. Consulte o resumo de Pronto-Socorro, Santa Thereza, Internação/UTI, Matriz de Exames de Imagem (Planilha 2) e Ambulância de cada operadora.
-            </p>
-          </div>
-
-          {/* Quick Actions & Indicador Oficial */}
-          <div className="flex items-center gap-2.5 flex-wrap md:flex-col md:items-end flex-shrink-0">
-            {/* O BOTÃO OFICIAL SOLICITADO PELO USUÁRIO */}
-            <div className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black flex items-center gap-2 bg-[#006B70] text-white shadow-md ring-2 ring-white/30 border border-white/20 select-none">
-              <LayoutGrid className="w-4 h-4 text-white" />
-              <span>Modelos em Cards (Por Plano)</span>
+              <div className="text-right text-[10px] text-slate-600">
+                <span className="px-2.5 py-1 rounded bg-slate-200 font-bold uppercase text-[9px]">
+                  Documento Operacional
+                </span>
+              </div>
             </div>
 
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer group"
-            >
-              <Printer className="w-3.5 h-3.5 text-teal-300 group-hover:scale-110 transition-transform" />
-              <span>Imprimir Matriz de Cobertura</span>
-            </button>
+            {/* Alertas Críticos do Plano */}
+            {modalPlan.situacao === 'SUSPENSO' && (
+              <div className="border-2 border-rose-600 bg-rose-50 p-2.5 rounded-lg text-rose-950 font-bold text-[11px]">
+                ⚠️ ATENÇÃO: CONVÊNIO COM INDICAÇÃO DE SUSPENSÃO NA PLANILHA. NÃO REALIZAR ATENDIMENTO SEM CONFIRMAR COM A PRISCILA OU DIRETORIA.
+              </div>
+            )}
+            {modalPlan.situacao === 'DESCREDENCIADO' && (
+              <div className="border-2 border-red-600 bg-red-50 p-2.5 rounded-lg text-red-950 font-bold text-[11px]">
+                ❌ CONVÊNIO DESCREDENCIADO: ATENDIMENTOS NÃO DEVEM SER FATURADOS POR ESTE PLANO. COBRANÇA NA MODALIDADE PARTICULAR.
+              </div>
+            )}
+
+            {/* Regra Geral Priscila */}
+            <div className="border border-amber-300 bg-amber-50/70 p-2 rounded-lg text-[10.5px] text-amber-950">
+              <strong>REGRA INSTITUCIONAL:</strong> Para qualquer item, exame ou serviço sem especificação nesta ficha: <em>Perguntar para a Priscila antes do atendimento.</em>
+            </div>
+
+            {/* Quadro 1: Pronto-Socorro & Hospital Santa Thereza */}
+            <div className="page-break-avoid border border-slate-300 rounded-lg overflow-hidden">
+              <div className="bg-slate-100 px-3 py-1.5 border-b border-slate-300 font-black text-[11px] uppercase tracking-wider text-slate-800">
+                1. Pronto-Socorro & Hospital Santa Thereza (HST) — Urgência e Emergência
+              </div>
+              <div className="grid grid-cols-2 divide-x divide-y divide-slate-200 text-[11px]">
+                <div className="p-2.5">
+                  <span className="font-bold text-slate-600 block text-[10px] uppercase">Pronto-Socorro Adulto (Medical):</span>
+                  <span className="font-bold text-slate-900">{modalPlan.psAdulto}</span>
+                </div>
+                <div className="p-2.5">
+                  <span className="font-bold text-slate-600 block text-[10px] uppercase">Pronto-Socorro Infantil / Pediatria:</span>
+                  <span className="font-bold text-slate-900">{modalPlan.psInfantil}</span>
+                </div>
+                <div className="p-2.5">
+                  <span className="font-bold text-slate-600 block text-[10px] uppercase">Santa Thereza — Pronto Atendimento:</span>
+                  <span className="font-bold text-slate-900">{modalPlan.santaThereza.prontoAtendimento}</span>
+                </div>
+                <div className="p-2.5">
+                  <span className="font-bold text-slate-600 block text-[10px] uppercase">Santa Thereza — Internação:</span>
+                  <span className="font-bold text-slate-900">{modalPlan.santaThereza.internacao}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quadro 2: Internação, Cirurgias & UTI */}
+            <div className="page-break-avoid border border-slate-300 rounded-lg overflow-hidden">
+              <div className="bg-slate-100 px-3 py-1.5 border-b border-slate-300 font-black text-[11px] uppercase tracking-wider text-slate-800">
+                2. Internação, Cirurgias & UTI
+              </div>
+              <div className="p-2.5 space-y-2 text-[11px]">
+                <div>
+                  <span className="font-bold text-slate-600 block text-[10px] uppercase">Regras de UTI & Intensivistas:</span>
+                  <span className="font-medium text-slate-900">{modalPlan.uti}</span>
+                </div>
+                <div className="pt-1.5 border-t border-slate-200">
+                  <span className="font-bold text-slate-600 block text-[10px] uppercase">Consultas Eletivas no Ambulatório:</span>
+                  <span className="font-medium text-slate-900">{modalPlan.consultaEletiva}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quadro 3: Matriz de Exames de Imagem & Procedimentos Diagnósticos (Planilha 2) */}
+            <div className="page-break-avoid border border-slate-300 rounded-lg overflow-hidden">
+              <div className="bg-slate-100 px-3 py-1.5 border-b border-slate-300 font-black text-[11px] uppercase tracking-wider text-slate-800">
+                3. Matriz Oficial de Exames de Imagem & Procedimentos Diagnósticos (Planilha 2)
+              </div>
+              <table className="w-full text-left text-[10.5px]">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-300 text-[10px] uppercase text-slate-600">
+                    <th className="p-2 font-bold w-1/4">Procedimento / Exame</th>
+                    <th className="p-2 font-bold w-1/6">Status</th>
+                    <th className="p-2 font-bold">Diretriz de Cobertura / Regra</th>
+                    <th className="p-2 font-bold w-1/5">Código / TUSS</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {examesLista.map(ex => {
+                    const d = modalPlan.exames[ex.key];
+                    return (
+                      <tr key={ex.key}>
+                        <td className="p-2 font-bold text-slate-900">{ex.label}</td>
+                        <td className="p-2 font-black">
+                          <span className={
+                            d.status === 'ATENDE' ? 'text-emerald-700' :
+                            d.status === 'NAO_ATENDE' ? 'text-red-700' :
+                            d.status === 'PACOTE_PS' ? 'text-teal-700' :
+                            d.status === 'PARTICULAR' ? 'text-amber-800' : 'text-blue-800'
+                          }>
+                            {d.status === 'ATENDE' ? 'Atende' :
+                             d.status === 'PACOTE_PS' ? 'Pacote PS' :
+                             d.status === 'SOMENTE_URGENCIA' ? 'Somente Urgência' :
+                             d.status === 'SOMENTE_ELETIVO' ? 'Somente Eletivo' :
+                             d.status === 'COM_ESPECIFICIDADE' ? 'Com Especificidade' :
+                             d.status === 'PARTICULAR' ? 'Cobrar Particular' :
+                             d.status === 'NAO_ATENDE' ? 'Não Atende' : 'Confirmar'}
+                          </span>
+                        </td>
+                        <td className="p-2 text-slate-800">{d.descricao}</td>
+                        <td className="p-2 font-mono font-bold text-slate-700">{d.codigo || '—'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Quadro 4: Outros Serviços */}
+            <div className="page-break-avoid border border-slate-300 rounded-lg overflow-hidden">
+              <div className="bg-slate-100 px-3 py-1.5 border-b border-slate-300 font-black text-[11px] uppercase tracking-wider text-slate-800">
+                4. Outros Procedimentos & Serviços
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-slate-200 text-[10.5px]">
+                <div className="p-2">
+                  <span className="font-bold text-slate-600 block text-[9.5px] uppercase">Laboratório:</span>
+                  <span className="font-semibold text-slate-900">{modalPlan.laboratorio}</span>
+                </div>
+                <div className="p-2">
+                  <span className="font-bold text-slate-600 block text-[9.5px] uppercase">Oftalmologia:</span>
+                  <span className="font-semibold text-slate-900">{modalPlan.oftalmologia}</span>
+                </div>
+                <div className="p-2">
+                  <span className="font-bold text-slate-600 block text-[9.5px] uppercase">Mamografia:</span>
+                  <span className="font-semibold text-slate-900">{modalPlan.mamografia}</span>
+                </div>
+                <div className="p-2">
+                  <span className="font-bold text-slate-600 block text-[9.5px] uppercase">Quimio / Hemodiálise:</span>
+                  <span className="font-semibold text-slate-900">Q: {modalPlan.quimioterapia} | H: {modalPlan.hemodialise}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quadro 5: Ambulância & Remoção */}
+            <div className="page-break-avoid border border-slate-300 rounded-lg p-2.5 text-[11px] space-y-1">
+              <div className="font-bold text-slate-700 uppercase text-[10px]">
+                5. Serviço de Ambulância & Remoção (Care Med / Liss Care):
+              </div>
+              <div className="text-slate-900">{modalPlan.ambulancia}</div>
+              {modalPlan.contatosUteis && modalPlan.contatosUteis.length > 0 && (
+                <div className="text-[10px] text-slate-600 pt-1 font-mono">
+                  Contatos Úteis: {modalPlan.contatosUteis.join(' • ')}
+                </div>
+              )}
+            </div>
+
+            {/* Quadro 6: Códigos Oficiais se existirem */}
+            {modalPlan.codigosContrato?.especificos && modalPlan.codigosContrato.especificos.length > 0 && (
+              <div className="page-break-avoid border border-slate-300 rounded-lg p-2.5 text-[10.5px] space-y-1">
+                <div className="font-bold text-slate-700 uppercase text-[10px]">
+                  6. Códigos Oficiais de Contrato & Faturamento:
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {modalPlan.codigosContrato.especificos.map((esp, i) => (
+                    <div key={i} className="text-slate-900">
+                      <span className="font-bold">{esp.titulo}:</span> <span className="font-mono font-bold text-slate-800">{esp.codigo}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Quadro 7: Observações Oficiais */}
+            {modalPlan.observacoesGerais.length > 0 && (
+              <div className="page-break-avoid border border-slate-300 rounded-lg p-2.5 text-[10.5px] space-y-1">
+                <div className="font-bold text-slate-700 uppercase text-[10px]">
+                  7. Observações Oficiais Registradas na Planilha:
+                </div>
+                <ul className="list-disc list-inside text-slate-800 space-y-0.5 m-0 font-medium">
+                  {modalPlan.observacoesGerais.map((obs, i) => (
+                    <li key={i}>{obs}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Rodapé de Validação da Recepção */}
+            <div className="page-break-avoid pt-4 mt-4 border-t border-slate-400 flex items-center justify-between text-[10px] text-slate-600">
+              <div>
+                <strong>Atendente / Recepção:</strong> _________________________________________________
+              </div>
+              <div>
+                <strong>Data:</strong> _____/_____/_________  <strong>Visto:</strong> ___________________
+              </div>
+            </div>
           </div>
         </div>
+      )}
+
+      {/* ========================================================
+          CONTAINER INTERATIVO DE TELA (100% OCULTO NA IMPRESSÃO)
+      ======================================================== */}
+      <div className="print:hidden space-y-6">
+        {/* CABEÇALHO OFICIAL: COBERTURA POR CONVÊNIOS (MODELO EM CARDS) */}
+        <div className="bg-gradient-to-r from-slate-900 via-[#0A565D] to-[#006B70] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+          <div className="absolute right-0 top-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <span className="bg-emerald-500/20 text-emerald-200 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider border border-emerald-400/30 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  Planilhas 1 & 2 Consolidadas
+                </span>
+                <span className="bg-white/10 text-white text-xs font-bold px-3 py-1 rounded-full border border-white/20">
+                  Hospital Palmas Medical • HST
+                </span>
+                <span className="bg-amber-400/20 text-amber-200 text-xs font-bold px-3 py-1 rounded-full border border-amber-300/30">
+                  42 Planos de Saúde Mapeados
+                </span>
+              </div>
+
+              <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white m-0">
+                Cobertura por Convênios
+              </h1>
+
+              <p className="text-slate-200 text-sm sm:text-base font-medium max-w-3xl leading-relaxed m-0">
+                Exibição oficial no <strong>Modelo em Cards por Plano</strong>. Consulte o resumo de Pronto-Socorro, Santa Thereza, Internação/UTI, Matriz de Exames de Imagem (Planilha 2) e Ambulância de cada operadora.
+              </p>
+            </div>
+
+            {/* Quick Actions & Indicador Oficial */}
+            <div className="flex items-center gap-2.5 flex-wrap md:flex-col md:items-end flex-shrink-0">
+              {/* O BOTÃO OFICIAL SOLICITADO PELO USUÁRIO */}
+              <div className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black flex items-center gap-2 bg-[#006B70] text-white shadow-md ring-2 ring-white/30 border border-white/20 select-none">
+                <LayoutGrid className="w-4 h-4 text-white" />
+                <span>Modelos em Cards (Por Plano)</span>
+              </div>
+
+              <div className="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/10 text-teal-100 border border-white/15 select-none">
+                <Printer className="w-3.5 h-3.5 text-teal-300 flex-shrink-0" />
+                <span>Clique no convênio para imprimir sua ficha individual</span>
+              </div>
+            </div>
+          </div>
 
         {/* REGRA GERAL DA PLANILHA EM DESTAQUE */}
         <div className="mt-6 pt-4 border-t border-white/15 flex items-start gap-2.5 text-xs text-amber-200 bg-amber-500/10 p-3 rounded-xl border border-amber-400/20">
@@ -498,16 +773,32 @@ export const CoberturaConveniosViewer: React.FC<CoberturaConveniosViewerProps> =
               </div>
             </div>
 
-            {/* Rodapé do Card com Ação de Abrir a Ficha Completa */}
+            {/* Rodapé do Card com Ações de Copiar, Imprimir e Abrir Ficha */}
             <div className="p-3.5 sm:p-4 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between gap-2">
-              <button
-                type="button"
-                onClick={() => handleCopyResumoPlano(p)}
-                className="px-2.5 py-1.5 text-[11px] font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
-              >
-                <Copy className="w-3.5 h-3.5" />
-                <span>Copiar</span>
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCopyResumoPlano(p);
+                  }}
+                  className="px-2.5 py-1.5 text-[11px] font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-200/70 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                  title="Copiar resumo textual"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copiar</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={(e) => handlePrintPlanDirectly(p, e)}
+                  className="px-2.5 py-1.5 text-[11px] font-bold text-[#006B70] hover:text-[#0A565D] hover:bg-teal-50 rounded-lg transition-colors cursor-pointer flex items-center gap-1 border border-teal-200/60"
+                  title="Imprimir ficha oficial deste convênio"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Imprimir</span>
+                </button>
+              </div>
 
               <button
                 type="button"
@@ -592,16 +883,20 @@ export const CoberturaConveniosViewer: React.FC<CoberturaConveniosViewerProps> =
 
                 <button
                   type="button"
-                  onClick={handlePrint}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-all border border-slate-200 cursor-pointer"
+                  onClick={handlePrintSelectedPlan}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#006B70] hover:bg-[#0A565D] text-white rounded-xl text-xs font-black transition-all border border-[#006B70] shadow-xs cursor-pointer"
+                  title="Imprimir Ficha Oficial Individual deste Plano (A4)"
                 >
-                  <Printer className="w-3.5 h-3.5 text-slate-600" />
-                  <span>Imprimir</span>
+                  <Printer className="w-3.5 h-3.5 text-white" />
+                  <span>Imprimir Ficha do Plano</span>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setModalPlan(null)}
+                  onClick={() => {
+                    setModalPlan(null);
+                    onClearInitialPlan?.();
+                  }}
                   className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors cursor-pointer"
                   title="Fechar Janela"
                 >
@@ -933,17 +1228,32 @@ export const CoberturaConveniosViewer: React.FC<CoberturaConveniosViewerProps> =
                 Pressione ESC ou clique em Fechar para voltar aos Cards
               </span>
 
-              <button
-                type="button"
-                onClick={() => setModalPlan(null)}
-                className="px-5 py-2.5 bg-[#006B70] hover:bg-[#0A565D] text-white rounded-xl text-xs font-black transition-colors cursor-pointer shadow-xs"
-              >
-                Fechar Ficha
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handlePrintSelectedPlan}
+                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-colors cursor-pointer border border-slate-200 flex items-center gap-1.5"
+                >
+                  <Printer className="w-3.5 h-3.5 text-slate-700" />
+                  <span>Imprimir Ficha</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModalPlan(null);
+                    onClearInitialPlan?.();
+                  }}
+                  className="px-5 py-2.5 bg-[#006B70] hover:bg-[#0A565D] text-white rounded-xl text-xs font-black transition-colors cursor-pointer shadow-xs"
+                >
+                  Fechar Ficha
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

@@ -11,6 +11,7 @@ import { PS_EXAM_DATA_ORIGINAL, LAB_EXAM_DATA_ORIGINAL, AMOR_EXAM_DATA_ORIGINAL 
 import { PROCEDIMENTOS_GERAIS, PROCEDIMENTOS_MEDICOS_ESPECIFICOS, PROCEDURES_METADATA } from '../data/proceduresData';
 import { HOSPITAL_EXTENSIONS, HOSPITAL_REPORTS } from '../data/hospitalData';
 import { PARECERES_CONVENIOS_DATA, PARECER_WORKFLOW_STEPS, ERROS_CRITICOS_GLOSA_PARECER } from '../data/pareceresData';
+import { COBERTURA_CONVENIOS_DATA } from '../data/coberturaConveniosData';
 
 // ----------------------------------------------------
 // UNIFIED HOSPITAL KNOWLEDGE ITEM SCHEMA
@@ -778,6 +779,23 @@ export function getUnifiedHospitalDatabase(): HospitalUnifiedItem[] {
     ],
     searchTokens: 'contingencia plano de contingencia tasy fora do ar sistema caiu queda energia ficha atendimento manual hpm fm kora recepcao'
   });
+
+  // 13. MATRIZ DE COBERTURA POR CONVÊNIOS
+  for (const cob of COBERTURA_CONVENIOS_DATA) {
+    items.push({
+      id: `cobertura-${cob.id.toLowerCase()}`,
+      convenioId: cob.id,
+      convenioName: cob.name,
+      area: 'regra_geral',
+      subarea: 'acomodacao',
+      title: `Cobertura e Regras de Atendimento — ${cob.name}`,
+      code: cob.registroAns || cob.badge,
+      description: `Convênio: ${cob.name} (${cob.category}). Acomodação: ${cob.acomodacaoPadrao}. Regra: ${cob.regrasAcomodacao}. Token/Biometria: ${cob.exigeTokenBiometria ? `SIM (${cob.tipoToken})` : 'NÃO'}. PS Adulto: ${cob.servicos.psAdulto.descricao} | PS Infantil: ${cob.servicos.psInfantil.descricao} | Internação: ${cob.servicos.internacaoClinica.descricao} | UTI: ${cob.servicos.utiAdulto.descricao} | Imagem no PS: ${cob.servicos.examesImagemPs.descricao}.`,
+      documentos: cob.documentosObrigatorios,
+      alertas: cob.alertasCriticos,
+      searchTokens: `cobertura convenios servicos internacao ps adulto infantil uti acomodacao apartamento enfermaria token biometria ${cob.id} ${cob.name} ${cob.category} ${cob.regrasAcomodacao}`
+    });
+  }
 
   UNIFIED_DATABASE_CACHE = items;
   return items;

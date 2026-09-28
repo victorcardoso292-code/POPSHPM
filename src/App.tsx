@@ -7,6 +7,7 @@ import { ExamValuesViewer } from './components/ExamValuesViewer';
 import { ProcedureValuesViewer } from './components/ProcedureValuesViewer';
 import { FluxoParecerViewer } from './components/FluxoParecerViewer';
 import { PlanoContingenciaViewer } from './components/PlanoContingenciaViewer';
+import { CoberturaConveniosViewer } from './components/CoberturaConveniosViewer';
 import { HospitalReportsViewer } from './components/HospitalReportsViewer';
 import { HospitalExtensionsViewer } from './components/HospitalExtensionsViewer';
 import { AiHospitalAssistant } from './components/AiHospitalAssistant';
@@ -53,6 +54,7 @@ export default function App() {
 
   // Navigation target states (defaults to empty so user sees the clean grid of plans)
   const [selectedPlanForPops, setSelectedPlanForPops] = useState<string>('');
+  const [selectedPlanForCobertura, setSelectedPlanForCobertura] = useState<string>('BRADESCO');
   const [examSearchInitial, setExamSearchInitial] = useState<string>('');
   const [ramaisSearchInitial, setRamaisSearchInitial] = useState<string>('');
   const [relatoriosTypeInitial, setRelatoriosTypeInitial] = useState<'PARTICULAR' | 'URGÊNCIA' | 'ELETIVO'>('URGÊNCIA');
@@ -249,6 +251,13 @@ export default function App() {
     setActiveMode('plano-contingencia');
   };
 
+  const handleNavigateToCobertura = (planId?: string) => {
+    if (planId) {
+      setSelectedPlanForCobertura(planId);
+    }
+    setActiveMode('cobertura-convenios');
+  };
+
   const handleSelectMode = (mode: AppMode) => {
     if (mode === 'pops-ps' || mode === 'pops-internacao' || mode === 'pops') {
       setSelectedPlanForPops('');
@@ -360,6 +369,14 @@ export default function App() {
             />
           )}
 
+          {activeMode === 'cobertura-convenios' && (
+            <CoberturaConveniosViewer
+              onNavigateToPops={handleNavigateToConvenio}
+              onNavigateToContingencia={handleNavigateToContingencia}
+              initialPlanId={selectedPlanForCobertura}
+            />
+          )}
+
           {activeMode === 'plano-contingencia' && (
             <PlanoContingenciaViewer />
           )}
@@ -447,6 +464,7 @@ export default function App() {
           onNavigateToRelatorios={handleNavigateToRelatorios}
           onNavigateToParecer={handleNavigateToParecer}
           onNavigateToContingencia={handleNavigateToContingencia}
+          onNavigateToCobertura={handleNavigateToCobertura}
           psExams={psExams}
           amorExams={amorExams}
           labExams={labExams}

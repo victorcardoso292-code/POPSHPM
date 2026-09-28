@@ -18,6 +18,7 @@ import { AppMode, ExamRow } from '../types';
 import { CONVENIOS_MASTER_LIST } from '../data/popsData';
 import { HOSPITAL_EXTENSIONS, HOSPITAL_REPORTS } from '../data/hospitalData';
 import { ALL_DIARIAS_ITEMS } from '../data/diariasData';
+import { PLANOS_COBERTURA_COMPLETA } from '../data/planosCoberturaCompletaData';
 
 interface UniversalSearchModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ interface UniversalSearchModalProps {
   onNavigateToRelatorios: (tipo?: 'PARTICULAR' | 'URGÊNCIA' | 'ELETIVO') => void;
   onNavigateToParecer?: (convenioId?: string) => void;
   onNavigateToContingencia?: () => void;
+  onNavigateToCobertura?: (planId?: string) => void;
   psExams: ExamRow[];
   amorExams: ExamRow[];
   labExams: ExamRow[];
@@ -42,6 +44,7 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
   onNavigateToRelatorios,
   onNavigateToParecer,
   onNavigateToContingencia,
+  onNavigateToCobertura,
   psExams,
   amorExams,
   labExams
@@ -90,22 +93,31 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
       };
     }
 
-    // 1. Convenios
-    const matchingConvenios = [
+    // 1. Convenios (combining POPs Master list + all 42 coverage plans)
+    const allKnownConvenios = [
       ...CONVENIOS_MASTER_LIST,
-      {
-        id: 'SERVIR',
-        name: 'SERVIR (Plano de Saúde TO)',
-        category: 'Estadual',
-        badge: 'SE',
-        criticalNotes: ['Cobertura estadual com regras específicas para internação e SADT.'],
-        portalUrl: 'https://servir.to.gov.br'
-      } as any
-    ].filter(c => 
-      c.name.toLowerCase().includes(q) || 
-      c.id.toLowerCase().includes(q) ||
-      (c.category && c.category.toLowerCase().includes(q))
-    ).slice(0, 5);
+      ...PLANOS_COBERTURA_COMPLETA.map(p => ({
+        id: p.id,
+        name: p.nomeExibicao,
+        category: p.categoria,
+        badge: p.badge,
+        criticalNotes: p.observacoesGerais,
+        portalUrl: ''
+      }))
+    ];
+    const seenConvIds = new Set<string>();
+    const matchingConvenios: any[] = [];
+    for (const c of allKnownConvenios) {
+      const match = 
+        c.name.toLowerCase().includes(q) || 
+        c.id.toLowerCase().includes(q) || 
+        (c.category && c.category.toLowerCase().includes(q));
+      if (match && !seenConvIds.has(c.id)) {
+        seenConvIds.add(c.id);
+        matchingConvenios.push(c);
+        if (matchingConvenios.length >= 6) break;
+      }
+    }
 
     // 1.5 Diárias de Internação
     const matchingDiarias = ALL_DIARIAS_ITEMS.filter(d => 
@@ -184,6 +196,17 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
         desc: 'Formulário oficial do Hospital Palmas Medical (Kora Saúde) para admissão e cadastro manual quando o Tasy estiver offline, com impressão A4.',
         action: () => {
           if (onNavigateToContingencia) onNavigateToContingencia();
+          onClose();
+        }
+      });
+    }
+
+    if ('cobertura'.includes(q) || 'coberturas'.includes(q) || 'matriz'.includes(q) || 'servicos'.includes(q) || 'serviços'.includes(q) || 'acomodacao'.includes(q) || 'acomodação'.includes(q)) {
+      rules.push({
+        title: 'Cobertura por Convênios — Matriz Geral Hospitalar 2026',
+        desc: 'Matriz consolidada de serviços autorizados (PS, Pediatria, Internação, UTI, Hemodinâmica, Imagem, Maternidade) e acomodações (Enfermaria vs Apartamento).',
+        action: () => {
+          if (onNavigateToCobertura) onNavigateToCobertura();
           onClose();
         }
       });
@@ -367,6 +390,19 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
                           >
                             Internação
                           </button>
+                          {onNavigateToCobertura && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                onNavigateToCobertura(c.id);
+                                onClose();
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-teal-100 hover:bg-teal-200 text-[#006B70] text-[11px] font-bold transition-colors cursor-pointer"
+                              title="Abrir página deste convênio na aba Cobertura"
+                            >
+                              Cobertura
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}

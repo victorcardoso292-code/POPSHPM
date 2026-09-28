@@ -16,7 +16,8 @@ import {
   Sparkles,
   Bot,
   UserCheck,
-  ClipboardList
+  ClipboardList,
+  ShieldCheck
 } from 'lucide-react';
 import { AppMode } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
@@ -68,6 +69,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: UserCheck,
       badge: 'Urgência & UTI',
       badgeColor: 'bg-purple-50 text-purple-900 border border-purple-200'
+    },
+    {
+      id: 'cobertura-convenios' as AppMode,
+      label: 'Cobertura por Convênios',
+      subtitle: 'Matriz de serviços, internação e PS',
+      icon: ShieldCheck,
+      badge: 'Matriz Geral',
+      badgeColor: 'bg-emerald-50 text-emerald-800 border border-emerald-200'
     },
     {
       id: 'plano-contingencia' as AppMode,

@@ -54,7 +54,7 @@ export default function App() {
 
   // Navigation target states (defaults to empty so user sees the clean grid of plans)
   const [selectedPlanForPops, setSelectedPlanForPops] = useState<string>('');
-  const [selectedPlanForCobertura, setSelectedPlanForCobertura] = useState<string>('BRADESCO');
+  const [selectedPlanForCobertura, setSelectedPlanForCobertura] = useState<string>('');
   const [examSearchInitial, setExamSearchInitial] = useState<string>('');
   const [ramaisSearchInitial, setRamaisSearchInitial] = useState<string>('');
   const [relatoriosTypeInitial, setRelatoriosTypeInitial] = useState<'PARTICULAR' | 'URGÊNCIA' | 'ELETIVO'>('URGÊNCIA');
@@ -252,15 +252,16 @@ export default function App() {
   };
 
   const handleNavigateToCobertura = (planId?: string) => {
-    if (planId) {
-      setSelectedPlanForCobertura(planId);
-    }
+    setSelectedPlanForCobertura(planId || '');
     setActiveMode('cobertura-convenios');
   };
 
   const handleSelectMode = (mode: AppMode) => {
     if (mode === 'pops-ps' || mode === 'pops-internacao' || mode === 'pops') {
       setSelectedPlanForPops('');
+    }
+    if (mode === 'cobertura-convenios') {
+      setSelectedPlanForCobertura('');
     }
     setActiveMode(mode);
   };

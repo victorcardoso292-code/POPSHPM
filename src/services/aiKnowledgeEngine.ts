@@ -7,7 +7,7 @@ import {
   POPS_PS_INSTITUTIONAL_HEADER 
 } from '../data/popsData';
 import { PORTAIS_CREDENCIAIS, PORTAIS_RULES, PortalCredential } from '../data/portaisData';
-import { PS_EXAM_DATA_ORIGINAL, LAB_EXAM_DATA_ORIGINAL, AMOR_EXAM_DATA_ORIGINAL } from '../data/examData';
+import { PS_EXAM_DATA_ORIGINAL, LAB_EXAM_DATA_ORIGINAL, AMOR_EXAM_DATA_ORIGINAL, isImagingExamWithContrast } from '../data/examData';
 import { PROCEDIMENTOS_GERAIS, PROCEDIMENTOS_MEDICOS_ESPECIFICOS, PROCEDURES_METADATA } from '../data/proceduresData';
 import { HOSPITAL_EXTENSIONS, HOSPITAL_REPORTS } from '../data/hospitalData';
 import { PARECERES_CONVENIOS_DATA, PARECER_WORKFLOW_STEPS, ERROS_CRITICOS_GLOSA_PARECER } from '../data/pareceresData';
@@ -625,7 +625,8 @@ export function getUnifiedHospitalDatabase(): HospitalUnifiedItem[] {
 
   // 7. VALORES DE EXAMES (PS, Laboratório, Amor Saúde, MedPrev)
   // PS Exams (Imagem, Métodos Gráficos, ECG, EDA)
-  for (const [code, desc, valConv, valPart, matrad] of PS_EXAM_DATA_ORIGINAL) {
+  // Estrutura oficial da tupla: [code, desc, particularPrice, medPrevPrice, pageRef]
+  for (const [code, desc, valPart, valConv, matrad] of PS_EXAM_DATA_ORIGINAL) {
     const dUpper = desc.toUpperCase();
     let modality = 'exame imagem';
     if (dUpper.includes('TC') || dUpper.includes('TOMOGRAFIA')) modality = 'tomografia tc tomografia computadorizada';
@@ -636,22 +637,23 @@ export function getUnifiedHospitalDatabase(): HospitalUnifiedItem[] {
     else if (dUpper.includes('ENDOSCOPIA') || dUpper.includes('COLONOSCOPIA') || dUpper.includes('EDA')) modality = 'endoscopia colonoscopia digestiva';
 
     items.push({
-      id: `exame-ps-${code || cleanStr(desc).slice(0, 15)}`,
+      id: `exame-ps-${code || ''}-${cleanStr(desc).slice(0, 20)}`,
       area: 'exame',
       subarea: 'imagem_graficos',
       code,
       title: desc,
-      description: `Código TUSS: ${code || 'Sob consulta'} | Procedimento: ${desc} | Valor Convênio/MedPrev: R$ ${valConv} | Valor Particular: R$ ${valPart} ${matrad !== '*' ? `| MAT/RAD: R$ ${matrad}` : ''}`,
+      description: `Código TUSS: ${code || 'Sob consulta'} | Procedimento: ${desc} | Valor Particular: R$ ${valPart} | Valor Convênio/MedPrev: R$ ${valConv} ${matrad && matrad !== '*' ? `| MAT/RAD: R$ ${matrad}` : ''}`,
       valores: {
-        particular: valPart,
-        convenio: valConv,
-        medprev: valConv
+        particular: valPart !== '*' ? valPart : undefined,
+        convenio: valConv !== '*' ? valConv : undefined,
+        medprev: valConv !== '*' ? valConv : undefined
       },
       searchTokens: `${code} ${desc} ${modality} valor preco particular medprev conv`
     });
   }
 
   // Amor Saúde Exams
+  // Estrutura oficial: [code, desc, particularAmorSaude, medPrev, pageRef]
   for (const [code, desc, valAmor] of AMOR_EXAM_DATA_ORIGINAL) {
     const dUpper = desc.toUpperCase();
     let modality = 'amor saude exame';
@@ -662,31 +664,32 @@ export function getUnifiedHospitalDatabase(): HospitalUnifiedItem[] {
     else if (dUpper.includes('ECG') || dUpper.includes('ELETRO')) modality = 'amor saude eletrocardiograma ecg';
 
     items.push({
-      id: `exame-amor-${code || cleanStr(desc).slice(0, 15)}`,
+      id: `exame-amor-${code || ''}-${cleanStr(desc).slice(0, 20)}`,
       area: 'exame',
       subarea: 'amor_saude',
       code,
       title: `${desc} (Tabela Amor Saúde)`,
       description: `Tabela Amor Saúde | Código TUSS: ${code || 'Sob consulta'} | Procedimento: ${desc} | Valor Amor Saúde: R$ ${valAmor}`,
       valores: {
-        amorSaude: valAmor
+        amorSaude: valAmor !== '*' ? valAmor : undefined
       },
       searchTokens: `${code} ${desc} ${modality} valor preco particular amor saude`
     });
   }
 
   // Laboratório Exams
-  for (const [code, desc, valConv, valPart] of LAB_EXAM_DATA_ORIGINAL) {
+  // Estrutura oficial: [code, desc, particularPrice, medPrevPrice]
+  for (const [code, desc, valPart, valConv] of LAB_EXAM_DATA_ORIGINAL) {
     items.push({
-      id: `exame-lab-${code || cleanStr(desc).slice(0, 15)}`,
+      id: `exame-lab-${code || ''}-${cleanStr(desc).slice(0, 20)}`,
       area: 'exame',
       subarea: 'laboratorio',
       code,
       title: `${desc} (Exame Laboratorial)`,
-      description: `Código TUSS: ${code} | Exame Laboratorial: ${desc} | Valor Convênio: R$ ${valConv} | Valor Particular: R$ ${valPart}`,
+      description: `Código TUSS: ${code} | Exame Laboratorial: ${desc} | Valor Particular: R$ ${valPart}${valConv && valConv !== '*' ? ` | Valor Convênio: R$ ${valConv}` : ''}`,
       valores: {
-        particular: valPart,
-        convenio: valConv
+        particular: valPart !== '*' ? valPart : undefined,
+        convenio: valConv && valConv !== '*' ? valConv : undefined
       },
       searchTokens: `${code} ${desc} laboratorio sangue urina fezes exame lab valor particular`
     });
@@ -696,17 +699,20 @@ export function getUnifiedHospitalDatabase(): HospitalUnifiedItem[] {
   const allProcs = [...PROCEDIMENTOS_GERAIS, ...PROCEDIMENTOS_MEDICOS_ESPECIFICOS];
   for (const pr of allProcs) {
     const isUtiProc = pr.description.toLowerCase().includes('uti');
+    const isDiariaProc = pr.category.includes('Diárias') || isUtiProc || pr.description.toLowerCase().includes('diária');
     items.push({
       id: `proc-${pr.id}`,
-      area: isUtiProc ? 'uti' : 'procedimento',
-      subarea: pr.category,
+      convenioId: 'PARTICULAR',
+      convenioName: 'Particular',
+      area: isUtiProc ? 'uti' : (isDiariaProc ? 'internacao' : 'procedimento'),
+      subarea: isDiariaProc ? 'diaria' : pr.category,
       title: pr.description,
       description: `Procedimento: ${pr.description} | Categoria: ${pr.category} | Valor Hospitalar: R$ ${pr.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} | Diárias Inclusas: ${pr.diarias} ${pr.notes ? `| Observação: ${pr.notes}` : ''}`,
       valores: {
         particular: pr.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
         diariasInclusas: pr.diarias
       },
-      searchTokens: `${pr.description} ${pr.category} ${pr.notes || ''} cirurgia procedimento valor pacote diarias`
+      searchTokens: `${pr.description} ${pr.category} ${pr.notes || ''} particular tabela particular hpm hospitalar diaria diarias acomodacao leito internacao uti quarto enfermaria apartamento preco valor quanto custa ${isUtiProc ? 'uti particular valor uti diaria uti diaria global de uti pos cirurgico diaria uti particular preco uti custo uti pacote uti particular 50000 6800' : ''}`
     });
   }
 
@@ -854,18 +860,43 @@ export function resolveQueryWithHistory(
       }
     }
 
+    // Check if the current query explicitly specifies an entity (Particular or a specific convênio)
     const qNorm = cleanStr(query);
+    let currentTurnConvenio: string | undefined = undefined;
+
+    if (qNorm.includes('particular')) {
+      currentTurnConvenio = 'PARTICULAR';
+    } else if (qNorm.includes('amor saude')) {
+      currentTurnConvenio = 'AMOR_SAUDE';
+    } else {
+      for (const c of CONVENIOS_MASTER_LIST) {
+        const cIdNorm = cleanStr(c.id);
+        const cNameNorm = cleanStr(c.name);
+        if (qNorm.includes(cIdNorm) || qNorm.includes(cNameNorm)) {
+          currentTurnConvenio = c.id;
+          break;
+        }
+      }
+    }
+
+    if (currentTurnConvenio) {
+      previousConvenio = currentTurnConvenio;
+    }
+
+    // A query is ONLY a follow-up if it genuinely lacks a subject and relies on previous context
+    const isAttributeOnly = /^(qual o valor|quanto custa|qual o preco|qual o codigo|qual o tuss|qual o ramal|tem contraste|como autorizar|precisa autorizacao|precisa de autorizacao|qual o portal|qual a senha|qual o preparo|como interna|como faz internacao)\??$/i.test(qNorm.trim());
+    const hasContinuationPrefix = /^(e\s|e\sse\s|e\spara\s|e\sno\s|e\sna\s|mas\se\s)/i.test(qNorm);
+    const hasAnaphoraPronoun = /\b(dele|dela|desse|dessa|nele|nela|disso)\b/i.test(qNorm);
+
     const isFollowUp = (
-      qNorm.length < 35 ||
-      qNorm.startsWith('e ') ||
-      qNorm.includes('como interna') ||
-      qNorm.includes('como faco a internacao') ||
-      qNorm.includes('e se for') ||
-      qNorm.includes('e para uti') ||
-      qNorm.includes('dele') || qNorm.includes('dela') ||
-      qNorm.includes('desse') || qNorm.includes('dessa') ||
-      qNorm.includes('quanto custa') || qNorm.includes('qual o valor') ||
-      qNorm.includes('tem contraste') || qNorm.includes('precisa de autorizacao')
+      !currentTurnConvenio &&
+      (
+        isAttributeOnly ||
+        hasContinuationPrefix ||
+        hasAnaphoraPronoun ||
+        qNorm.startsWith('e se for') ||
+        qNorm.startsWith('e para uti')
+      )
     );
 
     if (isFollowUp) {
@@ -995,13 +1026,20 @@ export function retrieveHospitalKnowledge(
   // 4. Identify Target Convênio and Clinical Area
   let detectedConvenio = historyResolution.previousConvenio;
   let bestConvScore = 0;
-  for (const c of CONVENIOS_MASTER_LIST) {
-    const cName = cleanStr(c.name);
-    const cId = cleanStr(c.id);
-    const score = computeMatchScore(normQ, `${cId} ${cName}`);
-    if (score > 30 && score > bestConvScore) {
-      bestConvScore = score;
-      detectedConvenio = c.id;
+
+  if (normQ.includes('particular')) {
+    detectedConvenio = 'PARTICULAR';
+  } else if (normQ.includes('amor saude')) {
+    detectedConvenio = 'AMOR_SAUDE';
+  } else {
+    for (const c of CONVENIOS_MASTER_LIST) {
+      const cName = cleanStr(c.name);
+      const cId = cleanStr(c.id);
+      const score = computeMatchScore(normQ, `${cId} ${cName}`);
+      if (score > 30 && score > bestConvScore) {
+        bestConvScore = score;
+        detectedConvenio = c.id;
+      }
     }
   }
 
@@ -1033,7 +1071,7 @@ export function retrieveHospitalKnowledge(
       score = matchScore;
 
       const isRamalQuery = normQ.includes('ramal') || normQ.includes('telefone') || normQ.includes('contato');
-      const isValorQuery = normQ.includes('valor') || normQ.includes('preco') || normQ.includes('custa') || normQ.includes('quanto');
+      const isValorQuery = normQ.includes('valor') || normQ.includes('preco') || normQ.includes('custa') || normQ.includes('quanto') || normQ.includes('particular') || normQ.includes('tabela') || normQ.includes('diaria');
 
       // 1. RAMAL PRIORITY
       if (isRamalQuery) {
@@ -1051,7 +1089,16 @@ export function retrieveHospitalKnowledge(
         }
       }
 
-      // 2.1 Penalize Angiotomografia/Angiorressonância if user just asked for standard TC/RM
+      // 2.1 Particular affinity: boost particular items and penalize convênios when asking for particular
+      if (normQ.includes('particular') || detectedConvenio === 'PARTICULAR') {
+        if (item.convenioId === 'PARTICULAR' || (item.valores && item.valores.particular)) {
+          score += 2600;
+        } else if (item.convenioId && item.convenioId !== 'PARTICULAR') {
+          score -= 1200; // Deprioritize insurance plans like Servir/Assefaz when user asked for particular
+        }
+      }
+
+      // 2.2 Penalize Angiotomografia/Angiorressonância if user just asked for standard TC/RM
       if (!normQ.includes('angio') && item.title.toLowerCase().includes('angio')) {
         score -= 200;
       }
@@ -1110,7 +1157,13 @@ export function retrieveHospitalKnowledge(
     };
   });
 
-  // 7. Synthesize Executive Hospital Direct Answer
+  // 7. Grounding Context Prompt for Gemini
+  const groundingPromptText = scoredItems.slice(0, 6).map((s, idx) => {
+    const it = s.item;
+    return `[REGISTRO ${idx + 1}] (${it.area.toUpperCase()}) ${it.title} | Código: ${it.code || 'N/A'} | Convênio: ${it.convenioName || 'Geral'} | Detalhes: ${it.description || ''} | Solicitar Junto: ${it.solicitarJunto || 'N/A'} | Alertas: ${it.alertas ? it.alertas.join('; ') : 'Nenhum'}`;
+  }).join('\n\n') || 'Nenhum registro específico localizado no banco de dados para os termos digitados.';
+
+  // 8. Synthesize Executive Hospital Direct Answer
   let directAnswer = '';
   let matchedCategory = facts.length > 0 ? facts[0].category : 'geral';
 
@@ -1134,8 +1187,55 @@ export function retrieveHospitalKnowledge(
   if (scoredItems.length > 0) {
     const top = scoredItems[0].item;
 
+    // Specific Scenario 1: Internação & Diárias Hospitalares / UTI Particulares
+    const isParticularUtiOrDiaria = (
+      (detectedConvenio === 'PARTICULAR' || normQ.includes('particular')) &&
+      (normQ.includes('uti') || normQ.includes('diaria') || normQ.includes('interna') || normQ.includes('acomodacao') || top.area === 'uti' || top.subarea === 'diaria')
+    ) || (
+      // If user asks generic "valor da uti", "diaria de uti", "valor diaria uti" without convênio, prioritize the hospital's particular table
+      !detectedConvenio && (normQ.includes('uti') || normQ.includes('diaria')) && (top.id === 'proc-pg-3' || top.id === 'proc-pg-4' || top.id === 'proc-pg-1' || top.id === 'proc-pg-2')
+    );
+
+    if (isParticularUtiOrDiaria) {
+      const isUtiQuery = normQ.includes('uti') || top.area === 'uti' || top.id === 'proc-pg-3' || top.id === 'proc-pg-4';
+
+      directAnswer = `**Hospital Palmas Medical – ${isUtiQuery ? 'Diárias de UTI (Tabela Particular)' : 'Diárias & Acomodações de Internação (Tabela Particular)'}**\n\n`;
+
+      directAnswer += `• **Diária Global de UTI (Adulto / Geral):**\n`;
+      directAnswer += `  - **Valor Hospitalar:** **R$ 50.000,00**\n`;
+      directAnswer += `  - **Diárias Inclusas:** **5 diárias obrigatórias** (pacote inicial obrigatório);\n`;
+      directAnswer += `  - **Regra de Estorno:** Obrigatório cobrar o valor de R$ 50.000,00 referente a 5 diárias. Caso o paciente fique menos dias e receba alta médica, o setor financeiro do hospital fará o estorno/reembolso proporcional dos dias não utilizados.\n\n`;
+
+      directAnswer += `• **Diária de UTI (Pós-Cirúrgico):**\n`;
+      directAnswer += `  - **Valor Hospitalar:** **R$ 6.800,00 ao dia**\n`;
+      directAnswer += `  - **Observação:** Receber e cobrar ao dia conforme prescrição médica.\n\n`;
+
+      directAnswer += `• **Outras Diárias de Acomodação Particular (para referência):**\n`;
+      directAnswer += `  - **Diária Global de Apartamento:** R$ 2.860,00 ao dia\n`;
+      directAnswer += `  - **Diária Global de Enfermaria:** R$ 2.200,00 ao dia\n`;
+      directAnswer += `  - **Diária UPGRADE Enfermaria para Apartamento:** R$ 569,25 ao dia (diferença de acomodação por leito)\n\n`;
+
+      directAnswer += `**Documentos Obrigatórios (Kit Internação Particular):**\n`;
+      directAnswer += `• Ficha de Admissão Hospitalar Particular;\n`;
+      directAnswer += `• Termo de Responsabilidade e Ciência de Débito (Relatório Tipo Particular);\n`;
+      directAnswer += `• Contrato de Prestação de Serviços Hospitalares Particulares;\n`;
+      directAnswer += `• Comprovante de Pagamento / Depósito Caução na Recepção/Financeiro;\n`;
+      directAnswer += `• Prescrição Médica e Documento oficial com foto (RG/CPF) do paciente e responsável financeiro.\n\n`;
+
+      directAnswer += `⚠️ **ATENÇÃO:** Estes valores são exclusivos da **Tabela Particular** do Hospital Palmas Medical. Não se aplicam a convênios (como SERVIR, UNIMED, BRADESCO, CASSI, ASSEFAZ etc.), que possuem regras de faturamento próprias e cobertura via guia de autorização (ex.: pelo SERVIR a UTI utiliza o pacote TUSS 60000999 faturado à operadora, sem cobrança desta tabela particular).`;
+
+      return {
+        detectedConvenio: 'PARTICULAR',
+        detectedArea: isUtiQuery ? 'uti' : 'internacao',
+        matchedCategory: 'diaria',
+        facts,
+        groundingPromptText,
+        directAnswer
+      };
+    }
+
     // Cross-Entity Scenario: "Paciente ASSEFAZ vai internar na UTI..." or similar multi-faceted query
-    if (detectedConvenio && (normQ.includes('uti') || normQ.includes('interna'))) {
+    if (detectedConvenio && detectedConvenio !== 'PARTICULAR' && (normQ.includes('uti') || normQ.includes('interna'))) {
       const convItems = scoredItems.filter(s => s.item.convenioId === detectedConvenio).map(s => s.item);
       const utiItem = convItems.find(i => i.area === 'uti' || i.subarea === 'uti');
       const internItem = convItems.find(i => i.area === 'internacao');
@@ -1200,16 +1300,39 @@ export function retrieveHospitalKnowledge(
         directAnswer += `• **Código TUSS:** \`${top.code}\`\n`;
       }
       if (top.valores) {
-        if (top.valores.particular) directAnswer += `• **Valor Particular:** R$ ${top.valores.particular}\n`;
-        if (top.valores.convenio) directAnswer += `• **Valor Convênio / MedPrev:** R$ ${top.valores.convenio}\n`;
-        if (top.valores.amorSaude) directAnswer += `• **Valor Amor Saúde:** R$ ${top.valores.amorSaude}\n`;
-        if (top.valores.diariasInclusas !== undefined) directAnswer += `• **Diárias Hospitalares Inclusas:** ${top.valores.diariasInclusas}\n`;
+        const hasContrast = isImagingExamWithContrast(top.title);
+        
+        if (top.valores.particular) {
+          directAnswer += `• **Valor Particular (Sem Contraste):** R$ ${top.valores.particular}\n`;
+        }
+        if (top.valores.convenio) {
+          directAnswer += `• **Valor Convênio / MedPrev (Sem Contraste):** R$ ${top.valores.convenio}\n`;
+        }
+        if (top.valores.amorSaude) {
+          directAnswer += `• **Valor Amor Saúde:** R$ ${top.valores.amorSaude}\n`;
+        }
+
+        if (hasContrast) {
+          const numPart = parseFloat((top.valores.particular || '0').replace(/\./g, '').replace(',', '.'));
+          const numConv = parseFloat((top.valores.convenio || '0').replace(/\./g, '').replace(',', '.'));
+          
+          directAnswer += `• **Adicional de Contraste (se prescrito):** + R$ 250,00\n`;
+          if (numPart > 0 || numConv > 0) {
+            const totPartStr = numPart > 0 ? (numPart + 250).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : undefined;
+            const totConvStr = numConv > 0 ? (numConv + 250).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : undefined;
+            directAnswer += `• **Valor Total com Contraste:** ${totPartStr ? `Particular: R$ ${totPartStr}` : ''}${totPartStr && totConvStr ? ' | ' : ''}${totConvStr ? `Convênio / MedPrev: R$ ${totConvStr}` : ''}\n`;
+          }
+        }
+
+        if (top.valores.diariasInclusas !== undefined) {
+          directAnswer += `• **Diárias Hospitalares Inclusas:** ${top.valores.diariasInclusas}\n`;
+        }
       }
       if (top.description) {
         directAnswer += `• **Detalhes:** ${top.description}\n`;
       }
 
-      // Check if there are related Amor Saúde or with-contrast variations among the top facts
+      // Check if there are related Amor Saúde or other variations among the top facts
       const otherVariants = scoredItems.slice(1, 4)
         .map(s => s.item)
         .filter(it => it.id !== top.id && it.valores && (it.valores.particular || it.valores.amorSaude));
@@ -1266,12 +1389,6 @@ export function retrieveHospitalKnowledge(
   if (!directAnswer) {
     directAnswer = 'Não encontrei essa informação cadastrada na base da Central de Autorizações. Por favor, verifique o POP do convênio ou confirme com a coordenação.';
   }
-
-  // 8. Grounding Context Prompt for Gemini
-  const groundingPromptText = scoredItems.slice(0, 6).map((s, idx) => {
-    const it = s.item;
-    return `[REGISTRO ${idx + 1}] (${it.area.toUpperCase()}) ${it.title} | Código: ${it.code || 'N/A'} | Convênio: ${it.convenioName || 'Geral'} | Detalhes: ${it.description || ''} | Solicitar Junto: ${it.solicitarJunto || 'N/A'} | Alertas: ${it.alertas ? it.alertas.join('; ') : 'Nenhum'}`;
-  }).join('\n\n') || 'Nenhum registro específico localizado no banco de dados para os termos digitados.';
 
   return {
     detectedConvenio,

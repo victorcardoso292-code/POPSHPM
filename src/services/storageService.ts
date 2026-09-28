@@ -131,9 +131,20 @@ export function loadPsExams(): ExamRow[] {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
+        let changed = false;
+        parsed.forEach((p: any) => {
+          if (p.description && p.description.includes('TC FACE') && p.code === '41001101') {
+            p.code = '41001110';
+            changed = true;
+          }
+          if (p.description && p.description.includes('ATM') && p.code === '41001141') {
+            p.code = '41001133';
+            changed = true;
+          }
+        });
         const existingCodes = new Set(parsed.map((p: any) => p.code));
         const missing = defaultList.filter(d => d.code && !existingCodes.has(d.code));
-        if (missing.length > 0) {
+        if (missing.length > 0 || changed) {
           const merged = [...parsed, ...missing];
           savePsExams(merged);
           return merged;

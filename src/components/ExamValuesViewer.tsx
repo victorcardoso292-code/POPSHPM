@@ -23,11 +23,140 @@ import {
   Eye,
   Layers,
   ArrowRight,
-  SlidersHorizontal
+  SlidersHorizontal,
+  FileUp,
+  FileSpreadsheet,
+  AlertCircle
 } from 'lucide-react';
 import { ExamRow, ExamTableType, SelectedExamItem } from '../types';
 import { parseMoneyValue, formatCurrencyBRL, isImagingExamWithContrast } from '../data/examData';
 import { HospitalPatientQuote, QuoteItem } from './HospitalPatientQuote';
+
+export interface ParsedBatchExam {
+  code: string;
+  description: string;
+  particularPrice: string;
+  medPrevPrice: string;
+  pageRef: string;
+}
+
+export function normalizeExamStr(s: string): string {
+  return (s || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function cleanPrice(p: string): string {
+  const s = (p || '').trim().replace(/^R\$\s*/i, '');
+  if (!s || s === '*' || s === '-' || s === '—') return '*';
+  return s;
+}
+
+export function parseBatchExamLine(line: string): ParsedBatchExam | null {
+  const trimmed = line.trim();
+  if (!trimmed) return null;
+
+  const lower = trimmed.toLowerCase();
+  if (lower.startsWith('código') || lower.startsWith('tuss') || lower.startsWith('descrição') || lower.startsWith('procedimento')) {
+    return null;
+  }
+
+  // Formato 1: JSON array syntax ["40305015", "Nome", "175,09", "*", "1"]
+  if (trimmed.startsWith('[') && (trimmed.endsWith(']') || trimmed.endsWith('],'))) {
+    try {
+      const cleanJson = trimmed.replace(/,\s*$/, '');
+      const arr = JSON.parse(cleanJson);
+      if (Array.isArray(arr) && arr.length >= 2) {
+        return {
+          code: String(arr[0] || '').trim(),
+          description: String(arr[1] || '').trim(),
+          particularPrice: cleanPrice(String(arr[2] || '*')),
+          medPrevPrice: cleanPrice(String(arr[3] || '*')),
+          pageRef: String(arr[4] || '').trim()
+        };
+      }
+    } catch {
+      // continua para outros formatos
+    }
+  }
+
+  // Formato 2: Separado por Tab, Ponto e Vírgula ou Pipe
+  let parts: string[] = [];
+  if (trimmed.includes('\t')) {
+    parts = trimmed.split('\t').map(s => s.trim()).filter(Boolean);
+  } else if (trimmed.includes(';')) {
+    parts = trimmed.split(';').map(s => s.trim()).filter(Boolean);
+  } else if (trimmed.includes('|')) {
+    parts = trimmed.split('|').map(s => s.trim()).filter(Boolean);
+  }
+
+  if (parts.length >= 2) {
+    let code = '';
+    let description = '';
+    let particularPrice = '*';
+    let medPrevPrice = '*';
+    let pageRef = '';
+
+    const firstClean = parts[0].replace(/[\.\-]/g, '').trim();
+    if (/^\d{6,10}$/.test(firstClean)) {
+      code = firstClean;
+      description = parts[1];
+      if (parts[2]) particularPrice = parts[2];
+      if (parts[3]) medPrevPrice = parts[3];
+      if (parts[4]) pageRef = parts[4];
+    } else {
+      description = parts[0];
+      if (parts[1]) particularPrice = parts[1];
+      if (parts[2]) medPrevPrice = parts[2];
+      if (parts[3]) pageRef = parts[3];
+    }
+
+    if (description) {
+      return {
+        code,
+        description: description.replace(/^[\s\-\:\;\|]+|[\s\-\:\;\|]+$/g, '').trim(),
+        particularPrice: cleanPrice(particularPrice),
+        medPrevPrice: cleanPrice(medPrevPrice),
+        pageRef
+      };
+    }
+  }
+
+  // Formato 3: Linha de texto com Código TUSS inicial (6 a 10 dígitos)
+  const codeMatch = trimmed.match(/^(\d{6,10})[\s\-:\|]+(.+)$/);
+  let code = '';
+  let rest = trimmed;
+  if (codeMatch) {
+    code = codeMatch[1];
+    rest = codeMatch[2].trim();
+  }
+
+  const priceEndMatch = rest.match(/(?:R\$\s*)?(\d{1,4}(?:\.\d{3})*,\d{2}|\d+\.\d{2})(?:\s+(\d+))?$/i);
+  let particularPrice = '*';
+  let pageRef = '';
+  let description = rest;
+
+  if (priceEndMatch) {
+    particularPrice = priceEndMatch[1];
+    pageRef = priceEndMatch[2] || '';
+    description = rest.slice(0, rest.lastIndexOf(priceEndMatch[0])).trim();
+  }
+
+  description = description.replace(/^[\s\-\:\;\|]+|[\s\-\:\;\|]+$/g, '').trim();
+  if (!description) return null;
+
+  return {
+    code,
+    description,
+    particularPrice: cleanPrice(particularPrice),
+    medPrevPrice: '*',
+    pageRef
+  };
+}
 
 interface ExamValuesViewerProps {
   psExams: ExamRow[];
@@ -96,6 +225,11 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
   const [quoteNotes, setQuoteNotes] = useState<string>('');
   const [copiedQuote, setCopiedQuote] = useState<boolean>(false);
 
+  // Batch Import Modal State & Deduplication
+  const [showBatchImportModal, setShowBatchImportModal] = useState<boolean>(false);
+  const [batchImportText, setBatchImportText] = useState<string>('');
+  const [batchImportSuccessMsg, setBatchImportSuccessMsg] = useState<string>('');
+
   const PAGE_SIZE = 5; // Requisito: 5 exames por página em todas as abas
 
   const currentDataset = useMemo(() => {
@@ -103,6 +237,83 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
     if (activeTable === 'lab') return labExams;
     return psExams;
   }, [activeTable, psExams, amorExams, labExams]);
+
+  // Batch import parser & deduplication against currentDataset
+  const batchParsedResults = useMemo(() => {
+    if (!batchImportText.trim()) return [];
+    const lines = batchImportText.split('\n');
+    const existingCodes = new Set(currentDataset.map(e => e.code.trim()).filter(Boolean));
+    const existingDesc = new Set(currentDataset.map(e => normalizeExamStr(e.description)));
+    
+    const seenCodesInBatch = new Set<string>();
+    const seenDescInBatch = new Set<string>();
+
+    const list: (ParsedBatchExam & { isDuplicate: boolean; duplicateReason: string })[] = [];
+
+    for (const rawLine of lines) {
+      const parsed = parseBatchExamLine(rawLine);
+      if (!parsed) continue;
+
+      const normD = normalizeExamStr(parsed.description);
+      let isDuplicate = false;
+      let duplicateReason = '';
+
+      if (parsed.code && existingCodes.has(parsed.code)) {
+        isDuplicate = true;
+        duplicateReason = `Código TUSS ${parsed.code} já cadastrado no sistema`;
+      } else if (existingDesc.has(normD)) {
+        isDuplicate = true;
+        duplicateReason = `Exame com mesma descrição já cadastrado`;
+      } else if (parsed.code && seenCodesInBatch.has(parsed.code)) {
+        isDuplicate = true;
+        duplicateReason = `Código repetido na própria lista colada`;
+      } else if (seenDescInBatch.has(normD)) {
+        isDuplicate = true;
+        duplicateReason = `Descrição repetida na própria lista colada`;
+      }
+
+      if (parsed.code) seenCodesInBatch.add(parsed.code);
+      seenDescInBatch.add(normD);
+
+      list.push({
+        ...parsed,
+        isDuplicate,
+        duplicateReason
+      });
+    }
+
+    return list;
+  }, [batchImportText, currentDataset]);
+
+  const newBatchExams = useMemo(() => {
+    return batchParsedResults.filter(r => !r.isDuplicate);
+  }, [batchParsedResults]);
+
+  const duplicateBatchExams = useMemo(() => {
+    return batchParsedResults.filter(r => r.isDuplicate);
+  }, [batchParsedResults]);
+
+  const handleConfirmBatchImport = () => {
+    if (newBatchExams.length === 0) return;
+
+    const newRows: ExamRow[] = newBatchExams.map(item => ({
+      code: item.code,
+      description: item.description,
+      particularPrice: item.particularPrice,
+      medPrevPrice: activeTable === 'amor' ? '*' : item.medPrevPrice,
+      pageRef: item.pageRef,
+      isCustom: true
+    }));
+
+    const updated = [...newRows, ...currentDataset];
+    onSaveExams(activeTable, updated);
+    setBatchImportSuccessMsg(`Sucesso! ${newRows.length} novo(s) exame(s) adicionado(s) com sucesso à tabela.`);
+    setTimeout(() => {
+      setShowBatchImportModal(false);
+      setBatchImportSuccessMsg('');
+      setBatchImportText('');
+    }, 1800);
+  };
 
   // Filtered exams list
   const filteredExams = useMemo(() => {
@@ -380,6 +591,21 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
 
           {/* Master Edit Actions */}
           <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            {/* Batch Import Button - Always accessible, ideal for importing lab exams */}
+            <button
+              type="button"
+              onClick={() => {
+                setBatchImportText('');
+                setBatchImportSuccessMsg('');
+                setShowBatchImportModal(true);
+              }}
+              className="flex items-center gap-1.5 bg-[#0E7B86] hover:bg-[#095962] text-white px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-all cursor-pointer"
+              title="Importar lista ou colar exames com desconsideração automática de duplicatas"
+            >
+              <FileUp className="w-4 h-4" />
+              <span>Importar Lista / Lote</span>
+            </button>
+
             {isMaster ? (
               <>
                 <button
@@ -1368,6 +1594,199 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
                   className="px-3.5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold cursor-pointer"
                 >
                   Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Importação em Lote de Exames (com Desconsideração Automática de Duplicatas) */}
+      {showBatchImportModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-4xl w-full border border-slate-200 shadow-2xl overflow-hidden my-auto flex flex-col max-h-[92vh]">
+            {/* Modal Header */}
+            <div className="p-4 sm:p-5 bg-gradient-to-r from-[#0E7B86] to-[#095962] text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center">
+                  <FileSpreadsheet className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black tracking-tight">
+                    Importação em Lote de Exames ({activeTable === 'lab' ? 'Laboratoriais' : activeTable === 'amor' ? 'Amor Saúde' : 'Pronto-Socorro'})
+                  </h3>
+                  <p className="text-xs text-teal-100 font-medium mt-0.5">
+                    Cole as linhas da lista ou do PDF. Exames já cadastrados são identificados e desconsiderados automaticamente.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowBatchImportModal(false)}
+                className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
+              {batchImportSuccessMsg && (
+                <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-sm font-bold flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <span>{batchImportSuccessMsg}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wide block mb-1.5">
+                  Cole o Conteúdo da Lista ou Tabela (linhas de texto, TSV, CSV ou JSON):
+                </label>
+                <textarea
+                  rows={6}
+                  value={batchImportText}
+                  onChange={e => setBatchImportText(e.target.value)}
+                  placeholder={`Exemplos aceitos:
+40301234  HEMOGRAMA COM CONTAGEM DE PLAQUETAS  30,86
+40302040  GLICOSE EM JEJUM  20,04  12
+40308391; PROTEÍNA C REATIVA (PCR) ULTRASSENSÍVEL; 72,18
+["40301630", "CREATININA, DOSAGEM", "20,04", "*", "8"]`}
+                  className="w-full p-3.5 bg-slate-50 border border-slate-300 rounded-2xl text-xs sm:text-sm font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0E7B86] focus:bg-white placeholder:text-slate-400"
+                />
+              </div>
+
+              {/* Status & Metrics Bar */}
+              {batchImportText.trim() && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <div className="p-3 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-between">
+                    <span className="text-xs text-slate-600 font-semibold">Linhas Reconhecidas:</span>
+                    <strong className="text-sm font-black text-slate-900">{batchParsedResults.length}</strong>
+                  </div>
+
+                  <div className={`p-3 rounded-xl border flex items-center justify-between ${
+                    duplicateBatchExams.length > 0 ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-slate-50 border-slate-200 text-slate-500'
+                  }`}>
+                    <div className="flex items-center gap-1.5">
+                      <AlertCircle className="w-4 h-4 text-amber-600" />
+                      <span className="text-xs font-semibold">Já Cadastrados (Ignorados):</span>
+                    </div>
+                    <strong className="text-sm font-black">{duplicateBatchExams.length}</strong>
+                  </div>
+
+                  <div className={`p-3 rounded-xl border flex items-center justify-between ${
+                    newBatchExams.length > 0 ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-500'
+                  }`}>
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span className="text-xs font-semibold">Novos a Incluir:</span>
+                    </div>
+                    <strong className="text-sm font-black">{newBatchExams.length}</strong>
+                  </div>
+                </div>
+              )}
+
+              {/* Preview Table */}
+              {batchParsedResults.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-600">
+                    <span>Prévia de Processamento ({batchParsedResults.length} itens encontrados):</span>
+                    {duplicateBatchExams.length > 0 && (
+                      <span className="text-amber-700 font-semibold">
+                        * {duplicateBatchExams.length} item(ns) já existem e serão desconsiderados.
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="border border-slate-200 rounded-2xl overflow-hidden max-h-60 overflow-y-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-100 text-slate-700 sticky top-0 font-bold border-b border-slate-200">
+                        <tr>
+                          <th className="py-2.5 px-3">Status</th>
+                          <th className="py-2.5 px-3">Código TUSS</th>
+                          <th className="py-2.5 px-3">Descrição do Exame</th>
+                          <th className="py-2.5 px-3 text-right">Valor</th>
+                          <th className="py-2.5 px-3 text-center">Ref/Pág</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 font-medium">
+                        {batchParsedResults.map((item, idx) => (
+                          <tr key={idx} className={item.isDuplicate ? 'bg-amber-50/40 text-slate-500' : 'bg-white hover:bg-teal-50/30 text-slate-900'}>
+                            <td className="py-2 px-3 whitespace-nowrap">
+                              {item.isDuplicate ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-100 text-amber-800">
+                                  <AlertCircle className="w-3 h-3 text-amber-600 shrink-0" />
+                                  <span>Ignorado: {item.duplicateReason}</span>
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                                  <Check className="w-3 h-3 text-emerald-600 shrink-0" />
+                                  <span>Novo Exame</span>
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-2 px-3 font-mono font-bold text-slate-700 whitespace-nowrap">
+                              {item.code || '—'}
+                            </td>
+                            <td className="py-2 px-3">
+                              {item.description}
+                            </td>
+                            <td className="py-2 px-3 text-right font-bold font-mono whitespace-nowrap text-teal-900">
+                              {item.particularPrice !== '*' ? `R$ ${item.particularPrice}` : 'Sob Consulta'}
+                            </td>
+                            <td className="py-2 px-3 text-center text-slate-500 whitespace-nowrap">
+                              {item.pageRef || '—'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="text-xs text-slate-500">
+                {newBatchExams.length > 0 ? (
+                  <span>Pronto para adicionar <strong className="text-slate-900 font-bold">{newBatchExams.length}</strong> novo(s) exame(s) sem duplicar.</span>
+                ) : (
+                  <span>Cole a lista acima para processar os exames.</span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                {batchImportText.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBatchImportText('');
+                      setBatchImportSuccessMsg('');
+                    }}
+                    className="px-3.5 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold cursor-pointer"
+                  >
+                    Limpar
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setShowBatchImportModal(false)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  disabled={newBatchExams.length === 0}
+                  onClick={handleConfirmBatchImport}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer ${
+                    newBatchExams.length > 0
+                      ? 'bg-[#0E7B86] hover:bg-[#095962] text-white active:scale-95'
+                      : 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                  }`}
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Adicionar {newBatchExams.length} Novo(s) Exame(s)</span>
                 </button>
               </div>
             </div>

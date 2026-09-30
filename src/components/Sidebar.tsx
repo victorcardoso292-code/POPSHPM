@@ -130,9 +130,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       id: 'documentos' as AppMode,
       label: 'Documentos',
-      subtitle: 'FUSEx, Óbito, NF e Hora Extra',
+      subtitle: 'Declarações, termos e fichas',
       icon: FolderOpen,
-      badge: '4 Modelos',
+      badge: '5 Modelos',
       badgeColor: 'bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]'
     }
   ];

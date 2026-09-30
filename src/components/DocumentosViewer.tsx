@@ -11,14 +11,16 @@ import {
   Building2, 
   Receipt,
   FileCheck,
-  Clock
+  Clock,
+  UserCheck
 } from 'lucide-react';
 import { TermoFusexPrint, TermoFusexData } from './documents/TermoFusexPrint';
 import { TermoRetiradaCorpoPrint, TermoRetiradaCorpoData } from './documents/TermoRetiradaCorpoPrint';
 import { SolicitacaoNotaFiscalPrint, SolicitacaoNotaFiscalData } from './documents/SolicitacaoNotaFiscalPrint';
 import { AutorizacaoHoraExtraPrint, AutorizacaoHoraExtraData, HoraExtraRow } from './documents/AutorizacaoHoraExtraPrint';
+import { DeclaracaoComparecimentoPrint, DeclaracaoComparecimentoData } from './documents/DeclaracaoComparecimentoPrint';
 
-export type DocumentType = 'fusex' | 'retirada-corpo' | 'nota-fiscal' | 'hora-extra';
+export type DocumentType = 'fusex' | 'retirada-corpo' | 'nota-fiscal' | 'hora-extra' | 'declaracao-comparecimento';
 
 const INITIAL_FUSEX: TermoFusexData = {
   nomeTitular: '',
@@ -102,6 +104,18 @@ const INITIAL_HORA_EXTRA: AutorizacaoHoraExtraData = {
   }))
 };
 
+const INITIAL_DECLARACAO: DeclaracaoComparecimentoData = {
+  nomePaciente: '',
+  cpfPaciente: '',
+  diaAtendimento: '',
+  mesAtendimento: '',
+  anoAtendimento: '',
+  tipoAtendimento: 'CONSULTA em PRONTO SOCORRO',
+  diaEmissao: '',
+  mesEmissao: '',
+  anoEmissao: ''
+};
+
 export const DocumentosViewer: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('todos');
@@ -115,9 +129,11 @@ export const DocumentosViewer: React.FC = () => {
   const [retiradaData, setRetiradaData] = useState<TermoRetiradaCorpoData>(INITIAL_RETIRADA_CORPO);
   const [notaFiscalData, setNotaFiscalData] = useState<SolicitacaoNotaFiscalData>(INITIAL_NOTA_FISCAL);
   const [horaExtraData, setHoraExtraData] = useState<AutorizacaoHoraExtraData>(INITIAL_HORA_EXTRA);
+  const [declaracaoData, setDeclaracaoData] = useState<DeclaracaoComparecimentoData>(INITIAL_DECLARACAO);
 
   const categories = [
     { id: 'todos', label: 'Todos os Documentos' },
+    { id: 'declaracoes', label: 'Declarações & Laudos' },
     { id: 'termos', label: 'Termos & Compromisso' },
     { id: 'rh', label: 'RH & Horas Extras' },
     { id: 'obito', label: 'Liberação de Óbito' },
@@ -125,6 +141,18 @@ export const DocumentosViewer: React.FC = () => {
   ];
 
   const docList = [
+    {
+      id: 'declaracao-comparecimento' as DocumentType,
+      title: 'Declaração de Comparecimento – Hospital Palmas Medical',
+      shortTitle: 'Declaração de Comparecimento',
+      category: 'declaracoes',
+      orgao: 'Hospital Palmas Medical • Pronto-Socorro',
+      description: 'Documento comprobatório oficial de comparecimento do paciente para consulta em Pronto-Socorro, exames ou internação, com dados do RT Dr. Nilo Francisco de Sales Sobrinho (CRM-TO 4686).',
+      icon: UserCheck,
+      badge: 'Pronto-Socorro',
+      badgeColor: 'bg-teal-50 text-teal-800 border-teal-200',
+      prazo: 'Emissão Imediata'
+    },
     {
       id: 'fusex' as DocumentType,
       title: 'Termo de Compromisso para Entrega da Guia de Encaminhamento – FUSEx / Exército Brasileiro',
@@ -199,6 +227,7 @@ export const DocumentosViewer: React.FC = () => {
     if (docId === 'retirada-corpo') setRetiradaData(INITIAL_RETIRADA_CORPO);
     if (docId === 'nota-fiscal') setNotaFiscalData(INITIAL_NOTA_FISCAL);
     if (docId === 'hora-extra') setHoraExtraData(INITIAL_HORA_EXTRA);
+    if (docId === 'declaracao-comparecimento') setDeclaracaoData(INITIAL_DECLARACAO);
     setActiveDoc(docId);
     setIsEditMode(false);
     setTimeout(() => {
@@ -211,14 +240,30 @@ export const DocumentosViewer: React.FC = () => {
     if (activeDoc === 'retirada-corpo') setRetiradaData(INITIAL_RETIRADA_CORPO);
     if (activeDoc === 'nota-fiscal') setNotaFiscalData(INITIAL_NOTA_FISCAL);
     if (activeDoc === 'hora-extra') setHoraExtraData(INITIAL_HORA_EXTRA);
+    if (activeDoc === 'declaracao-comparecimento') setDeclaracaoData(INITIAL_DECLARACAO);
   };
 
   const fillExampleData = () => {
     const now = new Date();
     const dStr = now.toLocaleDateString('pt-BR');
     const tStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const diaAtual = String(now.getDate()).padStart(2, '0');
+    const mesAtual = now.toLocaleString('pt-BR', { month: 'long' });
+    const anoAtual = String(now.getFullYear());
 
-    if (activeDoc === 'fusex') {
+    if (activeDoc === 'declaracao-comparecimento') {
+      setDeclaracaoData({
+        nomePaciente: 'GABRIEL RODRIGUES DE CARVALHO',
+        cpfPaciente: '852.147.963-00',
+        diaAtendimento: diaAtual,
+        mesAtendimento: mesAtual,
+        anoAtendimento: anoAtual,
+        tipoAtendimento: 'CONSULTA em PRONTO SOCORRO',
+        diaEmissao: diaAtual,
+        mesEmissao: mesAtual,
+        anoEmissao: anoAtual
+      });
+    } else if (activeDoc === 'fusex') {
       setFusexData({
         nomeTitular: 'SGT CARLOS ALBERTO SILVA',
         nomeDependente: 'LUCAS SILVA E SOUZA',
@@ -229,9 +274,9 @@ export const DocumentosViewer: React.FC = () => {
         telefone1: '(63) 98412-3456',
         telefone2: '(63) 3215-0000',
         hospitalNome: 'Hospital Palmas Medical',
-        diaData: String(now.getDate()).padStart(2, '0'),
-        mesData: now.toLocaleString('pt-BR', { month: 'long' }),
-        anoData: String(now.getFullYear()).slice(-2),
+        diaData: diaAtual,
+        mesData: mesAtual,
+        anoData: anoAtual.slice(-2),
         identidadeResponsavel: '1234567 SSP/TO',
         recepcionista: 'Recepção PS Palmas Medical'
       });
@@ -336,6 +381,12 @@ export const DocumentosViewer: React.FC = () => {
       {/* Printable Area when print is triggered */}
       {activeDoc && (
         <div id="documento-print-container" className="hidden print:block font-sans text-black w-full m-0 p-0">
+          {activeDoc === 'declaracao-comparecimento' && (
+            <DeclaracaoComparecimentoPrint
+              data={declaracaoData}
+              isEditable={false}
+            />
+          )}
           {activeDoc === 'fusex' && (
             <TermoFusexPrint 
               data={fusexData} 
@@ -377,7 +428,7 @@ export const DocumentosViewer: React.FC = () => {
                   DOCUMENTOS & MODELOS HOSPITALARES
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]">
-                  4 Modelos Oficiais
+                  5 Modelos Oficiais
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
@@ -425,7 +476,7 @@ export const DocumentosViewer: React.FC = () => {
         </div>
 
         {/* Documents Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {filteredDocs.map((doc) => {
             const Icon = doc.icon;
             return (
@@ -467,7 +518,7 @@ export const DocumentosViewer: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleOpenDoc(doc.id, true)}
-                      className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl bg-[#0E7B86] hover:bg-[#095962] text-white text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
+                      className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl bg-[#0E7B86] hover:bg-[#095962] text-white text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
                       <span>Preencher</span>
@@ -476,7 +527,7 @@ export const DocumentosViewer: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handlePrintBlank(doc.id)}
-                      className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all active:scale-95 cursor-pointer border border-slate-200"
+                      className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all active:scale-95 cursor-pointer border border-slate-200"
                       title="Imprimir modelo em branco para preenchimento manual"
                     >
                       <Printer className="w-3.5 h-3.5 text-slate-600" />
@@ -501,6 +552,7 @@ export const DocumentosViewer: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-sm sm:text-base font-black tracking-tight leading-tight">
+                      {activeDoc === 'declaracao-comparecimento' && 'Declaração de Comparecimento – Hospital Palmas Medical'}
                       {activeDoc === 'fusex' && 'Termo de Compromisso FUSEx – Exército Brasileiro'}
                       {activeDoc === 'hora-extra' && 'Autorização Pagamento de Hora Extra – Rede Medical'}
                       {activeDoc === 'retirada-corpo' && 'Termo de Retirada de Corpo – Rede Medical'}
@@ -583,6 +635,13 @@ export const DocumentosViewer: React.FC = () => {
 
               {/* Document Preview Content */}
               <div className="p-4 sm:p-6 overflow-y-auto bg-slate-100/70 flex-1">
+                {activeDoc === 'declaracao-comparecimento' && (
+                  <DeclaracaoComparecimentoPrint
+                    data={declaracaoData}
+                    isEditable={isEditMode}
+                    onChange={(f, val) => setDeclaracaoData(prev => ({ ...prev, [f]: val }))}
+                  />
+                )}
                 {activeDoc === 'fusex' && (
                   <TermoFusexPrint 
                     data={fusexData} 
@@ -616,7 +675,7 @@ export const DocumentosViewer: React.FC = () => {
 
               {/* Modal Footer */}
               <div className="p-3.5 sm:p-4 bg-white border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-                <span>Dica: Pressione Ctrl+P ou clique no botão Imprimir para salvar em PDF ou imprimir na impressora institucional.</span>
+                <span>Dica: Pressione Ctrl+P ou clique no botão Imprimir para salvar em PDF ou imprimir na recepção.</span>
                 <button
                   type="button"
                   onClick={() => setActiveDoc(null)}

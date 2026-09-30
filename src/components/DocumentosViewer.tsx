@@ -107,10 +107,9 @@ const INITIAL_HORA_EXTRA: AutorizacaoHoraExtraData = {
 const INITIAL_DECLARACAO: DeclaracaoComparecimentoData = {
   nomePaciente: '',
   cpfPaciente: '',
-  diaAtendimento: '',
-  mesAtendimento: '',
-  anoAtendimento: '',
-  tipoAtendimento: 'CONSULTA em PRONTO SOCORRO',
+  dataComparecimento: '',
+  horario: '',
+  observacao: '',
   diaEmissao: '',
   mesEmissao: '',
   anoEmissao: ''
@@ -255,10 +254,9 @@ export const DocumentosViewer: React.FC = () => {
       setDeclaracaoData({
         nomePaciente: 'GABRIEL RODRIGUES DE CARVALHO',
         cpfPaciente: '852.147.963-00',
-        diaAtendimento: diaAtual,
-        mesAtendimento: mesAtual,
-        anoAtendimento: anoAtual,
-        tipoAtendimento: 'CONSULTA em PRONTO SOCORRO',
+        dataComparecimento: dStr,
+        horario: `${tStr} às 18:30`,
+        observacao: 'Consulta médica de urgência e medicação em Pronto-Socorro',
         diaEmissao: diaAtual,
         mesEmissao: mesAtual,
         anoEmissao: anoAtual

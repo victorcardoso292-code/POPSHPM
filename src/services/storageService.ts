@@ -7,24 +7,13 @@ const MASTER_DEFAULT_PASSWORD = 'HPM@2026';
 
 export const SYSTEM_DEFAULT_USER = 'HPM';
 export const SYSTEM_DEFAULT_PASSWORD = 'HPM@2026';
-const SYSTEM_AUTH_KEY = 'hpmSystemAuthSessionV2';
-
-// Purge any legacy localStorage persistent authentication on startup
-try {
-  localStorage.removeItem('hpmSystemAuthV1');
-  localStorage.removeItem('hpmSystemAuth');
-  localStorage.removeItem(SYSTEM_AUTH_KEY);
-} catch {
-  // Ignore storage issues
-}
+const SYSTEM_AUTH_KEY = 'hpmSystemAuthSession_v4';
 
 export function isSystemAuthenticated(): boolean {
   try {
-    localStorage.removeItem('hpmSystemAuthV1');
-    localStorage.removeItem('hpmSystemAuth');
-    localStorage.removeItem(SYSTEM_AUTH_KEY);
-    sessionStorage.removeItem(SYSTEM_AUTH_KEY);
-    return false;
+    const sessionAuth = sessionStorage.getItem(SYSTEM_AUTH_KEY) === 'true';
+    const localAuth = localStorage.getItem(SYSTEM_AUTH_KEY) === 'true';
+    return sessionAuth || localAuth;
   } catch {
     return false;
   }
@@ -32,13 +21,12 @@ export function isSystemAuthenticated(): boolean {
 
 export function setSystemAuth(authenticated: boolean): void {
   try {
-    localStorage.removeItem('hpmSystemAuthV1');
-    localStorage.removeItem('hpmSystemAuth');
-    localStorage.removeItem(SYSTEM_AUTH_KEY);
     if (authenticated) {
       sessionStorage.setItem(SYSTEM_AUTH_KEY, 'true');
+      localStorage.setItem(SYSTEM_AUTH_KEY, 'true');
     } else {
       sessionStorage.removeItem(SYSTEM_AUTH_KEY);
+      localStorage.removeItem(SYSTEM_AUTH_KEY);
     }
   } catch {
     // Ignore storage issues

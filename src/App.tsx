@@ -10,6 +10,7 @@ import { PlanoContingenciaViewer } from './components/PlanoContingenciaViewer';
 import { CoberturaConveniosViewer } from './components/CoberturaConveniosViewer';
 import { HospitalReportsViewer } from './components/HospitalReportsViewer';
 import { HospitalExtensionsViewer } from './components/HospitalExtensionsViewer';
+import { DocumentosViewer } from './components/DocumentosViewer';
 import { AiHospitalAssistant } from './components/AiHospitalAssistant';
 import { AiChatDrawer } from './components/AiChatDrawer';
 import { PreGuiaGenerator } from './components/PreGuiaGenerator';
@@ -397,6 +398,10 @@ export default function App() {
             <HospitalExtensionsViewer
               initialSearch={ramaisSearchInitial}
             />
+          )}
+
+          {activeMode === 'documentos' && (
+            <DocumentosViewer />
           )}
 
           {activeMode === 'ai-assistant' && (

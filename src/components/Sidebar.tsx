@@ -17,7 +17,8 @@ import {
   Bot,
   UserCheck,
   ClipboardList,
-  ShieldCheck
+  ShieldCheck,
+  FolderOpen
 } from 'lucide-react';
 import { AppMode } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
@@ -97,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       id: 'exames' as AppMode,
       label: 'Valores de Exames',
-      subtitle: 'PS, Amor Saúde e 450+ Labs',
+      subtitle: 'PS, Amor Saúde e 1.200+ Labs',
       icon: FileSpreadsheet,
       badge: selectedExamsCount > 0 ? `${selectedExamsCount} sel.` : 'Calculadora',
       badgeColor: selectedExamsCount > 0 ? 'bg-[#B01B52] text-white animate-pulse' : 'bg-slate-100 text-slate-700'
@@ -125,16 +126,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: PhoneCall,
       badge: '23 Setores',
       badgeColor: 'bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]'
+    },
+    {
+      id: 'documentos' as AppMode,
+      label: 'Documentos',
+      subtitle: 'Termos, contratos e fichas',
+      icon: FolderOpen,
+      badge: 'Em Branco',
+      badgeColor: 'bg-blue-50 text-blue-700 border border-blue-200'
     }
   ];
 
   return (
-    <aside className="w-full lg:w-72 bg-white border-r border-slate-200 flex flex-col p-4 gap-4 shadow-xs">
+    <aside className="w-full lg:w-80 xl:w-[340px] bg-white border-r border-slate-200 flex flex-col p-3.5 sm:p-4 gap-4 shadow-xs flex-shrink-0">
       <div>
         <p className="text-[11px] uppercase font-black tracking-wider text-slate-400 mb-2 px-2">
           Módulos Operacionais
         </p>
-        <nav className="space-y-1.5" aria-label="Navegação do sistema">
+        <nav className="space-y-2" aria-label="Navegação do sistema">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeMode === item.id;
@@ -143,15 +152,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 key={item.id}
                 type="button"
                 onClick={() => onSelectMode(item.id)}
-                className={`w-full text-left flex items-center justify-between p-3 rounded-xl transition-all font-medium group cursor-pointer ${
+                className={`w-full text-left p-3 sm:p-3.5 rounded-2xl transition-all font-medium group cursor-pointer ${
                   isActive
-                    ? 'bg-[#FDF2F6] border-2 border-[#B01B52] text-[#B01B52] shadow-2xs'
-                    : 'bg-slate-50/70 hover:bg-[#EBF7F8] border border-slate-200/80 text-slate-700 hover:text-[#0E7B86] hover:border-[#C4E5E8]'
+                    ? 'bg-[#FDF2F6] border-2 border-[#B01B52] text-[#B01B52] shadow-xs'
+                    : 'bg-slate-50/80 hover:bg-[#EBF7F8] border border-slate-200/90 text-slate-800 hover:text-[#0E7B86] hover:border-[#C4E5E8]'
                 }`}
               >
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex items-start gap-3">
                   <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors mt-0.5 ${
                       isActive
                         ? 'bg-[#B01B52] text-white shadow-xs'
                         : 'bg-white border border-slate-200 text-[#0E7B86] group-hover:bg-[#0E7B86] group-hover:text-white group-hover:border-[#0E7B86]'
@@ -159,20 +168,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   >
                     <Icon className="w-4 h-4" />
                   </div>
-                  <div className="min-w-0">
-                    <span className="block text-sm sm:text-base font-black truncate leading-tight">
-                      {item.label}
-                    </span>
-                    <span className="block text-xs text-slate-500 font-medium truncate mt-0.5">
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-1.5">
+                      <span className={`text-sm sm:text-[15px] font-black leading-snug whitespace-normal break-words ${
+                        isActive ? 'text-[#B01B52]' : 'text-slate-900 group-hover:text-[#0E7B86]'
+                      }`}>
+                        {item.label}
+                      </span>
+                      <ChevronRight className={`w-4 h-4 flex-shrink-0 mt-0.5 transition-transform ${
+                        isActive ? 'text-[#B01B52] translate-x-0.5' : 'text-slate-400 group-hover:text-[#0E7B86]'
+                      }`} />
+                    </div>
+
+                    <span className="block text-xs text-slate-500 font-medium leading-relaxed mt-0.5 whitespace-normal break-words">
                       {item.subtitle}
                     </span>
+
+                    <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
+                      <span className={`text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-md ${item.badgeColor}`}>
+                        {item.badge}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-1 flex-shrink-0 ml-2">
-                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${item.badgeColor}`}>
-                    {item.badge}
-                  </span>
-                  <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isActive ? 'text-[#B01B52] translate-x-0.5' : 'text-slate-400'}`} />
                 </div>
               </button>
             );

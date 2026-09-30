@@ -18,7 +18,7 @@ import {
 import { TermoFusexPrint, TermoFusexData } from './documents/TermoFusexPrint';
 import { TermoRetiradaCorpoPrint, TermoRetiradaCorpoData } from './documents/TermoRetiradaCorpoPrint';
 import { SolicitacaoNotaFiscalPrint, SolicitacaoNotaFiscalData } from './documents/SolicitacaoNotaFiscalPrint';
-import { AutorizacaoHoraExtraPrint, AutorizacaoHoraExtraData, HoraExtraRow } from './documents/AutorizacaoHoraExtraPrint';
+import { AutorizacaoHoraExtraPrint, AutorizacaoHoraExtraData, HoraExtraRow, computeRowExtraHours } from './documents/AutorizacaoHoraExtraPrint';
 import { DeclaracaoComparecimentoPrint, DeclaracaoComparecimentoData } from './documents/DeclaracaoComparecimentoPrint';
 
 export type DocumentType = 'fusex' | 'retirada-corpo' | 'nota-fiscal' | 'hora-extra' | 'declaracao-comparecimento';
@@ -285,22 +285,22 @@ export const DocumentosViewer: React.FC = () => {
         matricula: 'MED-4821',
         linhas: [
           {
-            data: '28/09',
-            entrada: '19:00',
-            saidaIntervalo: '00:00',
-            retornoIntervalo: '01:00',
-            saida: '07:00',
-            qtdHoras: '11h',
-            motivo: 'Cobertura de plantão noturno no Pronto-Socorro'
+            data: '01/09/2026',
+            entrada: '07:00',
+            saidaIntervalo: '11:00',
+            retornoIntervalo: '12:00',
+            saida: '19:00',
+            qtdHoras: '12h',
+            motivo: 'Cobertura de plantão diurno 12h no Pronto-Socorro'
           },
           {
-            data: '29/09',
-            entrada: '14:00',
-            saidaIntervalo: '18:00',
-            retornoIntervalo: '19:00',
-            saida: '22:00',
-            qtdHoras: '7h',
-            motivo: 'Substituição de escala de enfermagem UTI'
+            data: '02/09/2026',
+            entrada: '07:00',
+            saidaIntervalo: '',
+            retornoIntervalo: '',
+            saida: '13:00',
+            qtdHoras: '6h',
+            motivo: 'Plantão extraordinário de 6h em Enfermaria'
           },
           ...Array.from({ length: 7 }, () => ({
             data: '',
@@ -367,10 +367,33 @@ export const DocumentosViewer: React.FC = () => {
     }
   };
 
+  const handleUpdateFullRow = (index: number, updatedRow: HoraExtraRow) => {
+    setHoraExtraData(prev => {
+      const newLinhas = [...prev.linhas];
+      newLinhas[index] = updatedRow;
+      return { ...prev, linhas: newLinhas };
+    });
+  };
+
   const handleRowChange = (index: number, field: keyof HoraExtraRow, val: string) => {
     setHoraExtraData(prev => {
       const newLinhas = [...prev.linhas];
-      newLinhas[index] = { ...newLinhas[index], [field]: val };
+      const updatedRow = { ...newLinhas[index], [field]: val };
+
+      // Se alterou horários, auto-calcula as horas extras da linha
+      if (['entrada', 'saidaIntervalo', 'retornoIntervalo', 'saida'].includes(field)) {
+        const computed = computeRowExtraHours(
+          updatedRow.entrada,
+          updatedRow.saidaIntervalo,
+          updatedRow.retornoIntervalo,
+          updatedRow.saida
+        );
+        if (computed) {
+          updatedRow.qtdHoras = computed;
+        }
+      }
+
+      newLinhas[index] = updatedRow;
       return { ...prev, linhas: newLinhas };
     });
   };
@@ -693,6 +716,7 @@ export const DocumentosViewer: React.FC = () => {
                     isEditable={isEditMode}
                     onChangeHeader={(field, val) => setHoraExtraData(prev => ({ ...prev, [field]: val }))}
                     onChangeRow={handleRowChange}
+                    onUpdateRow={handleUpdateFullRow}
                   />
                 )}
                 {activeDoc === 'retirada-corpo' && (

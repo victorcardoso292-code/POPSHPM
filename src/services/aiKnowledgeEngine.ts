@@ -9,7 +9,7 @@ import {
 import { PORTAIS_CREDENCIAIS, PORTAIS_RULES, PortalCredential } from '../data/portaisData';
 import { PS_EXAM_DATA_ORIGINAL, LAB_EXAM_DATA_ORIGINAL, AMOR_EXAM_DATA_ORIGINAL, isImagingExamWithContrast } from '../data/examData';
 import { PROCEDIMENTOS_GERAIS, PROCEDIMENTOS_MEDICOS_ESPECIFICOS, PROCEDURES_METADATA } from '../data/proceduresData';
-import { HOSPITAL_EXTENSIONS, HOSPITAL_REPORTS } from '../data/hospitalData';
+import { HOSPITAL_EXTENSIONS, HOSPITAL_REPORTS, HOSPITAL_WHATSAPP_CONTACTS } from '../data/hospitalData';
 import { PARECERES_CONVENIOS_DATA, PARECER_WORKFLOW_STEPS, ERROS_CRITICOS_GLOSA_PARECER } from '../data/pareceresData';
 import { COBERTURA_CONVENIOS_DATA } from '../data/coberturaConveniosData';
 
@@ -716,7 +716,7 @@ export function getUnifiedHospitalDatabase(): HospitalUnifiedItem[] {
     });
   }
 
-  // 9. RAMAIS E TELEFONES DO HOSPITAL
+  // 9. RAMAIS E WHATSAPP DO HOSPITAL
   for (const ext of HOSPITAL_EXTENSIONS) {
     items.push({
       id: `ramal-${ext.number}-${cleanStr(ext.sector)}`,
@@ -724,9 +724,23 @@ export function getUnifiedHospitalDatabase(): HospitalUnifiedItem[] {
       subarea: ext.category,
       code: ext.number,
       title: `Ramal ${ext.number} — ${ext.sector}`,
-      description: `Setor: ${ext.sector} | Ramal: ${ext.number} | Localização: ${ext.building} | Categoria: ${ext.category}`,
-      contatos: [ext.number],
-      searchTokens: `ramal telefone contato falar com ${ext.number} ${ext.sector} ${ext.building} ${ext.category}`
+      description: `Setor: ${ext.sector} | Ramal: ${ext.number} ${ext.whatsapp ? `| WhatsApp: ${ext.whatsapp}` : ''} | Localização: ${ext.building} | Categoria: ${ext.category}`,
+      contatos: ext.whatsapp ? [ext.number, ext.whatsapp] : [ext.number],
+      searchTokens: `ramal telefone contato falar com ${ext.number} ${ext.sector} ${ext.whatsapp || ''} ${ext.building} ${ext.category}`
+    });
+  }
+
+  // 9.1 WHATSAPP OFICIAL DOS SETORES
+  for (const w of HOSPITAL_WHATSAPP_CONTACTS) {
+    items.push({
+      id: `whatsapp-${w.cleanNumber}`,
+      area: 'ramal',
+      subarea: 'whatsapp',
+      code: w.whatsapp,
+      title: `WhatsApp: ${w.sector}`,
+      description: `WhatsApp: ${w.whatsapp} | Setor: ${w.sector} | Finalidade: ${w.description || 'Comunicação oficial'} | Categoria: ${w.category}`,
+      contatos: [w.whatsapp, w.cleanNumber],
+      searchTokens: `whatsapp zap telefone celular contato falar mensagem ${w.sector} ${w.whatsapp} ${w.cleanNumber} ${w.category}`
     });
   }
 

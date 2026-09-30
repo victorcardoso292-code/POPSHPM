@@ -4,24 +4,21 @@ import {
   Search, 
   FileText, 
   Printer, 
-  Eye, 
   Edit3, 
   CheckCircle2, 
   X, 
-  RotateCcw, 
   ShieldAlert, 
   Building2, 
   Receipt,
   FileCheck,
-  Calendar,
-  Sparkles,
-  ArrowRight
+  Clock
 } from 'lucide-react';
 import { TermoFusexPrint, TermoFusexData } from './documents/TermoFusexPrint';
 import { TermoRetiradaCorpoPrint, TermoRetiradaCorpoData } from './documents/TermoRetiradaCorpoPrint';
 import { SolicitacaoNotaFiscalPrint, SolicitacaoNotaFiscalData } from './documents/SolicitacaoNotaFiscalPrint';
+import { AutorizacaoHoraExtraPrint, AutorizacaoHoraExtraData, HoraExtraRow } from './documents/AutorizacaoHoraExtraPrint';
 
-export type DocumentType = 'fusex' | 'retirada-corpo' | 'nota-fiscal';
+export type DocumentType = 'fusex' | 'retirada-corpo' | 'nota-fiscal' | 'hora-extra';
 
 const INITIAL_FUSEX: TermoFusexData = {
   nomeTitular: '',
@@ -91,6 +88,20 @@ const INITIAL_NOTA_FISCAL: SolicitacaoNotaFiscalData = {
   dataSolicitacao: ''
 };
 
+const INITIAL_HORA_EXTRA: AutorizacaoHoraExtraData = {
+  colaborador: '',
+  matricula: '',
+  linhas: Array.from({ length: 9 }, () => ({
+    data: '',
+    entrada: '',
+    saidaIntervalo: '',
+    retornoIntervalo: '',
+    saida: '',
+    qtdHoras: '',
+    motivo: ''
+  }))
+};
+
 export const DocumentosViewer: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('todos');
@@ -103,10 +114,12 @@ export const DocumentosViewer: React.FC = () => {
   const [fusexData, setFusexData] = useState<TermoFusexData>(INITIAL_FUSEX);
   const [retiradaData, setRetiradaData] = useState<TermoRetiradaCorpoData>(INITIAL_RETIRADA_CORPO);
   const [notaFiscalData, setNotaFiscalData] = useState<SolicitacaoNotaFiscalData>(INITIAL_NOTA_FISCAL);
+  const [horaExtraData, setHoraExtraData] = useState<AutorizacaoHoraExtraData>(INITIAL_HORA_EXTRA);
 
   const categories = [
     { id: 'todos', label: 'Todos os Documentos' },
     { id: 'termos', label: 'Termos & Compromisso' },
+    { id: 'rh', label: 'RH & Horas Extras' },
     { id: 'obito', label: 'Liberação de Óbito' },
     { id: 'faturamento', label: 'Nota Fiscal & Faturamento' }
   ];
@@ -123,6 +136,18 @@ export const DocumentosViewer: React.FC = () => {
       badge: 'FUSEx / Exército',
       badgeColor: 'bg-emerald-50 text-emerald-800 border-emerald-200',
       prazo: '48 horas ou 2 dias úteis'
+    },
+    {
+      id: 'hora-extra' as DocumentType,
+      title: 'Autorização Pagamento de Hora Extra – Rede Medical / Kora Saúde',
+      shortTitle: 'Autorização Pagamento de Hora Extra',
+      category: 'rh',
+      orgao: 'Rede Medical / Kora Saúde • DP & RH',
+      description: 'Formulário padrão para autorização de trabalho em regime extraordinário, controle de jornadas, horários de intervalo, horas autorizadas e aprovações da Diretoria e do Gestor.',
+      icon: Clock,
+      badge: 'RH & DP',
+      badgeColor: 'bg-purple-50 text-purple-800 border-purple-200',
+      prazo: 'Folha de Pagamento'
     },
     {
       id: 'retirada-corpo' as DocumentType,
@@ -170,10 +195,10 @@ export const DocumentosViewer: React.FC = () => {
   };
 
   const handlePrintBlank = (docId: DocumentType) => {
-    // Reset data to blank, open modal in view mode and print
     if (docId === 'fusex') setFusexData(INITIAL_FUSEX);
     if (docId === 'retirada-corpo') setRetiradaData(INITIAL_RETIRADA_CORPO);
     if (docId === 'nota-fiscal') setNotaFiscalData(INITIAL_NOTA_FISCAL);
+    if (docId === 'hora-extra') setHoraExtraData(INITIAL_HORA_EXTRA);
     setActiveDoc(docId);
     setIsEditMode(false);
     setTimeout(() => {
@@ -185,6 +210,7 @@ export const DocumentosViewer: React.FC = () => {
     if (activeDoc === 'fusex') setFusexData(INITIAL_FUSEX);
     if (activeDoc === 'retirada-corpo') setRetiradaData(INITIAL_RETIRADA_CORPO);
     if (activeDoc === 'nota-fiscal') setNotaFiscalData(INITIAL_NOTA_FISCAL);
+    if (activeDoc === 'hora-extra') setHoraExtraData(INITIAL_HORA_EXTRA);
   };
 
   const fillExampleData = () => {
@@ -208,6 +234,40 @@ export const DocumentosViewer: React.FC = () => {
         anoData: String(now.getFullYear()).slice(-2),
         identidadeResponsavel: '1234567 SSP/TO',
         recepcionista: 'Recepção PS Palmas Medical'
+      });
+    } else if (activeDoc === 'hora-extra') {
+      setHoraExtraData({
+        colaborador: 'FERNANDO ALMEIDA SILVA',
+        matricula: 'MED-4821',
+        linhas: [
+          {
+            data: '28/09',
+            entrada: '19:00',
+            saidaIntervalo: '00:00',
+            retornoIntervalo: '01:00',
+            saida: '07:00',
+            qtdHoras: '11h',
+            motivo: 'Cobertura de plantão noturno no Pronto-Socorro'
+          },
+          {
+            data: '29/09',
+            entrada: '14:00',
+            saidaIntervalo: '18:00',
+            retornoIntervalo: '19:00',
+            saida: '22:00',
+            qtdHoras: '7h',
+            motivo: 'Substituição de escala de enfermagem UTI'
+          },
+          ...Array.from({ length: 7 }, () => ({
+            data: '',
+            entrada: '',
+            saidaIntervalo: '',
+            retornoIntervalo: '',
+            saida: '',
+            qtdHoras: '',
+            motivo: ''
+          }))
+        ]
       });
     } else if (activeDoc === 'retirada-corpo') {
       setRetiradaData({
@@ -263,6 +323,14 @@ export const DocumentosViewer: React.FC = () => {
     }
   };
 
+  const handleRowChange = (index: number, field: keyof HoraExtraRow, val: string) => {
+    setHoraExtraData(prev => {
+      const newLinhas = [...prev.linhas];
+      newLinhas[index] = { ...newLinhas[index], [field]: val };
+      return { ...prev, linhas: newLinhas };
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Printable Area when print is triggered */}
@@ -272,6 +340,12 @@ export const DocumentosViewer: React.FC = () => {
             <TermoFusexPrint 
               data={fusexData} 
               isEditable={false} 
+            />
+          )}
+          {activeDoc === 'hora-extra' && (
+            <AutorizacaoHoraExtraPrint
+              data={horaExtraData}
+              isEditable={false}
             />
           )}
           {activeDoc === 'retirada-corpo' && (
@@ -303,7 +377,7 @@ export const DocumentosViewer: React.FC = () => {
                   DOCUMENTOS & MODELOS HOSPITALARES
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]">
-                  3 Modelos Oficiais
+                  4 Modelos Oficiais
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
@@ -351,15 +425,15 @@ export const DocumentosViewer: React.FC = () => {
         </div>
 
         {/* Documents Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {filteredDocs.map((doc) => {
             const Icon = doc.icon;
             return (
               <div 
                 key={doc.id}
-                className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-[#0E7B86] transition-all group"
+                className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col justify-between hover:border-[#0E7B86] transition-all group"
               >
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   <div className="flex items-start justify-between gap-2">
                     <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 group-hover:bg-[#EBF7F8] group-hover:border-[#C4E5E8] flex items-center justify-center text-slate-700 group-hover:text-[#0E7B86] transition-colors shrink-0">
                       <Icon className="w-5 h-5" />
@@ -378,22 +452,22 @@ export const DocumentosViewer: React.FC = () => {
                     </p>
                   </div>
 
-                  <p className="text-xs text-slate-600 leading-relaxed">
+                  <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
                     {doc.description}
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-slate-100 mt-4 space-y-2">
+                <div className="pt-3 border-t border-slate-100 mt-4 space-y-2">
                   <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium">
                     <span>Referência:</span>
-                    <strong className="text-slate-700 font-mono">{doc.prazo}</strong>
+                    <strong className="text-slate-700 font-mono text-[10px]">{doc.prazo}</strong>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     <button
                       type="button"
                       onClick={() => handleOpenDoc(doc.id, true)}
-                      className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-[#0E7B86] hover:bg-[#095962] text-white text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
+                      className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl bg-[#0E7B86] hover:bg-[#095962] text-white text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
                       <span>Preencher</span>
@@ -402,7 +476,7 @@ export const DocumentosViewer: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handlePrintBlank(doc.id)}
-                      className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all active:scale-95 cursor-pointer border border-slate-200"
+                      className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all active:scale-95 cursor-pointer border border-slate-200"
                       title="Imprimir modelo em branco para preenchimento manual"
                     >
                       <Printer className="w-3.5 h-3.5 text-slate-600" />
@@ -417,8 +491,8 @@ export const DocumentosViewer: React.FC = () => {
 
         {/* Interactive Document Editor / Preview Modal */}
         {activeDoc && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
-            <div className="bg-white rounded-3xl max-w-4xl w-full border border-slate-200 shadow-2xl overflow-hidden my-auto flex flex-col max-h-[94vh]">
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-5 overflow-y-auto">
+            <div className="bg-white rounded-3xl max-w-5xl w-full border border-slate-200 shadow-2xl overflow-hidden my-auto flex flex-col max-h-[95vh]">
               {/* Modal Header */}
               <div className="p-4 sm:p-5 bg-gradient-to-r from-[#0E7B86] to-[#095962] text-white flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -428,6 +502,7 @@ export const DocumentosViewer: React.FC = () => {
                   <div>
                     <h3 className="text-sm sm:text-base font-black tracking-tight leading-tight">
                       {activeDoc === 'fusex' && 'Termo de Compromisso FUSEx – Exército Brasileiro'}
+                      {activeDoc === 'hora-extra' && 'Autorização Pagamento de Hora Extra – Rede Medical'}
                       {activeDoc === 'retirada-corpo' && 'Termo de Retirada de Corpo – Rede Medical'}
                       {activeDoc === 'nota-fiscal' && 'Solicitação de Nota Fiscal – Rede Medical'}
                     </h3>
@@ -515,6 +590,14 @@ export const DocumentosViewer: React.FC = () => {
                     onChange={(f, val) => setFusexData(prev => ({ ...prev, [f]: val }))} 
                   />
                 )}
+                {activeDoc === 'hora-extra' && (
+                  <AutorizacaoHoraExtraPrint
+                    data={horaExtraData}
+                    isEditable={isEditMode}
+                    onChangeHeader={(field, val) => setHoraExtraData(prev => ({ ...prev, [field]: val }))}
+                    onChangeRow={handleRowChange}
+                  />
+                )}
                 {activeDoc === 'retirada-corpo' && (
                   <TermoRetiradaCorpoPrint 
                     data={retiradaData} 
@@ -533,7 +616,7 @@ export const DocumentosViewer: React.FC = () => {
 
               {/* Modal Footer */}
               <div className="p-3.5 sm:p-4 bg-white border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-                <span>Dica: Pressione Ctrl+P ou clique no botão Imprimir para salvar em PDF ou imprimir na impressora da recepção.</span>
+                <span>Dica: Pressione Ctrl+P ou clique no botão Imprimir para salvar em PDF ou imprimir na impressora institucional.</span>
                 <button
                   type="button"
                   onClick={() => setActiveDoc(null)}

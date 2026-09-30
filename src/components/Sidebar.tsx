@@ -121,18 +121,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'ramais' as AppMode,
-      label: 'Ramais Hospitalares',
-      subtitle: 'Contatos internos rápidos',
+      label: 'Ramais & WhatsApp',
+      subtitle: 'Contatos internos e plantão',
       icon: PhoneCall,
-      badge: '23 Setores',
-      badgeColor: 'bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]'
+      badge: '25 Ramais • 8 Whats',
+      badgeColor: 'bg-emerald-50 text-emerald-800 border border-emerald-200'
     },
     {
       id: 'documentos' as AppMode,
       label: 'Documentos',
-      subtitle: 'FUSEx, Óbito e Nota Fiscal',
+      subtitle: 'FUSEx, Óbito, NF e Hora Extra',
       icon: FolderOpen,
-      badge: '3 Modelos',
+      badge: '4 Modelos',
       badgeColor: 'bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]'
     }
   ];

@@ -1,22 +1,90 @@
-import { HospitalExtension, HospitalReportType } from '../types';
+import { HospitalExtension, HospitalReportType, HospitalWhatsContact } from '../types';
+
+export const HOSPITAL_WHATSAPP_CONTACTS: HospitalWhatsContact[] = [
+  {
+    sector: 'Pronto-Socorro (Recepção PS)',
+    whatsapp: '+55 63 9973-6200',
+    cleanNumber: '556399736200',
+    description: 'Atendimento, triagem e recepção do Pronto-Socorro 24h',
+    category: 'atendimento',
+    badge: 'PS 24 Horas'
+  },
+  {
+    sector: 'Tecnologia da Informação - TI',
+    whatsapp: '+55 63 9979-2770',
+    cleanNumber: '556399792770',
+    description: 'Suporte de sistemas hospitalares, Tasy, impressoras e rede',
+    category: 'administracao',
+    badge: 'Suporte de TI'
+  },
+  {
+    sector: 'UTI B - Hospital Palmas Medical',
+    whatsapp: '+55 63 9962-5604',
+    cleanNumber: '556399625604',
+    description: 'Posto de enfermagem e coordenação médica da UTI B',
+    category: 'uti',
+    badge: 'UTI B'
+  },
+  {
+    sector: 'UTI A e C - Hospital Palmas Medical',
+    whatsapp: '+55 63 9933-1347',
+    cleanNumber: '556399331347',
+    description: 'Unidades de Terapia Intensiva A e C • Plantão e enfermagem',
+    category: 'uti',
+    badge: 'UTI A & C'
+  },
+  {
+    sector: 'Posto de Enfermagem PS',
+    whatsapp: '+55 63 9966-9128',
+    cleanNumber: '556399669128',
+    description: 'Equipe de enfermagem do Pronto-Socorro e sala de medicação',
+    category: 'atendimento',
+    badge: 'Enfermagem PS'
+  },
+  {
+    sector: 'Internação 2º Andar',
+    whatsapp: '+55 63 8459-3964',
+    cleanNumber: '556384593964',
+    description: 'Posto de enfermagem dos leitos de internação do 2º andar',
+    category: 'internacao',
+    badge: 'Internação 2º'
+  },
+  {
+    sector: 'Orçamento HPM',
+    whatsapp: '+55 63 9989-1818',
+    cleanNumber: '556399891818',
+    description: 'Cotações de cirurgias particulares, diárias, exames e pacotes',
+    category: 'administracao',
+    badge: 'Orçamentos'
+  },
+  {
+    sector: 'Centro Clínico HPM',
+    whatsapp: '+55 63 9931-4648',
+    cleanNumber: '556399314648',
+    description: 'Consultórios médicos, agendamento de consultas e ambulatório',
+    category: 'ambulatorio',
+    badge: 'Centro Clínico'
+  }
+];
 
 export const HOSPITAL_EXTENSIONS: HospitalExtension[] = [
   { sector: 'PA - HST', number: '8359', building: 'Hospital Santa Thereza • Pronto Atendimento', category: 'atendimento' },
   { sector: 'INTERNAÇÃO HST', number: '8300', building: 'Hospital Santa Thereza • Posto de Internação', category: 'internacao' },
   { sector: 'UTI NEO', number: '1887', building: 'Bloco Crítico / 3º Andar', category: 'uti' },
-  { sector: 'UTI A', number: '1894', building: 'Bloco Crítico / 3º Andar', category: 'uti' },
-  { sector: 'UTI B', number: '1893', building: 'Bloco Crítico / 3º Andar', category: 'uti' },
-  { sector: 'UTI C', number: '1885', building: 'Bloco Crítico / 3º Andar', category: 'uti' },
+  { sector: 'UTI A', number: '1894', whatsapp: '+55 63 9933-1347', building: 'Bloco Crítico / 3º Andar', category: 'uti' },
+  { sector: 'UTI B', number: '1893', whatsapp: '+55 63 9962-5604', building: 'Bloco Crítico / 3º Andar', category: 'uti' },
+  { sector: 'UTI C', number: '1885', whatsapp: '+55 63 9933-1347', building: 'Bloco Crítico / 3º Andar', category: 'uti' },
   { sector: 'CENTRO CIRÚRGICO (CC)', number: '1822', building: 'Bloco Cirúrgico / 2º Andar', category: 'apoio' },
   { sector: 'FARMÁCIA CC', number: '1824', building: 'Centro Cirúrgico / 2º Andar', category: 'farmacia' },
-  { sector: 'INTERNAÇÃO 2º ANDAR', number: '1886', building: 'Posto de Enfermagem 2º Andar', category: 'internacao' },
+  { sector: 'INTERNAÇÃO 2º ANDAR', number: '1886', whatsapp: '+55 63 8459-3964', building: 'Posto de Enfermagem 2º Andar', category: 'internacao' },
   { sector: 'FARMÁCIA MEZANINO', number: '1896', building: 'Mezanino Central', category: 'farmacia' },
   { sector: 'RECEPÇÃO 2º ANDAR', number: '1801', building: 'Recepção Internação / 2º Andar', category: 'atendimento' },
-  { sector: 'RECEPÇÃO PRONTO-SOCORRO', number: '1878', building: 'Térreo / Entrada PS', category: 'atendimento' },
-  { sector: 'PS ADULTO (ENFERMAGEM/MÉDICO)', number: '1860', building: 'Térreo / Box de Emergência', category: 'atendimento' },
+  { sector: 'RECEPÇÃO PRONTO-SOCORRO', number: '1878', whatsapp: '+55 63 9973-6200', building: 'Térreo / Entrada PS', category: 'atendimento' },
+  { sector: 'PS ADULTO (ENFERMAGEM/MÉDICO)', number: '1860', whatsapp: '+55 63 9966-9128', building: 'Térreo / Box de Emergência', category: 'atendimento' },
   { sector: 'PS INFANTIL / PEDIATRIA', number: '1849', building: 'Térreo / Ala Pediátrica', category: 'atendimento' },
+  { sector: 'CENTRO CLÍNICO HPM', number: '1802 / 1810', whatsapp: '+55 63 9931-4648', building: 'Centro Clínico / Ambulatório', category: 'atendimento' },
   { sector: 'CME (CENTRO DE MATERIAIS)', number: '1834', building: 'Subsolo / Esterilização', category: 'apoio' },
-  { sector: 'TI & SUPORTE DE SISTEMAS', number: '1805', building: 'Prédio Administrativo', category: 'administracao' },
+  { sector: 'TI & SUPORTE DE SISTEMAS', number: '1805', whatsapp: '+55 63 9979-2770', building: 'Prédio Administrativo', category: 'administracao' },
   { sector: 'LABORATÓRIO CENTRAL', number: '1817 / 1853', building: 'Térreo / Coleta & Análises', category: 'apoio' },
   { sector: 'HEMODINÂMICA & CATETERISMO', number: '1868', building: 'Bloco Intervencionista', category: 'apoio' },
   { sector: 'ALMOXARIFADO CENTRAL', number: '1833', building: 'Subsolo / Logística', category: 'administracao' },
@@ -24,7 +92,7 @@ export const HOSPITAL_EXTENSIONS: HospitalExtension[] = [
   { sector: 'RX / RADIOLOGIA / TOMOGRAFIA', number: '1874', building: 'Centro de Diagnóstico por Imagem', category: 'apoio' },
   { sector: 'FARMÁCIA SATÉLITE', number: '1824', building: 'Pronto-Socorro / Térreo', category: 'farmacia' },
   { sector: 'MANUTENÇÃO PREDIAL & ENGENHARIA', number: '1830', building: 'Engenharia Clínica', category: 'administracao' },
-  { sector: 'ORÇAMENTO & FATURAMENTO', number: '1824', building: 'Faturamento Hospitalar', category: 'administracao' },
+  { sector: 'ORÇAMENTO & FATURAMENTO', number: '1824', whatsapp: '+55 63 9989-1818', building: 'Faturamento Hospitalar', category: 'administracao' },
   { sector: 'ULTRASSONOGRAFIA (USG)', number: '1820', building: 'Diagnóstico por Imagem', category: 'apoio' }
 ];
 

@@ -99,8 +99,18 @@ export interface SelectedExamItem {
 export interface HospitalExtension {
   sector: string;
   number: string;
+  whatsapp?: string;
   building?: string;
   category?: 'internacao' | 'uti' | 'apoio' | 'atendimento' | 'administracao' | 'farmacia';
+}
+
+export interface HospitalWhatsContact {
+  sector: string;
+  whatsapp: string;
+  cleanNumber: string;
+  description?: string;
+  category: 'atendimento' | 'uti' | 'internacao' | 'administracao' | 'ambulatorio';
+  badge?: string;
 }
 
 export interface HospitalReportType {

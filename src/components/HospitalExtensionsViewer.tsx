@@ -7,10 +7,13 @@ import {
   Building2, 
   MapPin, 
   ShieldCheck,
-  Phone
+  Phone,
+  MessageCircle,
+  ExternalLink,
+  MessageSquare
 } from 'lucide-react';
-import { HOSPITAL_EXTENSIONS } from '../data/hospitalData';
-import { HospitalExtension } from '../types';
+import { HOSPITAL_EXTENSIONS, HOSPITAL_WHATSAPP_CONTACTS } from '../data/hospitalData';
+import { HospitalExtension, HospitalWhatsContact } from '../types';
 
 interface HospitalExtensionsViewerProps {
   initialSearch?: string;
@@ -31,6 +34,7 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
 
   const categories = [
     { id: 'todos', label: 'Todos os Ramais' },
+    { id: 'whatsapp', label: 'WhatsApp Hospitalar (8)' },
     { id: 'hst', label: 'Unidade HST' },
     { id: 'uti', label: 'UTIs' },
     { id: 'atendimento', label: 'Recepções & PS' },
@@ -40,9 +44,23 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
     { id: 'administracao', label: 'Administração & TI' }
   ];
 
+  const filteredWhatsApp = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return HOSPITAL_WHATSAPP_CONTACTS;
+    return HOSPITAL_WHATSAPP_CONTACTS.filter(item => 
+      item.sector.toLowerCase().includes(q) ||
+      item.whatsapp.includes(q) ||
+      item.cleanNumber.includes(q) ||
+      (item.description && item.description.toLowerCase().includes(q))
+    );
+  }, [searchTerm]);
+
   const filteredExtensions = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
     return HOSPITAL_EXTENSIONS.filter(ext => {
+      if (selectedCat === 'whatsapp') {
+        return !!ext.whatsapp;
+      }
       const matchCat = 
         selectedCat === 'todos' || 
         (selectedCat === 'hst' 
@@ -50,6 +68,7 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
           : ext.category === selectedCat);
       const matchSearch = ext.sector.toLowerCase().includes(q) || 
                           ext.number.includes(q) || 
+                          (ext.whatsapp && ext.whatsapp.includes(q)) ||
                           (ext.building && ext.building.toLowerCase().includes(q));
       return matchCat && matchSearch;
     });
@@ -61,28 +80,118 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
     setTimeout(() => setCopiedNumber(null), 2000);
   };
 
+  const openWhatsApp = (cleanNum: string, sectorName: string) => {
+    const msg = encodeURIComponent(`Olá, sou da equipe do Hospital Palmas Medical e gostaria de falar com o setor: ${sectorName}.`);
+    window.open(`https://wa.me/${cleanNum}?text=${msg}`, '_blank');
+  };
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-[#095962] via-[#0E7B86] to-[#095962] border border-[#0E7B86]/40 rounded-2xl p-5 text-white shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-black uppercase tracking-widest text-[#EBF7F8] bg-[#095962] border border-white/20 px-2.5 py-0.5 rounded-full">
-              Guia Telefônico Interno
+              Guia Telefônico & WhatsApp
             </span>
             <span className="text-xs text-white/80 font-medium">Hospital Palmas Medical</span>
           </div>
           <h2 className="text-2xl font-black tracking-tight text-white m-0">
-            Ramais & Telefones Úteis
+            Ramais & WhatsApp dos Setores
           </h2>
           <p className="text-xs text-white/85 max-w-xl leading-relaxed m-0">
-            Consulte rapidamente o ramal de UTIs, Centros Cirúrgicos, Farmácias, Postos de Enfermagem, Apoio Diagnóstico e Recepções.
+            Consulte rapidamente os números de WhatsApp institucionais e ramais internos de UTIs, Centros Cirúrgicos, Postos de Enfermagem, Farmácias, TI e Recepções.
           </p>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-xs border border-white/20 rounded-xl px-4 py-2.5 text-xs text-white flex items-center gap-2">
-          <Building2 className="w-4 h-4 text-[#EBF7F8]" />
-          <span>Central Telefônica: <strong>(63) 3214-8000</strong></span>
+        <div className="flex flex-col sm:flex-row gap-2.5 self-start md:self-auto">
+          <div className="bg-white/10 backdrop-blur-xs border border-white/20 rounded-xl px-3.5 py-2 text-xs text-white flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-[#EBF7F8]" />
+            <span>Central: <strong>(63) 3214-8000</strong></span>
+          </div>
+          <div className="bg-emerald-500/20 backdrop-blur-xs border border-emerald-400/40 rounded-xl px-3.5 py-2 text-xs text-emerald-100 flex items-center gap-2">
+            <MessageCircle className="w-4 h-4 text-emerald-300" />
+            <span><strong>8 WhatsApps</strong> Integrados</span>
+          </div>
+        </div>
+      </div>
+
+      {/* NOVO: SEÇÃO DE WHATSAPP OFICIAL DOS SETORES */}
+      <div className="bg-white border-2 border-emerald-500/30 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-100 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shadow-2xs flex-shrink-0">
+              <MessageCircle className="w-5 h-5 fill-emerald-500 text-white" />
+            </div>
+            <div>
+              <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-emerald-800 flex items-center gap-1.5 m-0">
+                WhatsApp Hospitalar Oficial • Plantão e Setores
+              </span>
+              <p className="text-[11px] text-slate-500 m-0">
+                Clique para iniciar conversa direta no WhatsApp ou copie o número formatado.
+              </p>
+            </div>
+          </div>
+          <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 self-start sm:self-auto">
+            8 Contatos Rápidos
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {filteredWhatsApp.map((item, idx) => (
+            <div 
+              key={idx}
+              className="p-3.5 rounded-xl border border-slate-200/90 bg-slate-50/70 hover:bg-emerald-50/50 hover:border-emerald-300 transition-all flex flex-col justify-between gap-2.5 group"
+            >
+              <div className="space-y-1">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-md border border-emerald-200">
+                    {item.badge || 'WhatsApp'}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => copyNumber(item.whatsapp)}
+                      className="p-1 rounded-md text-slate-400 hover:text-emerald-700 hover:bg-emerald-100/50 transition-colors cursor-pointer"
+                      title="Copiar número"
+                    >
+                      {copiedNumber === item.whatsapp ? (
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <h4 className="text-xs sm:text-sm font-black text-slate-900 leading-snug group-hover:text-emerald-900 m-0 pt-0.5">
+                  {item.sector}
+                </h4>
+
+                {item.description && (
+                  <p className="text-[11px] text-slate-500 line-clamp-2 m-0 leading-tight">
+                    {item.description}
+                  </p>
+                )}
+              </div>
+
+              <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between gap-2">
+                <span className="font-mono text-xs font-black text-slate-800">
+                  {item.whatsapp}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => openWhatsApp(item.cleanNumber, item.sector)}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
+                  title="Abrir no WhatsApp Web / App"
+                >
+                  <MessageSquare className="w-3 h-3" />
+                  <span>Chamar</span>
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -100,12 +209,12 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
           {[
             { sector: 'PA - HST', num: '8359', tag: 'HST • PA' },
             { sector: 'Internação HST', num: '8300', tag: 'HST • INT' },
-            { sector: 'UTI Geral', num: '8010', tag: 'UTI' },
-            { sector: 'Recepção PS', num: '8020', tag: 'PS' },
-            { sector: 'Enfermagem PS', num: '8025', tag: 'PS' },
-            { sector: 'Farmácia Central', num: '8040', tag: 'Farmácia' },
-            { sector: 'Tomografia / RX', num: '8032', tag: 'SADT' },
-            { sector: 'Centro Cirúrgico', num: '8015', tag: 'CC' }
+            { sector: 'UTI B', num: '1893', tag: 'UTI B' },
+            { sector: 'UTI A', num: '1894', tag: 'UTI A' },
+            { sector: 'Recepção PS', num: '1878', tag: 'PS' },
+            { sector: 'Enfermagem PS', num: '1860', tag: 'PS' },
+            { sector: 'Farmácia CC', num: '1824', tag: 'Farmácia' },
+            { sector: 'Centro Cirúrgico', num: '1822', tag: 'CC' }
           ].map(crit => (
             <button
               key={crit.num}
@@ -162,7 +271,7 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="search"
-              placeholder="Pesquisar setor ou ramal..."
+              placeholder="Pesquisar setor, ramal ou WhatsApp..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#0E7B86] focus:bg-white text-slate-900"
@@ -175,6 +284,8 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredExtensions.map((ext, idx) => {
           const isHst = ext.sector.toUpperCase().includes('HST') || (ext.building && ext.building.toUpperCase().includes('HST'));
+          const cleanWhats = ext.whatsapp ? ext.whatsapp.replace(/\D/g, '') : null;
+
           return (
             <div
               key={idx}
@@ -184,10 +295,16 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
             >
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     {isHst && (
                       <span className="text-xs font-black uppercase text-amber-800 bg-amber-100 px-2 py-0.5 rounded border border-amber-300">
                         Unidade HST
+                      </span>
+                    )}
+                    {ext.whatsapp && (
+                      <span className="text-[10px] font-black uppercase text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300 flex items-center gap-1">
+                        <MessageCircle className="w-3 h-3 text-emerald-600" />
+                        Tem WhatsApp
                       </span>
                     )}
                     <span className="text-xs uppercase font-black tracking-wider text-slate-400">
@@ -205,9 +322,16 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
                     <span className="truncate">{ext.building}</span>
                   </p>
                 )}
+
+                {ext.whatsapp && (
+                  <div className="pt-1 flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>WhatsApp: <strong className="font-mono">{ext.whatsapp}</strong></span>
+                  </div>
+                )}
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2">
                   <span className="text-xs sm:text-sm text-slate-500 font-bold">Ramal:</span>
                   <span className={`font-mono text-lg sm:text-xl font-black px-2.5 py-1 rounded-lg border ${
@@ -232,6 +356,7 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
                       <Copy className="w-4 h-4" />
                     )}
                   </button>
+
                   <a
                     href={`tel:${ext.number}`}
                     className={`p-2 rounded-lg transition-colors ${
@@ -243,6 +368,17 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
                   >
                     <Phone className="w-4 h-4" />
                   </a>
+
+                  {ext.whatsapp && cleanWhats && (
+                    <button
+                      type="button"
+                      onClick={() => openWhatsApp(cleanWhats, ext.sector)}
+                      className="p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors cursor-pointer"
+                      title="Chamar no WhatsApp"
+                    >
+                      <MessageCircle className="w-4 h-4 text-emerald-600" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

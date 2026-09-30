@@ -80,9 +80,9 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
     setTimeout(() => setCopiedNumber(null), 2000);
   };
 
-  const openWhatsApp = (cleanNum: string, sectorName: string) => {
+  const getWhatsAppLink = (cleanNum: string, sectorName: string) => {
     const msg = encodeURIComponent(`Olá, sou da equipe do Hospital Palmas Medical e gostaria de falar com o setor: ${sectorName}.`);
-    window.open(`https://wa.me/${cleanNum}?text=${msg}`, '_blank');
+    return `https://wa.me/${cleanNum}?text=${msg}`;
   };
 
   return (
@@ -180,15 +180,16 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
                   {item.whatsapp}
                 </span>
 
-                <button
-                  type="button"
-                  onClick={() => openWhatsApp(item.cleanNumber, item.sector)}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
+                <a
+                  href={getWhatsAppLink(item.cleanNumber, item.sector)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition-all shadow-2xs active:scale-95 cursor-pointer no-underline"
                   title="Abrir no WhatsApp Web / App"
                 >
                   <MessageSquare className="w-3 h-3" />
                   <span>Chamar</span>
-                </button>
+                </a>
               </div>
             </div>
           ))}
@@ -370,14 +371,15 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
                   </a>
 
                   {ext.whatsapp && cleanWhats && (
-                    <button
-                      type="button"
-                      onClick={() => openWhatsApp(cleanWhats, ext.sector)}
+                    <a
+                      href={getWhatsAppLink(cleanWhats, ext.sector)}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors cursor-pointer"
                       title="Chamar no WhatsApp"
                     >
                       <MessageCircle className="w-4 h-4 text-emerald-600" />
-                    </button>
+                    </a>
                   )}
                 </div>
               </div>

@@ -1,11 +1,3 @@
-// Clean Node 22 / tsx CJS global __dirname bug for ESM config loaders (vite-plugin-pwa)
-try {
-  delete (globalThis as any).__dirname;
-  delete (global as any).__dirname;
-} catch {
-  // ignore
-}
-
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';

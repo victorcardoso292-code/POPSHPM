@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlertTriangle } from 'lucide-react';
 
 export interface TermoFusexData {
   nomeTitular: string;
@@ -33,6 +34,15 @@ export const TermoFusexPrint: React.FC<TermoFusexPrintProps> = ({
       className="bg-white text-black p-6 sm:p-10 max-w-[800px] mx-auto border border-slate-300 print:border-none print:p-0 page-break-avoid"
       style={{ fontFamily: "Arial, 'Helvetica Neue', Helvetica, sans-serif" }}
     >
+      {/* Aviso Operacional de Duas Vias (Com sinal de alerta piscando) */}
+      <div className="mb-4 p-2.5 bg-amber-50 border-2 border-amber-500 rounded-xl flex items-center justify-center gap-2.5 text-amber-950 font-black text-xs uppercase tracking-wide print:border-black print:border print:bg-transparent print:p-1.5 print:mb-3 print:text-[10px] select-none shadow-xs">
+        <AlertTriangle className="w-4 h-4 text-red-600 animate-alert-icon flex-shrink-0 print:hidden" />
+        <span className="text-center">
+          AVISO: IMPRIMIR DUAS VIAS, UMA DO PACIENTE E OUTRA ANEXAR AO PRONTUÁRIO
+        </span>
+        <AlertTriangle className="w-4 h-4 text-red-600 animate-alert-icon flex-shrink-0 print:hidden" />
+      </div>
+
       {/* Header Oficial ABNT - Sem a estrela */}
       <div className="text-center space-y-1 mb-5">
         <p className="font-bold uppercase tracking-wider text-[12px] m-0 text-black">

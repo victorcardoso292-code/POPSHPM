@@ -2,15 +2,12 @@ import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
-import { registerSW } from 'virtual:pwa-register';
 
 // Registra o Service Worker PWA para produção e contingência offline
 if (typeof window !== 'undefined' && 'serviceWorker' in navigator && import.meta.env.PROD) {
-  try {
-    registerSW({ immediate: true });
-  } catch {
-    // Ignora erro em ambientes de preview com sandbox restrito
-  }
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
 }
 
 // Ignora erros inofensivos de WebSocket / HMR do Vite no ambiente de preview do AI Studio

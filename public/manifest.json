@@ -1,0 +1,31 @@
+{
+  "id": "/",
+  "name": "Central de Autorizações & POPs Hospitalar",
+  "short_name": "HPM POPs",
+  "description": "Sistema hospitalar inteligente de Procedimentos Operacionais Padrão (POPs), convênios, exames, internação e plano de contingência offline.",
+  "theme_color": "#006B70",
+  "background_color": "#F8FAFC",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

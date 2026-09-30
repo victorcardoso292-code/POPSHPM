@@ -12,7 +12,8 @@ import {
   Receipt,
   FileCheck,
   Clock,
-  UserCheck
+  UserCheck,
+  AlertTriangle
 } from 'lucide-react';
 import { TermoFusexPrint, TermoFusexData } from './documents/TermoFusexPrint';
 import { TermoRetiradaCorpoPrint, TermoRetiradaCorpoData } from './documents/TermoRetiradaCorpoPrint';
@@ -504,6 +505,13 @@ export const DocumentosViewer: React.FC = () => {
                   <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
                     {doc.description}
                   </p>
+
+                  {doc.id === 'fusex' && (
+                    <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-red-800 text-[11px] font-black uppercase tracking-tight">
+                      <AlertTriangle className="w-4 h-4 text-red-600 animate-alert-icon flex-shrink-0" />
+                      <span>Imprimir 2 Vias: 1ª Paciente • 2ª Prontuário</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-3 border-t border-slate-100 mt-4 space-y-2">
@@ -561,6 +569,15 @@ export const DocumentosViewer: React.FC = () => {
                         ? 'Modo Preenchimento: digite os dados nos campos destacados para impressão personalizada.'
                         : 'Modo Documento em Branco: modelo limpo pronto para impressão e assinatura manual.'}
                     </p>
+
+                    {activeDoc === 'fusex' && (
+                      <div className="mt-2.5 inline-flex items-center gap-2 px-3 py-1 bg-red-600/95 text-white rounded-xl border border-red-300/40 shadow-sm animate-pulse">
+                        <AlertTriangle className="w-4 h-4 text-yellow-300 animate-alert-icon flex-shrink-0" />
+                        <span className="text-[11px] sm:text-xs font-black tracking-wide uppercase">
+                          IMPRIMIR DUAS VIAS: UMA DO PACIENTE E OUTRA ANEXAR AO PRONTUÁRIO
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -572,6 +589,23 @@ export const DocumentosViewer: React.FC = () => {
                   <X className="w-5 h-5" />
                 </button>
               </div>
+
+              {/* Faixa de Alerta Operacional Piscante (FUSEx Duas Vias) */}
+              {activeDoc === 'fusex' && (
+                <div 
+                  className="w-full bg-red-700 text-white animate-alert-banner border-b-2 border-red-900 py-2.5 px-4 shadow-sm select-none"
+                  role="alert"
+                  aria-live="assertive"
+                >
+                  <div className="w-full max-w-5xl mx-auto flex items-center justify-center gap-2.5 sm:gap-3 text-center">
+                    <AlertTriangle className="w-5 h-5 text-yellow-300 animate-alert-icon flex-shrink-0" />
+                    <span className="text-xs sm:text-sm font-black tracking-wider uppercase drop-shadow-sm text-white">
+                      AVISO: IMPRIMIR DUAS VIAS, UMA DO PACIENTE E OUTRA ANEXAR AO PRONTUÁRIO
+                    </span>
+                    <AlertTriangle className="w-5 h-5 text-yellow-300 animate-alert-icon flex-shrink-0" />
+                  </div>
+                </div>
+              )}
 
               {/* Mode Switcher & Actions Bar */}
               <div className="p-3 px-5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
@@ -619,6 +653,12 @@ export const DocumentosViewer: React.FC = () => {
                         Limpar
                       </button>
                     </>
+                  )}
+                  {activeDoc === 'fusex' && (
+                    <span className="hidden sm:inline-flex items-center gap-1.5 text-red-700 font-black text-xs uppercase bg-red-50 px-2.5 py-1.5 rounded-lg border border-red-200">
+                      <AlertTriangle className="w-3.5 h-3.5 text-red-600 animate-alert-icon flex-shrink-0" />
+                      <span>2 Vias Obrigatórias (Paciente + Prontuário)</span>
+                    </span>
                   )}
                   <button
                     type="button"

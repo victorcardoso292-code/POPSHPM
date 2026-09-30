@@ -23,6 +23,13 @@ interface TermoFusexPrintProps {
   isEditable?: boolean;
 }
 
+function cleanPhoneDisplay(phone: string): string {
+  if (!phone) return '(    ) ____________________';
+  const trimmed = phone.trim();
+  if (trimmed.startsWith('(')) return trimmed;
+  return `(${trimmed}`;
+}
+
 export const TermoFusexPrint: React.FC<TermoFusexPrintProps> = ({
   data,
   onChange,
@@ -57,99 +64,182 @@ export const TermoFusexPrint: React.FC<TermoFusexPrintProps> = ({
         </div>
       </div>
 
-      {/* Grid de Campos de Identificação ABNT */}
-      <div className="border border-black divide-y divide-black text-[11px] mb-4">
-        {/* Nome do Titular */}
-        <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-black">
-          <div className="w-full sm:w-56 p-1.5 font-bold bg-slate-50 flex items-center text-black">
-            Nome do titular do FUSEx:
-          </div>
-          <div className="flex-1 p-1.5 min-h-[26px] flex items-center">
-            {isEditable ? (
-              <input
-                type="text"
-                value={data.nomeTitular}
-                onChange={e => onChange?.('nomeTitular', e.target.value)}
-                placeholder="Nome do militar / titular"
-                className="w-full text-[11px] outline-none bg-amber-50/50 print:bg-transparent"
-                style={{ fontFamily: 'Arial, sans-serif' }}
-              />
-            ) : (
-              <span className="font-medium">{data.nomeTitular}</span>
-            )}
-          </div>
-        </div>
+      {/* Tabela de Campos de Identificação ABNT com Linhas 100% Sólidas e Fechadas */}
+      <table 
+        className="w-full text-[11px] mb-4 text-black"
+        style={{ 
+          borderCollapse: 'collapse', 
+          border: '1.5px solid #000000', 
+          width: '100%',
+          backgroundColor: '#ffffff'
+        }}
+      >
+        <tbody>
+          {/* Nome do Titular */}
+          <tr>
+            <td 
+              className="bg-slate-50 font-bold p-1.5 align-middle text-black"
+              style={{ 
+                width: '230px', 
+                border: '1px solid #000000', 
+                backgroundColor: '#f8fafc',
+                padding: '6px 8px'
+              }}
+            >
+              Nome do titular do FUSEx:
+            </td>
+            <td 
+              colSpan={3} 
+              className="p-1.5 align-middle text-black"
+              style={{ 
+                border: '1px solid #000000',
+                padding: '6px 8px'
+              }}
+            >
+              {isEditable ? (
+                <input
+                  type="text"
+                  value={data.nomeTitular}
+                  onChange={e => onChange?.('nomeTitular', e.target.value)}
+                  placeholder="Nome do militar / titular"
+                  className="w-full text-[11px] outline-none bg-amber-50/50 print:bg-transparent"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
+                />
+              ) : (
+                <span className="font-medium text-black">{data.nomeTitular}</span>
+              )}
+            </td>
+          </tr>
 
-        {/* Nome do dependente */}
-        <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-black">
-          <div className="w-full sm:w-56 p-1.5 font-bold bg-slate-50 flex items-center text-black">
-            Nome do dependente (paciente):
-          </div>
-          <div className="flex-1 p-1.5 min-h-[26px] flex items-center">
-            {isEditable ? (
-              <input
-                type="text"
-                value={data.nomeDependente}
-                onChange={e => onChange?.('nomeDependente', e.target.value)}
-                placeholder="Nome completo do paciente atendido"
-                className="w-full text-[11px] outline-none bg-amber-50/50 print:bg-transparent"
-                style={{ fontFamily: 'Arial, sans-serif' }}
-              />
-            ) : (
-              <span className="font-medium">{data.nomeDependente}</span>
-            )}
-          </div>
-        </div>
+          {/* Nome do dependente */}
+          <tr>
+            <td 
+              className="bg-slate-50 font-bold p-1.5 align-middle text-black"
+              style={{ 
+                width: '230px', 
+                border: '1px solid #000000', 
+                backgroundColor: '#f8fafc',
+                padding: '6px 8px'
+              }}
+            >
+              Nome do dependente (paciente):
+            </td>
+            <td 
+              colSpan={3} 
+              className="p-1.5 align-middle text-black"
+              style={{ 
+                border: '1px solid #000000',
+                padding: '6px 8px'
+              }}
+            >
+              {isEditable ? (
+                <input
+                  type="text"
+                  value={data.nomeDependente}
+                  onChange={e => onChange?.('nomeDependente', e.target.value)}
+                  placeholder="Nome completo do paciente atendido"
+                  className="w-full text-[11px] outline-none bg-amber-50/50 print:bg-transparent"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
+                />
+              ) : (
+                <span className="font-medium text-black">{data.nomeDependente}</span>
+              )}
+            </td>
+          </tr>
 
-        {/* Prec Cp */}
-        <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-black">
-          <div className="w-full sm:w-56 p-1.5 font-bold bg-slate-50 flex items-center text-black">
-            Prec Cp:
-          </div>
-          <div className="flex-1 p-1.5 min-h-[26px] flex items-center">
-            {isEditable ? (
-              <input
-                type="text"
-                value={data.precCp}
-                onChange={e => onChange?.('precCp', e.target.value)}
-                placeholder="Número Prec Cp"
-                className="w-full text-[11px] outline-none bg-amber-50/50 print:bg-transparent"
-                style={{ fontFamily: 'Arial, sans-serif' }}
-              />
-            ) : (
-              <span className="font-medium">{data.precCp}</span>
-            )}
-          </div>
-        </div>
+          {/* Prec Cp */}
+          <tr>
+            <td 
+              className="bg-slate-50 font-bold p-1.5 align-middle text-black"
+              style={{ 
+                width: '230px', 
+                border: '1px solid #000000', 
+                backgroundColor: '#f8fafc',
+                padding: '6px 8px'
+              }}
+            >
+              Prec Cp:
+            </td>
+            <td 
+              colSpan={3} 
+              className="p-1.5 align-middle text-black"
+              style={{ 
+                border: '1px solid #000000',
+                padding: '6px 8px'
+              }}
+            >
+              {isEditable ? (
+                <input
+                  type="text"
+                  value={data.precCp}
+                  onChange={e => onChange?.('precCp', e.target.value)}
+                  placeholder="Número Prec Cp"
+                  className="w-full text-[11px] outline-none bg-amber-50/50 print:bg-transparent"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
+                />
+              ) : (
+                <span className="font-medium text-black">{data.precCp}</span>
+              )}
+            </td>
+          </tr>
 
-        {/* Especialidade atendida */}
-        <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-black">
-          <div className="w-full sm:w-56 p-1.5 font-bold bg-slate-50 flex items-center text-black">
-            Especialidade atendida:
-          </div>
-          <div className="flex-1 p-1.5 min-h-[26px] flex items-center">
-            {isEditable ? (
-              <input
-                type="text"
-                value={data.especialidade}
-                onChange={e => onChange?.('especialidade', e.target.value)}
-                placeholder="Ex.: Pronto-Socorro / Urgência Adulto"
-                className="w-full text-[11px] outline-none bg-amber-50/50 print:bg-transparent"
-                style={{ fontFamily: 'Arial, sans-serif' }}
-              />
-            ) : (
-              <span className="font-medium">{data.especialidade}</span>
-            )}
-          </div>
-        </div>
+          {/* Especialidade atendida */}
+          <tr>
+            <td 
+              className="bg-slate-50 font-bold p-1.5 align-middle text-black"
+              style={{ 
+                width: '230px', 
+                border: '1px solid #000000', 
+                backgroundColor: '#f8fafc',
+                padding: '6px 8px'
+              }}
+            >
+              Especialidade atendida:
+            </td>
+            <td 
+              colSpan={3} 
+              className="p-1.5 align-middle text-black"
+              style={{ 
+                border: '1px solid #000000',
+                padding: '6px 8px'
+              }}
+            >
+              {isEditable ? (
+                <input
+                  type="text"
+                  value={data.especialidade}
+                  onChange={e => onChange?.('especialidade', e.target.value)}
+                  placeholder="Ex.: Pronto-Socorro / Urgência Adulto"
+                  className="w-full text-[11px] outline-none bg-amber-50/50 print:bg-transparent"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
+                />
+              ) : (
+                <span className="font-medium text-black">{data.especialidade}</span>
+              )}
+            </td>
+          </tr>
 
-        {/* Data de atendimento & Hora */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-black">
-          <div className="flex divide-x divide-black">
-            <div className="w-44 sm:w-56 p-1.5 font-bold bg-slate-50 flex items-center text-black">
+          {/* Data de atendimento & Hora */}
+          <tr>
+            <td 
+              className="bg-slate-50 font-bold p-1.5 align-middle text-black"
+              style={{ 
+                width: '230px', 
+                border: '1px solid #000000', 
+                backgroundColor: '#f8fafc',
+                padding: '6px 8px'
+              }}
+            >
               Data de atendimento:
-            </div>
-            <div className="flex-1 p-1.5 text-center flex items-center justify-center">
+            </td>
+            <td 
+              className="p-1.5 align-middle text-center text-black"
+              style={{ 
+                width: '24%', 
+                border: '1px solid #000000',
+                padding: '6px 8px'
+              }}
+            >
               {isEditable ? (
                 <input
                   type="text"
@@ -160,15 +250,27 @@ export const TermoFusexPrint: React.FC<TermoFusexPrintProps> = ({
                   style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
-                <span>{data.dataAtendimento || '____ / ____ / ________'}</span>
+                <span className="font-medium text-black">{data.dataAtendimento || '____ / ____ / ________'}</span>
               )}
-            </div>
-          </div>
-          <div className="flex divide-x divide-black">
-            <div className="w-36 p-1.5 font-bold bg-slate-50 flex items-center text-black">
+            </td>
+            <td 
+              className="bg-slate-50 font-bold p-1.5 align-middle text-center text-black"
+              style={{ 
+                width: '135px', 
+                border: '1px solid #000000', 
+                backgroundColor: '#f8fafc',
+                padding: '6px 8px'
+              }}
+            >
               Hora da emissão:
-            </div>
-            <div className="flex-1 p-1.5 text-center flex items-center justify-center">
+            </td>
+            <td 
+              className="p-1.5 align-middle text-center text-black"
+              style={{ 
+                border: '1px solid #000000',
+                padding: '6px 8px'
+              }}
+            >
               {isEditable ? (
                 <input
                   type="text"
@@ -179,51 +281,73 @@ export const TermoFusexPrint: React.FC<TermoFusexPrintProps> = ({
                   style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
-                <span>{data.horaEmissao || '____ : ____'}</span>
+                <span className="font-medium text-black">{data.horaEmissao || '____ : ____'}</span>
               )}
-            </div>
-          </div>
-        </div>
+            </td>
+          </tr>
 
-        {/* Telefone de contato do responsável */}
-        <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-black">
-          <div className="w-full sm:w-56 p-1.5 font-bold bg-slate-50 flex items-center text-black">
-            Telefone de contato do responsável:
-          </div>
-          <div className="flex-1 p-1.5 grid grid-cols-2 divide-x divide-black">
-            <div className="pr-2 flex items-center">
-              <span className="font-bold mr-1">(</span>
+          {/* Telefone de contato do responsável */}
+          <tr>
+            <td 
+              className="bg-slate-50 font-bold p-1.5 align-middle text-black"
+              style={{ 
+                width: '230px', 
+                border: '1px solid #000000', 
+                backgroundColor: '#f8fafc',
+                padding: '6px 8px'
+              }}
+            >
+              Telefone de contato do responsável:
+            </td>
+            <td 
+              className="p-1.5 align-middle text-black"
+              style={{ 
+                width: '24%', 
+                border: '1px solid #000000',
+                padding: '6px 8px'
+              }}
+            >
               {isEditable ? (
                 <input
                   type="text"
                   value={data.telefone1}
                   onChange={e => onChange?.('telefone1', e.target.value)}
-                  placeholder="63) 99999-9999"
+                  placeholder="(63) 99999-9999"
                   className="w-full text-[11px] outline-none bg-amber-50/50 print:bg-transparent"
                   style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
-                <span>{data.telefone1 ? `${data.telefone1}` : '   ) ________________'}</span>
+                <span className="text-black font-medium">
+                  {cleanPhoneDisplay(data.telefone1)}
+                </span>
               )}
-            </div>
-            <div className="pl-2 flex items-center">
-              <span className="font-bold mr-1">(</span>
+            </td>
+            <td 
+              colSpan={2}
+              className="p-1.5 align-middle text-black"
+              style={{ 
+                border: '1px solid #000000',
+                padding: '6px 8px'
+              }}
+            >
               {isEditable ? (
                 <input
                   type="text"
                   value={data.telefone2}
                   onChange={e => onChange?.('telefone2', e.target.value)}
-                  placeholder="63) 3215-0000"
+                  placeholder="(63) 3215-0000 / Recado"
                   className="w-full text-[11px] outline-none bg-amber-50/50 print:bg-transparent"
                   style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
-                <span>{data.telefone2 ? `${data.telefone2}` : '   ) ________________'}</span>
+                <span className="text-black font-medium">
+                  {cleanPhoneDisplay(data.telefone2)}
+                </span>
               )}
-            </div>
-          </div>
-        </div>
-      </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
       {/* Texto de Declaração Oficial ABNT (Justificado, Entrelinhas 1.5) */}
       <div className="text-[11.5px] text-justify space-y-3 mb-5 leading-relaxed text-black">
@@ -235,7 +359,7 @@ export const TermoFusexPrint: React.FC<TermoFusexPrintProps> = ({
               value={data.hospitalNome}
               onChange={e => onChange?.('hospitalNome', e.target.value)}
               className="border-b border-black font-bold outline-none px-1 w-64 bg-amber-50/50 print:bg-transparent inline-block"
-              style={{ fontFamily: 'Arial, sans-serif' }}
+              style={{ fontFamily: 'Arial, sans-serif', borderBottom: '1px solid black' }}
             />
           ) : (
             <span className="font-bold underline">{data.hospitalNome || 'Hospital Palmas Medical'}</span>
@@ -247,7 +371,10 @@ export const TermoFusexPrint: React.FC<TermoFusexPrintProps> = ({
           Estou ciente que o não cumprimento deste termo acarretará o pagamento integral das despesas realizadas, conforme Capítulo III da Urgência e Emergência, previstas nas Instruções Reguladoras para Assistência Médico Hospitalar aos Beneficiários do Fundo de Saúde do Exército (IR 30-38).
         </p>
 
-        <div className="pl-4 border-l-2 border-slate-700 italic text-[10.5px] text-slate-900 leading-normal">
+        <div 
+          className="pl-4 italic text-[10.5px] text-slate-900 leading-normal"
+          style={{ borderLeft: '2px solid #334155' }}
+        >
           “Art. 20. O FUSEx não se responsabilizará ou ressarcirá as despesas, caso não comprovada a urgência e/ou a emergência ou não tenham sido cumpridas as providências previstas nos arts. 18 e 19 das IR 30-38.”
         </div>
       </div>
@@ -260,20 +387,29 @@ export const TermoFusexPrint: React.FC<TermoFusexPrintProps> = ({
       {/* Assinatura do Beneficiário */}
       <div className="space-y-4 mb-6">
         <div className="text-center pt-6 max-w-md mx-auto">
-          <div className="border-t border-black mb-1.5"></div>
+          <div className="mb-1.5" style={{ borderTop: '1px solid black' }}></div>
           <p className="font-bold text-[11px] m-0 text-black">Assinatura do beneficiário ou responsável</p>
           <div className="mt-3 text-left flex items-center gap-2 text-[11px]">
             <span className="font-bold text-black">Anotar a identidade:</span>
-            <span className="border-b border-black flex-1 min-h-[18px]">
+            <span 
+              className="flex-1 min-h-[18px] text-black"
+              style={{ borderBottom: '1px solid black' }}
+            >
               {data.identidadeResponsavel}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Box OCS / Hospital */}
-      <div className="border border-black p-3.5 text-[11px] space-y-2 bg-slate-50/50">
-        <div className="text-center font-bold uppercase tracking-wider text-[11.5px] border-b border-black pb-1.5 text-black">
+      {/* Box OCS / Hospital com bordas 100% sólidas */}
+      <div 
+        className="p-3.5 text-[11px] space-y-2 bg-slate-50/50 text-black"
+        style={{ border: '1.5px solid #000000', backgroundColor: '#fafafa' }}
+      >
+        <div 
+          className="text-center font-bold uppercase tracking-wider text-[11.5px] pb-1.5 text-black"
+          style={{ borderBottom: '1px solid #000000' }}
+        >
           A ser preenchido pela Organização Civil de Saúde/OCS
         </div>
 
@@ -286,7 +422,7 @@ export const TermoFusexPrint: React.FC<TermoFusexPrintProps> = ({
         </p>
 
         <div className="pt-8 max-w-sm mx-auto text-center">
-          <div className="border-t border-black mb-1.5"></div>
+          <div className="mb-1.5" style={{ borderTop: '1px solid black' }}></div>
           <p className="font-bold text-[11px] m-0 text-black">Assinatura da recepcionista</p>
           <p className="text-[10px] m-0 text-slate-700">Responsável pelo atendimento (legível)</p>
           {data.recepcionista && (
@@ -294,7 +430,10 @@ export const TermoFusexPrint: React.FC<TermoFusexPrintProps> = ({
           )}
         </div>
 
-        <p className="font-bold text-[10px] pt-1.5 border-t border-slate-400 m-0 text-black">
+        <p 
+          className="font-bold text-[10px] pt-1.5 m-0 text-black"
+          style={{ borderTop: '1px solid #94a3b8' }}
+        >
           OBS: O hospital ficará com o termo original, e o responsável pelo paciente ficará com a cópia a ser trocada.
         </p>
       </div>

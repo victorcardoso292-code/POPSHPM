@@ -423,5 +423,13 @@ html.dark .animate-code-alert-box {
   .shadow-xs, .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl {
     box-shadow: none !important;
   }
+
+  /* Força a renderização nítida de todas as bordas e linhas pretas do documento */
+  table, tr, th, td {
+    border-color: #000000 !important;
+  }
+  table {
+    border-collapse: collapse !important;
+  }
 }
 

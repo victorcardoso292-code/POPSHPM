@@ -27,7 +27,7 @@ export const SolicitacaoNotaFiscalPrint: React.FC<SolicitacaoNotaFiscalPrintProp
 }) => {
   return (
     <div 
-      className="text-black bg-white p-6 sm:p-12 max-w-[760px] mx-auto text-[11px] leading-normal border-2 border-black print:border-2 print:border-black rounded-none shadow-xs"
+      className="text-black bg-white p-6 sm:p-12 max-w-[760px] mx-auto text-[11px] leading-normal border-2 border-black print:border-none print:p-0 rounded-none shadow-xs page-break-avoid"
       style={{ fontFamily: "Arial, 'Helvetica Neue', Helvetica, sans-serif" }}
     >
       {/* Top Logo */}

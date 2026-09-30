@@ -6,7 +6,9 @@ import {
   Sparkles,
   Command,
   LogOut,
-  AlertTriangle
+  AlertTriangle,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { AppMode } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
@@ -37,7 +39,9 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenUniversalSearch,
   onOpenSmartDrawer,
   onOpenAiDrawer,
-  onLogoutSystem
+  onLogoutSystem,
+  isDarkMode = false,
+  onToggleDarkMode
 }) => {
   return (
     <header className="bg-white text-slate-800 shadow-xs border-b border-slate-200/90 sticky top-0 z-40">
@@ -166,6 +170,19 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* PWA Install Button */}
             <PWAInstallButton variant="header" />
+
+            {/* Theme Toggle (Dark / Light) */}
+            {onToggleDarkMode && (
+              <button
+                type="button"
+                onClick={onToggleDarkMode}
+                className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 transition-colors cursor-pointer"
+                title={isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro (Plantão Noturno)'}
+                aria-label="Alternar modo escuro"
+              >
+                {isDarkMode ? <Sun className="w-3.5 h-3.5 text-amber-500" /> : <Moon className="w-3.5 h-3.5 text-slate-600" />}
+              </button>
+            )}
 
             {/* System Logout / Lock Button */}
             {onLogoutSystem && (

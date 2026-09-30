@@ -61,7 +61,7 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
 }) => {
   return (
     <div 
-      className="text-black bg-white p-5 sm:p-8 max-w-[850px] mx-auto text-[11px] leading-tight border border-slate-300 print:border-none print:p-0"
+      className="text-black bg-white p-5 sm:p-8 max-w-[850px] mx-auto text-[11px] leading-tight border border-slate-300 print:border-none print:p-0 page-break-avoid"
       style={{ fontFamily: "Arial, 'Helvetica Neue', Helvetica, sans-serif" }}
     >
       {/* Tabela de Cabeçalho Oficial ABNT */}

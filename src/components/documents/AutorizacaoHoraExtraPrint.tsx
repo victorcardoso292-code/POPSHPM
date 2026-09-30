@@ -45,7 +45,7 @@ export const AutorizacaoHoraExtraPrint: React.FC<AutorizacaoHoraExtraPrintProps>
 
   return (
     <div 
-      className="bg-white text-black p-4 sm:p-8 max-w-[900px] mx-auto text-[11px] leading-tight border border-slate-300 print:border-none print:p-0"
+      className="bg-white text-black p-4 sm:p-8 max-w-[900px] mx-auto text-[11px] leading-tight border border-slate-300 print:border-none print:p-0 page-break-avoid"
       style={{ fontFamily: "Arial, 'Helvetica Neue', Helvetica, sans-serif" }}
     >
       {/* Moldura Externa Oficial */}

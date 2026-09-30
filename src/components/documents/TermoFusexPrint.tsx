@@ -30,7 +30,7 @@ export const TermoFusexPrint: React.FC<TermoFusexPrintProps> = ({
 }) => {
   return (
     <div 
-      className="bg-white text-black p-6 sm:p-10 max-w-[800px] mx-auto border border-slate-300 print:border-none print:p-0"
+      className="bg-white text-black p-6 sm:p-10 max-w-[800px] mx-auto border border-slate-300 print:border-none print:p-0 page-break-avoid"
       style={{ fontFamily: "Arial, 'Helvetica Neue', Helvetica, sans-serif" }}
     >
       {/* Header Oficial ABNT - Sem a estrela */}

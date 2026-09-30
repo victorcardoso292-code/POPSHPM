@@ -130,10 +130,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       id: 'documentos' as AppMode,
       label: 'Documentos',
-      subtitle: 'Termos, contratos e fichas',
+      subtitle: 'FUSEx, Óbito e Nota Fiscal',
       icon: FolderOpen,
-      badge: 'Em Branco',
-      badgeColor: 'bg-blue-50 text-blue-700 border border-blue-200'
+      badge: '3 Modelos',
+      badgeColor: 'bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]'
     }
   ];
 

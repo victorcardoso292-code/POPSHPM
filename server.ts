@@ -1,3 +1,11 @@
+// Clean Node 22 / tsx CJS global __dirname bug for ESM config loaders (vite-plugin-pwa)
+try {
+  delete (globalThis as any).__dirname;
+  delete (global as any).__dirname;
+} catch {
+  // ignore
+}
+
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -295,10 +303,7 @@ Responda em formato JSON:
   // Vite integration middleware
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
-      server: { 
-        middlewareMode: true,
-        hmr: false
-      },
+      server: { middlewareMode: true },
       appType: 'spa',
     });
     app.use(vite.middlewares);

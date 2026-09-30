@@ -29,142 +29,154 @@ export const TermoFusexPrint: React.FC<TermoFusexPrintProps> = ({
   isEditable = false
 }) => {
   return (
-    <div className="font-serif text-black bg-white p-6 sm:p-10 max-w-[800px] mx-auto text-xs leading-normal border border-slate-300 print:border-none print:p-0">
-      {/* Header Brasão */}
-      <div className="text-center space-y-1 mb-4">
-        {/* SVG Brasão das Armas Nacionais / Exército */}
-        <div className="flex justify-center mb-1.5">
-          <svg className="w-16 h-16 text-slate-800" viewBox="0 0 100 100" fill="currentColor">
-            <path d="M50 5 L61 35 L93 35 L67 55 L77 87 L50 68 L23 87 L33 55 L7 35 L39 35 Z" fill="#2d3748" opacity="0.85" />
-            <circle cx="50" cy="50" r="18" fill="#1a202c" />
-            <circle cx="50" cy="50" r="14" fill="#ffffff" />
-            <polygon points="50,40 53,47 60,47 55,51 57,58 50,54 43,58 45,51 40,47 47,47" fill="#1a202c" />
-          </svg>
+    <div 
+      className="bg-white text-black p-6 sm:p-10 max-w-[800px] mx-auto border border-slate-300 print:border-none print:p-0"
+      style={{ fontFamily: "Arial, 'Helvetica Neue', Helvetica, sans-serif" }}
+    >
+      {/* Header Oficial ABNT - Sem a estrela */}
+      <div className="text-center space-y-1 mb-5">
+        <p className="font-bold uppercase tracking-wider text-[12px] m-0 text-black">
+          MINISTÉRIO DA DEFESA
+        </p>
+        <p className="font-bold uppercase tracking-wider text-[12px] m-0 text-black">
+          EXÉRCITO BRASILEIRO
+        </p>
+        <p className="font-bold uppercase tracking-wider text-[11px] m-0 text-black">
+          CMP – 3ª BDA INF MTZ
+        </p>
+        <p className="font-bold uppercase tracking-wider text-[11px] m-0 text-black">
+          22º BATALHÃO DE INFANTARIA
+        </p>
+        <p className="font-bold uppercase tracking-wider text-[11px] m-0 text-black">
+          BATALHÃO TOCANTINS
+        </p>
+        <div className="pt-2">
+          <h3 className="font-bold uppercase text-[13px] tracking-normal inline-block border-t border-black pt-1 m-0 text-black">
+            TERMO DE COMPROMISSO PARA ENTREGA DA GUIA DE ENCAMINHAMENTO
+          </h3>
         </div>
-        <p className="font-bold uppercase tracking-wider text-[11px] m-0">Ministério da Defesa</p>
-        <p className="font-bold uppercase tracking-wider text-[11px] m-0">Exército Brasileiro</p>
-        <p className="font-bold uppercase tracking-wider text-[10px] m-0">CMP – 3ª BDA INF MTZ</p>
-        <p className="font-bold uppercase tracking-wider text-[10px] m-0">22º Batalhão de Infantaria</p>
-        <p className="font-bold uppercase tracking-wider text-[10px] m-0">Batalhão Tocantins</p>
-        <h3 className="font-black uppercase tracking-normal text-xs sm:text-sm mt-3 pt-1 border-t border-black inline-block">
-          TERMO DE COMPROMISSO PARA ENTREGA DA GUIA DE ENCAMINHAMENTO
-        </h3>
       </div>
 
-      {/* Grid de Campos Identificação */}
-      <div className="border-2 border-black divide-y-2 divide-black text-[11px] mb-4">
+      {/* Grid de Campos de Identificação ABNT */}
+      <div className="border border-black divide-y divide-black text-[11px] mb-4">
         {/* Nome do Titular */}
-        <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x-2 divide-black">
-          <div className="w-full sm:w-48 p-1.5 font-bold bg-slate-50 flex items-center">
+        <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-black">
+          <div className="w-full sm:w-56 p-1.5 font-bold bg-slate-50 flex items-center text-black">
             Nome do titular do FUSEx:
           </div>
-          <div className="flex-1 p-1.5 min-h-[28px]">
+          <div className="flex-1 p-1.5 min-h-[26px] flex items-center">
             {isEditable ? (
               <input
                 type="text"
                 value={data.nomeTitular}
                 onChange={e => onChange?.('nomeTitular', e.target.value)}
                 placeholder="Nome do militar / titular"
-                className="w-full font-sans text-xs outline-none bg-amber-50/50 print:bg-transparent"
+                className="w-full text-[11px] outline-none bg-amber-50/50 print:bg-transparent"
+                style={{ fontFamily: 'Arial, sans-serif' }}
               />
             ) : (
-              <span>{data.nomeTitular}</span>
+              <span className="font-medium">{data.nomeTitular}</span>
             )}
           </div>
         </div>
 
         {/* Nome do dependente */}
-        <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x-2 divide-black">
-          <div className="w-full sm:w-48 p-1.5 font-bold bg-slate-50 flex items-center">
-            Nome do dependente<br />(paciente):
+        <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-black">
+          <div className="w-full sm:w-56 p-1.5 font-bold bg-slate-50 flex items-center text-black">
+            Nome do dependente (paciente):
           </div>
-          <div className="flex-1 p-1.5 min-h-[28px] flex items-center">
+          <div className="flex-1 p-1.5 min-h-[26px] flex items-center">
             {isEditable ? (
               <input
                 type="text"
                 value={data.nomeDependente}
                 onChange={e => onChange?.('nomeDependente', e.target.value)}
                 placeholder="Nome completo do paciente atendido"
-                className="w-full font-sans text-xs outline-none bg-amber-50/50 print:bg-transparent"
+                className="w-full text-[11px] outline-none bg-amber-50/50 print:bg-transparent"
+                style={{ fontFamily: 'Arial, sans-serif' }}
               />
             ) : (
-              <span>{data.nomeDependente}</span>
+              <span className="font-medium">{data.nomeDependente}</span>
             )}
           </div>
         </div>
 
         {/* Prec Cp */}
-        <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x-2 divide-black">
-          <div className="w-full sm:w-48 p-1.5 font-bold bg-slate-50 flex items-center">
+        <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-black">
+          <div className="w-full sm:w-56 p-1.5 font-bold bg-slate-50 flex items-center text-black">
             Prec Cp:
           </div>
-          <div className="flex-1 p-1.5 min-h-[26px]">
+          <div className="flex-1 p-1.5 min-h-[26px] flex items-center">
             {isEditable ? (
               <input
                 type="text"
                 value={data.precCp}
                 onChange={e => onChange?.('precCp', e.target.value)}
                 placeholder="Número Prec Cp"
-                className="w-full font-sans text-xs outline-none bg-amber-50/50 print:bg-transparent"
+                className="w-full text-[11px] outline-none bg-amber-50/50 print:bg-transparent"
+                style={{ fontFamily: 'Arial, sans-serif' }}
               />
             ) : (
-              <span>{data.precCp}</span>
+              <span className="font-medium">{data.precCp}</span>
             )}
           </div>
         </div>
 
         {/* Especialidade atendida */}
-        <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x-2 divide-black">
-          <div className="w-full sm:w-48 p-1.5 font-bold bg-slate-50 flex items-center">
+        <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-black">
+          <div className="w-full sm:w-56 p-1.5 font-bold bg-slate-50 flex items-center text-black">
             Especialidade atendida:
           </div>
-          <div className="flex-1 p-1.5 min-h-[26px]">
+          <div className="flex-1 p-1.5 min-h-[26px] flex items-center">
             {isEditable ? (
               <input
                 type="text"
                 value={data.especialidade}
                 onChange={e => onChange?.('especialidade', e.target.value)}
-                placeholder="Ex.: Pronto-Socorro / Clínica Médica / Ortopedia"
-                className="w-full font-sans text-xs outline-none bg-amber-50/50 print:bg-transparent"
+                placeholder="Ex.: Pronto-Socorro / Urgência Adulto"
+                className="w-full text-[11px] outline-none bg-amber-50/50 print:bg-transparent"
+                style={{ fontFamily: 'Arial, sans-serif' }}
               />
             ) : (
-              <span>{data.especialidade}</span>
+              <span className="font-medium">{data.especialidade}</span>
             )}
           </div>
         </div>
 
         {/* Data de atendimento & Hora */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x-2 divide-black">
-          <div className="flex divide-x-2 divide-black">
-            <div className="w-40 sm:w-48 p-1.5 font-bold bg-slate-50 flex items-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-black">
+          <div className="flex divide-x divide-black">
+            <div className="w-44 sm:w-56 p-1.5 font-bold bg-slate-50 flex items-center text-black">
               Data de atendimento:
             </div>
-            <div className="flex-1 p-1.5 text-center flex items-center justify-center font-mono">
+            <div className="flex-1 p-1.5 text-center flex items-center justify-center">
               {isEditable ? (
                 <input
                   type="text"
                   value={data.dataAtendimento}
                   onChange={e => onChange?.('dataAtendimento', e.target.value)}
                   placeholder="DD / MM / AAAA"
-                  className="w-full text-center font-sans text-xs outline-none bg-amber-50/50 print:bg-transparent"
+                  className="w-full text-center text-[11px] outline-none bg-amber-50/50 print:bg-transparent"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
                 <span>{data.dataAtendimento || '____ / ____ / ________'}</span>
               )}
             </div>
           </div>
-          <div className="flex divide-x-2 divide-black">
-            <div className="w-36 p-1.5 font-bold bg-slate-50 flex items-center">
+          <div className="flex divide-x divide-black">
+            <div className="w-36 p-1.5 font-bold bg-slate-50 flex items-center text-black">
               Hora da emissão:
             </div>
-            <div className="flex-1 p-1.5 text-center flex items-center justify-center font-mono">
+            <div className="flex-1 p-1.5 text-center flex items-center justify-center">
               {isEditable ? (
                 <input
                   type="text"
                   value={data.horaEmissao}
                   onChange={e => onChange?.('horaEmissao', e.target.value)}
                   placeholder="HH : MM"
-                  className="w-full text-center font-sans text-xs outline-none bg-amber-50/50 print:bg-transparent"
+                  className="w-full text-center text-[11px] outline-none bg-amber-50/50 print:bg-transparent"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
                 <span>{data.horaEmissao || '____ : ____'}</span>
@@ -174,51 +186,56 @@ export const TermoFusexPrint: React.FC<TermoFusexPrintProps> = ({
         </div>
 
         {/* Telefone de contato do responsável */}
-        <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x-2 divide-black">
-          <div className="w-full sm:w-48 p-1.5 font-bold bg-slate-50 flex items-center">
+        <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-black">
+          <div className="w-full sm:w-56 p-1.5 font-bold bg-slate-50 flex items-center text-black">
             Telefone de contato do responsável:
           </div>
-          <div className="flex-1 p-1.5 grid grid-cols-2 divide-x divide-slate-300">
-            <div className="pr-2">
+          <div className="flex-1 p-1.5 grid grid-cols-2 divide-x divide-black">
+            <div className="pr-2 flex items-center">
+              <span className="font-bold mr-1">(</span>
               {isEditable ? (
                 <input
                   type="text"
                   value={data.telefone1}
                   onChange={e => onChange?.('telefone1', e.target.value)}
-                  placeholder="(   ) ____________"
-                  className="w-full font-sans text-xs outline-none bg-amber-50/50 print:bg-transparent"
+                  placeholder="63) 99999-9999"
+                  className="w-full text-[11px] outline-none bg-amber-50/50 print:bg-transparent"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
-                <span>{data.telefone1 ? `( ) ${data.telefone1}` : '(   ) ________________'}</span>
+                <span>{data.telefone1 ? `${data.telefone1}` : '   ) ________________'}</span>
               )}
             </div>
-            <div className="pl-2">
+            <div className="pl-2 flex items-center">
+              <span className="font-bold mr-1">(</span>
               {isEditable ? (
                 <input
                   type="text"
                   value={data.telefone2}
                   onChange={e => onChange?.('telefone2', e.target.value)}
-                  placeholder="(   ) ____________"
-                  className="w-full font-sans text-xs outline-none bg-amber-50/50 print:bg-transparent"
+                  placeholder="63) 3215-0000"
+                  className="w-full text-[11px] outline-none bg-amber-50/50 print:bg-transparent"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
-                <span>{data.telefone2 ? `( ) ${data.telefone2}` : '(   ) ________________'}</span>
+                <span>{data.telefone2 ? `${data.telefone2}` : '   ) ________________'}</span>
               )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Texto de Declaração Oficial */}
-      <div className="text-[11px] text-justify space-y-2 mb-4 leading-relaxed">
+      {/* Texto de Declaração Oficial ABNT (Justificado, Entrelinhas 1.5) */}
+      <div className="text-[11.5px] text-justify space-y-3 mb-5 leading-relaxed text-black">
         <p>
-          <strong>DECLARO</strong> que fui atendido(a), em caráter de URGÊNCIA e ou EMERGÊNCIA pelo Hospital{' '}
+          <strong>DECLARO</strong> que fui atendido(a), em caráter de <strong>URGÊNCIA e ou EMERGÊNCIA</strong> pelo Hospital{' '}
           {isEditable ? (
             <input
               type="text"
               value={data.hospitalNome}
               onChange={e => onChange?.('hospitalNome', e.target.value)}
               className="border-b border-black font-bold outline-none px-1 w-64 bg-amber-50/50 print:bg-transparent inline-block"
+              style={{ fontFamily: 'Arial, sans-serif' }}
             />
           ) : (
             <span className="font-bold underline">{data.hospitalNome || 'Hospital Palmas Medical'}</span>
@@ -230,23 +247,24 @@ export const TermoFusexPrint: React.FC<TermoFusexPrintProps> = ({
           Estou ciente que o não cumprimento deste termo acarretará o pagamento integral das despesas realizadas, conforme Capítulo III da Urgência e Emergência, previstas nas Instruções Reguladoras para Assistência Médico Hospitalar aos Beneficiários do Fundo de Saúde do Exército (IR 30-38).
         </p>
 
-        <p className="italic font-serif pl-2 border-l-2 border-slate-400">
+        <div className="pl-4 border-l-2 border-slate-700 italic text-[10.5px] text-slate-900 leading-normal">
           “Art. 20. O FUSEx não se responsabilizará ou ressarcirá as despesas, caso não comprovada a urgência e/ou a emergência ou não tenham sido cumpridas as providências previstas nos arts. 18 e 19 das IR 30-38.”
-        </p>
+        </div>
       </div>
 
-      {/* Local, Data e Assinaturas */}
-      <div className="text-right text-[11px] mb-6">
+      {/* Local e Data ABNT */}
+      <div className="text-right text-[11.5px] mb-6 text-black">
         Palmas, TO, {data.diaData || '_______'} de {data.mesData || '_________________'} de 20{data.anoData || '____'}.
       </div>
 
-      <div className="space-y-4 mb-5">
+      {/* Assinatura do Beneficiário */}
+      <div className="space-y-4 mb-6">
         <div className="text-center pt-6 max-w-md mx-auto">
-          <div className="border-t border-black mb-1"></div>
-          <p className="font-bold text-[11px] m-0">Assinatura do beneficiário ou responsável</p>
-          <div className="mt-2 text-left flex items-center gap-2 text-[11px]">
-            <span className="font-semibold">Anotar a identidade:</span>
-            <span className="border-b border-black flex-1 min-h-[16px]">
+          <div className="border-t border-black mb-1.5"></div>
+          <p className="font-bold text-[11px] m-0 text-black">Assinatura do beneficiário ou responsável</p>
+          <div className="mt-3 text-left flex items-center gap-2 text-[11px]">
+            <span className="font-bold text-black">Anotar a identidade:</span>
+            <span className="border-b border-black flex-1 min-h-[18px]">
               {data.identidadeResponsavel}
             </span>
           </div>
@@ -254,29 +272,29 @@ export const TermoFusexPrint: React.FC<TermoFusexPrintProps> = ({
       </div>
 
       {/* Box OCS / Hospital */}
-      <div className="border-2 border-black p-3 text-[10.5px] space-y-2 bg-slate-50/40">
-        <div className="text-center font-black uppercase tracking-wider text-xs border-b border-black pb-1">
+      <div className="border border-black p-3.5 text-[11px] space-y-2 bg-slate-50/50">
+        <div className="text-center font-bold uppercase tracking-wider text-[11.5px] border-b border-black pb-1.5 text-black">
           A ser preenchido pela Organização Civil de Saúde/OCS
         </div>
 
-        <p className="font-bold text-center m-0">
+        <p className="font-bold text-center m-0 text-[11px] text-black">
           Horário limite para a troca da guia autorizada do FUSEx: até 48 (quarenta e oito) horas ou 2 (dois) dias úteis, a contar da data do atendimento.
         </p>
 
-        <p className="text-center m-0 text-[10px]">
+        <p className="text-center m-0 text-[10.5px] text-slate-800">
           Srs. Beneficiários, a troca somente será realizada dentro do prazo e horários estabelecidos acima.
         </p>
 
-        <div className="pt-6 max-w-sm mx-auto text-center">
-          <div className="border-t border-black mb-1"></div>
-          <p className="font-bold text-[10.5px] m-0">Assinatura da recepcionista</p>
-          <p className="text-[10px] m-0 text-slate-600">Responsável pelo atendimento (legível)</p>
+        <div className="pt-8 max-w-sm mx-auto text-center">
+          <div className="border-t border-black mb-1.5"></div>
+          <p className="font-bold text-[11px] m-0 text-black">Assinatura da recepcionista</p>
+          <p className="text-[10px] m-0 text-slate-700">Responsável pelo atendimento (legível)</p>
           {data.recepcionista && (
-            <p className="text-[10px] font-mono mt-0.5 text-slate-800">{data.recepcionista}</p>
+            <p className="text-[10px] font-bold mt-1 text-black">{data.recepcionista}</p>
           )}
         </div>
 
-        <p className="font-bold text-[10px] pt-1 border-t border-slate-300 m-0">
+        <p className="font-bold text-[10px] pt-1.5 border-t border-slate-400 m-0 text-black">
           OBS: O hospital ficará com o termo original, e o responsável pelo paciente ficará com a cópia a ser trocada.
         </p>
       </div>

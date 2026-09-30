@@ -60,25 +60,28 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
   isEditable = false
 }) => {
   return (
-    <div className="font-sans text-black bg-white p-5 sm:p-8 max-w-[850px] mx-auto text-[11px] leading-tight border border-slate-300 print:border-none print:p-0">
-      {/* Tabela de Cabeçalho Oficial */}
-      <table className="w-full border-collapse border-2 border-black mb-1.5">
+    <div 
+      className="text-black bg-white p-5 sm:p-8 max-w-[850px] mx-auto text-[11px] leading-tight border border-slate-300 print:border-none print:p-0"
+      style={{ fontFamily: "Arial, 'Helvetica Neue', Helvetica, sans-serif" }}
+    >
+      {/* Tabela de Cabeçalho Oficial ABNT */}
+      <table className="w-full border-collapse border border-black mb-1.5 text-black">
         <tbody>
           <tr>
             {/* Logo Medical Kora */}
-            <td className="w-48 p-2 border-r-2 border-black align-middle text-center">
-              <div className="flex items-center justify-center gap-1.5 font-sans">
+            <td className="w-48 p-2 border-r border-black align-middle text-center">
+              <div className="flex items-center justify-center gap-2">
                 <div className="text-[#0E7B86] font-bold text-2xl leading-none">✚</div>
                 <div className="text-left">
-                  <div className="text-lg font-black tracking-tight text-slate-800 leading-none">Medical</div>
-                  <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Kora</div>
+                  <div className="text-lg font-bold tracking-tight text-black leading-none">Medical</div>
+                  <div className="text-[10px] text-slate-700 font-bold uppercase tracking-wider">Kora</div>
                 </div>
               </div>
             </td>
 
             {/* FORMULÁRIO */}
-            <td className="p-3 border-r-2 border-black text-center align-middle">
-              <span className="text-base sm:text-lg font-black uppercase tracking-wider text-slate-900">
+            <td className="p-3 border-r border-black text-center align-middle">
+              <span className="text-base sm:text-lg font-bold uppercase tracking-wider text-black">
                 FORMULÁRIO
               </span>
             </td>
@@ -108,8 +111,8 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
             </td>
           </tr>
           {/* Linha do Título */}
-          <tr className="border-t-2 border-black bg-slate-50">
-            <td colSpan={3} className="p-1.5 font-black uppercase text-center text-xs tracking-wide">
+          <tr className="border-t border-black bg-slate-50">
+            <td colSpan={3} className="p-1.5 font-bold uppercase text-center text-xs tracking-wide text-black">
               Título: TERMO DE RETIRADA DE CORPO
             </td>
           </tr>
@@ -117,10 +120,10 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
       </table>
 
       {/* SEÇÃO 1: IDENTIFICAÇÃO DO PACIENTE */}
-      <table className="w-full border-collapse border-2 border-black mb-1.5">
+      <table className="w-full border-collapse border border-black mb-1.5 text-black">
         <thead>
-          <tr className="bg-slate-200 border-b-2 border-black">
-            <th colSpan={4} className="py-1 px-2 text-left font-black uppercase tracking-wider text-[11px]">
+          <tr className="bg-slate-200 border-b border-black">
+            <th colSpan={4} className="py-1 px-2 text-left font-bold uppercase tracking-wider text-[11px] text-black">
               IDENTIFICAÇÃO DO PACIENTE
             </th>
           </tr>
@@ -135,10 +138,11 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.nomePaciente}
                   onChange={e => onChange?.('nomePaciente', e.target.value)}
                   placeholder="Nome completo do paciente"
-                  className="font-medium outline-none w-3/4 bg-amber-50/50 print:bg-transparent"
+                  className="font-medium outline-none w-3/4 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
-                <span className="font-semibold">{data.nomePaciente}</span>
+                <span className="font-bold">{data.nomePaciente}</span>
               )}
             </td>
           </tr>
@@ -151,7 +155,8 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.nomeMae}
                   onChange={e => onChange?.('nomeMae', e.target.value)}
                   placeholder="Filiação materna completa"
-                  className="font-medium outline-none w-3/4 bg-amber-50/50 print:bg-transparent"
+                  className="font-medium outline-none w-3/4 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
                 <span>{data.nomeMae}</span>
@@ -167,7 +172,8 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.dataNascimento}
                   onChange={e => onChange?.('dataNascimento', e.target.value)}
                   placeholder="DD/MM/AAAA"
-                  className="outline-none w-28 font-mono bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-28 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
                 <span>{data.dataNascimento || '_____ / _____ / _________'}</span>
@@ -181,7 +187,8 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.naturalidadeEstado}
                   onChange={e => onChange?.('naturalidadeEstado', e.target.value)}
                   placeholder="Cidade / UF"
-                  className="outline-none w-48 bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-48 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
                 <span>{data.naturalidadeEstado}</span>
@@ -197,10 +204,11 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.cpfPaciente}
                   onChange={e => onChange?.('cpfPaciente', e.target.value)}
                   placeholder="000.000.000-00"
-                  className="outline-none w-40 font-mono bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-40 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
-                <span className="font-mono">{data.cpfPaciente}</span>
+                <span>{data.cpfPaciente}</span>
               )}
             </td>
             <td colSpan={2} className="p-1.5 w-1/2">
@@ -231,7 +239,8 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.convenio}
                   onChange={e => onChange?.('convenio', e.target.value)}
                   placeholder="Nome do convênio ou Particular"
-                  className="outline-none w-48 bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-48 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
                 <span>{data.convenio}</span>
@@ -245,10 +254,11 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.numeroCarteira}
                   onChange={e => onChange?.('numeroCarteira', e.target.value)}
                   placeholder="Número da carteirinha"
-                  className="outline-none w-44 font-mono bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-44 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
-                <span className="font-mono">{data.numeroCarteira}</span>
+                <span>{data.numeroCarteira}</span>
               )}
             </td>
           </tr>
@@ -261,10 +271,11 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.numeroAtendimento}
                   onChange={e => onChange?.('numeroAtendimento', e.target.value)}
                   placeholder="Número TASY / ficha"
-                  className="outline-none w-36 font-mono bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-36 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
-                <span className="font-mono">{data.numeroAtendimento}</span>
+                <span>{data.numeroAtendimento}</span>
               )}
             </td>
             <td colSpan={2} className="p-1.5 w-1/2">
@@ -275,7 +286,8 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.dataInternacao}
                   onChange={e => onChange?.('dataInternacao', e.target.value)}
                   placeholder="DD/MM/AAAA"
-                  className="outline-none w-28 font-mono bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-28 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
                 <span>{data.dataInternacao || '_____ / _____ / _________'}</span>
@@ -291,7 +303,8 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.endereco}
                   onChange={e => onChange?.('endereco', e.target.value)}
                   placeholder="Rua, número, setor"
-                  className="outline-none w-4/5 bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-4/5 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
                 <span>{data.endereco}</span>
@@ -307,7 +320,8 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.cidade}
                   onChange={e => onChange?.('cidade', e.target.value)}
                   placeholder="Cidade"
-                  className="outline-none w-44 bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-44 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
                 <span>{data.cidade}</span>
@@ -321,7 +335,8 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.estado}
                   onChange={e => onChange?.('estado', e.target.value)}
                   placeholder="UF"
-                  className="outline-none w-20 bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-20 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
                 <span>{data.estado}</span>
@@ -332,10 +347,10 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
       </table>
 
       {/* SEÇÃO 2: IDENTIFICAÇÃO DA LIBERAÇÃO */}
-      <table className="w-full border-collapse border-2 border-black mb-1.5">
+      <table className="w-full border-collapse border border-black mb-1.5 text-black">
         <thead>
-          <tr className="bg-slate-200 border-b-2 border-black">
-            <th colSpan={4} className="py-1 px-2 text-left font-black uppercase tracking-wider text-[11px]">
+          <tr className="bg-slate-200 border-b border-black">
+            <th colSpan={4} className="py-1 px-2 text-left font-bold uppercase tracking-wider text-[11px] text-black">
               IDENTIFICAÇÃO DA LIBERAÇÃO
             </th>
           </tr>
@@ -350,10 +365,11 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.numeroDO}
                   onChange={e => onChange?.('numeroDO', e.target.value)}
                   placeholder="Declaração de Óbito Nº"
-                  className="outline-none w-40 font-mono bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-40 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
-                <span className="font-mono">{data.numeroDO}</span>
+                <span>{data.numeroDO}</span>
               )}
             </td>
             <td colSpan={2} className="p-1.5 w-1/3 text-center">
@@ -372,7 +388,8 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.causaMorte}
                   onChange={e => onChange?.('causaMorte', e.target.value)}
                   placeholder="Causa mortis conforme atestado"
-                  className="outline-none w-4/5 bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-4/5 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
                 <span>{data.causaMorte}</span>
@@ -388,7 +405,8 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.dataObito}
                   onChange={e => onChange?.('dataObito', e.target.value)}
                   placeholder="DD/MM/AAAA"
-                  className="outline-none w-28 font-mono bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-28 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
                 <span>{data.dataObito || '_____ / _____ / _________'}</span>
@@ -402,7 +420,8 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.horaObito}
                   onChange={e => onChange?.('horaObito', e.target.value)}
                   placeholder="HH:MM"
-                  className="outline-none w-24 font-mono bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-24 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
                 <span>{data.horaObito || '____ : ____'}</span>
@@ -418,7 +437,8 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.medicoResp}
                   onChange={e => onChange?.('medicoResp', e.target.value)}
                   placeholder="Nome do médico e CRM"
-                  className="outline-none w-3/4 bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-3/4 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
                 <span>{data.medicoResp}</span>
@@ -429,10 +449,10 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
       </table>
 
       {/* SEÇÃO 3: IDENTIFICAÇÃO DO FAMILIAR/RESPONSÁVEL PELA RETIRADA */}
-      <table className="w-full border-collapse border-2 border-black mb-1.5">
+      <table className="w-full border-collapse border border-black mb-1.5 text-black">
         <thead>
-          <tr className="bg-slate-200 border-b-2 border-black">
-            <th colSpan={4} className="py-1 px-2 text-left font-black uppercase tracking-wider text-[11px]">
+          <tr className="bg-slate-200 border-b border-black">
+            <th colSpan={4} className="py-1 px-2 text-left font-bold uppercase tracking-wider text-[11px] text-black">
               IDENTIFICAÇÃO DO FAMILIAR/RESPONSÁVEL PELA RETIRADA
             </th>
           </tr>
@@ -447,7 +467,8 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.nomeFamiliar}
                   onChange={e => onChange?.('nomeFamiliar', e.target.value)}
                   placeholder="Nome do familiar ou responsável legal"
-                  className="outline-none w-3/4 bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-3/4 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
                 <span>{data.nomeFamiliar}</span>
@@ -463,10 +484,11 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.cpfFamiliar}
                   onChange={e => onChange?.('cpfFamiliar', e.target.value)}
                   placeholder="000.000.000-00"
-                  className="outline-none w-40 font-mono bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-40 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
-                <span className="font-mono">{data.cpfFamiliar}</span>
+                <span>{data.cpfFamiliar}</span>
               )}
             </td>
             <td colSpan={2} className="p-1.5 w-1/2">
@@ -477,10 +499,11 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.telefoneFamiliar}
                   onChange={e => onChange?.('telefoneFamiliar', e.target.value)}
                   placeholder="(63) 99999-9999"
-                  className="outline-none w-40 font-mono bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-40 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
-                <span className="font-mono">{data.telefoneFamiliar}</span>
+                <span>{data.telefoneFamiliar}</span>
               )}
             </td>
           </tr>
@@ -488,10 +511,10 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
       </table>
 
       {/* SEÇÃO 4: IDENTIFICAÇÃO DA FUNERÁRIA */}
-      <table className="w-full border-collapse border-2 border-black mb-3">
+      <table className="w-full border-collapse border border-black mb-3 text-black">
         <thead>
-          <tr className="bg-slate-200 border-b-2 border-black">
-            <th colSpan={4} className="py-1 px-2 text-left font-black uppercase tracking-wider text-[11px]">
+          <tr className="bg-slate-200 border-b border-black">
+            <th colSpan={4} className="py-1 px-2 text-left font-bold uppercase tracking-wider text-[11px] text-black">
               IDENTIFICAÇÃO DA FUNERÁRIA
             </th>
           </tr>
@@ -506,7 +529,8 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.nomeFuneraria}
                   onChange={e => onChange?.('nomeFuneraria', e.target.value)}
                   placeholder="Nome da empresa funerária"
-                  className="outline-none w-3/4 bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-3/4 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
                 <span>{data.nomeFuneraria}</span>
@@ -522,10 +546,11 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.placaVeiculo}
                   onChange={e => onChange?.('placaVeiculo', e.target.value)}
                   placeholder="ABC-1234"
-                  className="outline-none w-32 font-mono uppercase bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-32 uppercase bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
-                <span className="font-mono">{data.placaVeiculo}</span>
+                <span>{data.placaVeiculo}</span>
               )}
             </td>
             <td colSpan={2} className="p-1.5 w-1/2">
@@ -536,7 +561,8 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.nomeMotorista}
                   onChange={e => onChange?.('nomeMotorista', e.target.value)}
                   placeholder="Nome do motorista / agente funerário"
-                  className="outline-none w-48 bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-48 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
                 <span>{data.nomeMotorista}</span>
@@ -552,10 +578,11 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.telefone1Funeraria}
                   onChange={e => onChange?.('telefone1Funeraria', e.target.value)}
                   placeholder="(  ) __________"
-                  className="outline-none w-36 font-mono bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-36 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
-                <span className="font-mono">{data.telefone1Funeraria}</span>
+                <span>{data.telefone1Funeraria}</span>
               )}
             </td>
             <td colSpan={2} className="p-1.5 w-1/2">
@@ -566,10 +593,11 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
                   value={data.telefone2Funeraria}
                   onChange={e => onChange?.('telefone2Funeraria', e.target.value)}
                   placeholder="(  ) __________"
-                  className="outline-none w-36 font-mono bg-amber-50/50 print:bg-transparent"
+                  className="outline-none w-36 bg-amber-50/50 print:bg-transparent text-[10.5px]"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 />
               ) : (
-                <span className="font-mono">{data.telefone2Funeraria}</span>
+                <span>{data.telefone2Funeraria}</span>
               )}
             </td>
           </tr>
@@ -579,47 +607,47 @@ export const TermoRetiradaCorpoPrint: React.FC<TermoRetiradaCorpoPrintProps> = (
       {/* Assinaturas */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 my-6 pt-4 text-center text-[10.5px]">
         <div>
-          <div className="border-t border-black max-w-[280px] mx-auto mb-1"></div>
-          <p className="font-bold m-0">Assinatura do familiar/responsável</p>
+          <div className="border-t border-black max-w-[280px] mx-auto mb-1.5"></div>
+          <p className="font-bold m-0 text-black">Assinatura do familiar/responsável</p>
         </div>
         <div>
-          <div className="border-t border-black max-w-[280px] mx-auto mb-1"></div>
-          <p className="font-bold m-0">Nome recepcionista responsável pela liberação</p>
+          <div className="border-t border-black max-w-[280px] mx-auto mb-1.5"></div>
+          <p className="font-bold m-0 text-black">Nome recepcionista responsável pela liberação</p>
           {data.recepcionista && (
-            <p className="font-mono text-[10px] text-slate-700 m-0 mt-0.5">{data.recepcionista}</p>
+            <p className="text-[10px] font-bold text-black m-0 mt-1">{data.recepcionista}</p>
           )}
         </div>
       </div>
 
       {/* Tabela de Aprovação da Qualidade / Rodapé Oficial */}
-      <table className="w-full border-collapse border-2 border-black text-[9.5px] mt-4">
+      <table className="w-full border-collapse border border-black text-[9.5px] mt-4 text-black">
         <tbody>
-          <tr className="divide-x-2 divide-black text-center align-top">
+          <tr className="divide-x divide-black text-center align-top">
             <td className="w-1/4 p-1.5">
-              <div className="font-bold text-slate-800">Paula Fernanda N. Santos</div>
-              <div className="text-slate-600">Coordenadora de Atendimento</div>
-              <div className="font-bold text-slate-700 mt-1">Elaboração</div>
+              <div className="font-bold text-black">Paula Fernanda N. Santos</div>
+              <div className="text-slate-700">Coordenadora de Atendimento</div>
+              <div className="font-bold text-black mt-1">Elaboração</div>
             </td>
             <td className="w-1/4 p-1.5">
-              <div className="font-bold text-slate-800">Paula Fernanda N. Santos</div>
-              <div className="text-slate-600">Coordenadora de Atendimento</div>
-              <div className="font-bold text-slate-700 mt-1">Gestor do Documento</div>
+              <div className="font-bold text-black">Paula Fernanda N. Santos</div>
+              <div className="text-slate-700">Coordenadora de Atendimento</div>
+              <div className="font-bold text-black mt-1">Gestor do Documento</div>
             </td>
             <td className="w-1/4 p-1.5">
-              <div className="font-bold text-slate-800">João Carlos D. Medeiros</div>
-              <div className="text-slate-600">Gerente Administrativo</div>
-              <div className="font-bold text-slate-700 mt-1">Revisor</div>
+              <div className="font-bold text-black">João Carlos D. Medeiros</div>
+              <div className="text-slate-700">Gerente Administrativo</div>
+              <div className="font-bold text-black mt-1">Revisor</div>
             </td>
             <td className="w-1/4 p-1.5">
-              <div className="font-bold text-slate-800">Qualidade</div>
-              <div className="font-bold text-slate-700 mt-1">Aprovador</div>
+              <div className="font-bold text-black">Qualidade</div>
+              <div className="font-bold text-black mt-1">Aprovador</div>
             </td>
           </tr>
-          <tr className="border-t-2 border-black text-[9px]">
-            <td colSpan={3} className="p-1 px-2 text-slate-700">
+          <tr className="border-t border-black text-[9px]">
+            <td colSpan={3} className="p-1 px-2 text-slate-800">
               É proibida a reprodução parcial ou total deste documento.
             </td>
-            <td className="p-1 px-2 text-right font-bold text-slate-700">
+            <td className="p-1 px-2 text-right font-bold text-black">
               Página 1 de 1
             </td>
           </tr>

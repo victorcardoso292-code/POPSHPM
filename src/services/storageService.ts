@@ -7,26 +7,23 @@ const MASTER_DEFAULT_PASSWORD = 'HPM@2026';
 
 export const SYSTEM_DEFAULT_USER = 'HPM';
 export const SYSTEM_DEFAULT_PASSWORD = 'HPM@2026';
-const SYSTEM_AUTH_KEY = 'hpmSystemAuthSession_v4';
 
+// Requer login novamente a cada atualização de página conforme solicitado
 export function isSystemAuthenticated(): boolean {
   try {
-    const sessionAuth = sessionStorage.getItem(SYSTEM_AUTH_KEY) === 'true';
-    const localAuth = localStorage.getItem(SYSTEM_AUTH_KEY) === 'true';
-    return sessionAuth || localAuth;
+    sessionStorage.removeItem('hpmSystemAuthSession_v4');
+    localStorage.removeItem('hpmSystemAuthSession_v4');
   } catch {
-    return false;
+    // Ignore storage errors
   }
+  return false;
 }
 
 export function setSystemAuth(authenticated: boolean): void {
   try {
-    if (authenticated) {
-      sessionStorage.setItem(SYSTEM_AUTH_KEY, 'true');
-      localStorage.setItem(SYSTEM_AUTH_KEY, 'true');
-    } else {
-      sessionStorage.removeItem(SYSTEM_AUTH_KEY);
-      localStorage.removeItem(SYSTEM_AUTH_KEY);
+    if (!authenticated) {
+      sessionStorage.removeItem('hpmSystemAuthSession_v4');
+      localStorage.removeItem('hpmSystemAuthSession_v4');
     }
   } catch {
     // Ignore storage issues

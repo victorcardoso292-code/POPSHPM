@@ -5,49 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script>
       (function() {
+        var isWsError = function(val) {
+          if (!val) return false;
+          var str = '';
+          try {
+            str = String(val.message || val.reason || val.stack || val.type || val);
+          } catch(e) {
+            str = '';
+          }
+          return (
+            str.indexOf('[vite]') !== -1 ||
+            str.indexOf('WebSocket') !== -1 ||
+            str.indexOf('websocket') !== -1 ||
+            str.indexOf('ws://') !== -1 ||
+            str.indexOf('wss://') !== -1 ||
+            str.indexOf('fechado') !== -1 ||
+            str.indexOf('closed without being opened') !== -1
+          );
+        };
+
         var methods = ['log', 'info', 'warn', 'error', 'debug'];
         methods.forEach(function(m) {
           var orig = console[m];
           if (!orig) return;
           console[m] = function() {
-            var str = '';
             for (var i = 0; i < arguments.length; i++) {
-              str += ' ' + String(arguments[i] && (arguments[i].message || arguments[i]));
-            }
-            if (
-              str.indexOf('[vite]') !== -1 ||
-              str.indexOf('WebSocket') !== -1 ||
-              str.indexOf('websocket') !== -1 ||
-              str.indexOf('ws://') !== -1 ||
-              str.indexOf('wss://') !== -1
-            ) {
-              return;
+              if (isWsError(arguments[i])) return;
             }
             return orig.apply(console, arguments);
           };
         });
 
         window.addEventListener('error', function(e) {
-          var msg = String((e && (e.message || (e.error && e.error.message))) || '');
-          if (
-            msg.indexOf('[vite]') !== -1 ||
-            msg.indexOf('WebSocket') !== -1 ||
-            msg.indexOf('websocket') !== -1
-          ) {
+          if (isWsError(e) || isWsError(e.error) || isWsError(e.message)) {
             e.preventDefault();
             e.stopImmediatePropagation();
+            return true;
           }
         }, true);
 
         window.addEventListener('unhandledrejection', function(e) {
-          var msg = String((e && e.reason && (e.reason.message || e.reason)) || '');
-          if (
-            msg.indexOf('WebSocket') !== -1 ||
-            msg.indexOf('websocket') !== -1 ||
-            msg.indexOf('[vite]') !== -1
-          ) {
+          if (isWsError(e) || isWsError(e.reason)) {
             e.preventDefault();
             e.stopImmediatePropagation();
+            return true;
           }
         }, true);
       })();

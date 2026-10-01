@@ -13,15 +13,18 @@ import {
   FileCheck,
   Clock,
   UserCheck,
-  AlertTriangle
+  AlertTriangle,
+  Utensils,
+  Eye
 } from 'lucide-react';
 import { TermoFusexPrint, TermoFusexData } from './documents/TermoFusexPrint';
 import { TermoRetiradaCorpoPrint, TermoRetiradaCorpoData } from './documents/TermoRetiradaCorpoPrint';
 import { SolicitacaoNotaFiscalPrint, SolicitacaoNotaFiscalData } from './documents/SolicitacaoNotaFiscalPrint';
 import { AutorizacaoHoraExtraPrint, AutorizacaoHoraExtraData, HoraExtraRow, computeRowExtraHours } from './documents/AutorizacaoHoraExtraPrint';
 import { DeclaracaoComparecimentoPrint, DeclaracaoComparecimentoData } from './documents/DeclaracaoComparecimentoPrint';
+import { CardapioRefeitorioPrint } from './documents/CardapioRefeitorioPrint';
 
-export type DocumentType = 'fusex' | 'retirada-corpo' | 'nota-fiscal' | 'hora-extra' | 'declaracao-comparecimento';
+export type DocumentType = 'fusex' | 'retirada-corpo' | 'nota-fiscal' | 'hora-extra' | 'declaracao-comparecimento' | 'cardapio-refeitorio';
 
 const INITIAL_FUSEX: TermoFusexData = {
   nomeTitular: '',
@@ -133,6 +136,7 @@ export const DocumentosViewer: React.FC = () => {
 
   const categories = [
     { id: 'todos', label: 'Todos os Documentos' },
+    { id: 'refeitorio', label: 'Cardápio & Refeitório' },
     { id: 'declaracoes', label: 'Declarações & Laudos' },
     { id: 'termos', label: 'Termos & Compromisso' },
     { id: 'rh', label: 'RH & Horas Extras' },
@@ -141,6 +145,18 @@ export const DocumentosViewer: React.FC = () => {
   ];
 
   const docList = [
+    {
+      id: 'cardapio-refeitorio' as DocumentType,
+      title: 'Cardápio Rotativo Refeitório – Outubro 2026 (Master Massas)',
+      shortTitle: 'Cardápio do Refeitório (Outubro 2026)',
+      category: 'refeitorio',
+      orgao: 'Refeitório Hospitalar • Master Massas',
+      description: 'Cardápio rotativo oficial de Outubro/2026 para colaboradores: prato principal, guarnições, acompanhamentos, saladas e sobremesas para todos os 31 dias do mês.',
+      icon: Utensils,
+      badge: 'Somente Visualização',
+      badgeColor: 'bg-amber-50 text-amber-900 border-amber-300',
+      prazo: 'Outubro / 2026'
+    },
     {
       id: 'declaracao-comparecimento' as DocumentType,
       title: 'Declaração de Comparecimento – Hospital Palmas Medical',
@@ -223,6 +239,14 @@ export const DocumentosViewer: React.FC = () => {
   };
 
   const handlePrintBlank = (docId: DocumentType) => {
+    if (docId === 'cardapio-refeitorio') {
+      setActiveDoc('cardapio-refeitorio');
+      setIsEditMode(false);
+      setTimeout(() => {
+        window.print();
+      }, 250);
+      return;
+    }
     if (docId === 'fusex') setFusexData(INITIAL_FUSEX);
     if (docId === 'retirada-corpo') setRetiradaData(INITIAL_RETIRADA_CORPO);
     if (docId === 'nota-fiscal') setNotaFiscalData(INITIAL_NOTA_FISCAL);
@@ -433,6 +457,9 @@ export const DocumentosViewer: React.FC = () => {
               isEditable={false} 
             />
           )}
+          {activeDoc === 'cardapio-refeitorio' && (
+            <CardapioRefeitorioPrint />
+          )}
         </div>
       )}
 
@@ -450,7 +477,7 @@ export const DocumentosViewer: React.FC = () => {
                   DOCUMENTOS & MODELOS HOSPITALARES
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]">
-                  5 Modelos Oficiais
+                  6 Modelos & Documentos Oficiais
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
@@ -544,24 +571,50 @@ export const DocumentosViewer: React.FC = () => {
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenDoc(doc.id, true)}
-                      className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl bg-[#0E7B86] hover:bg-[#095962] text-white text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                      <span>Preencher</span>
-                    </button>
+                    {doc.id === 'cardapio-refeitorio' ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDoc(doc.id, false)}
+                          className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl bg-[#0E7B86] hover:bg-[#095962] text-white text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
+                          title="Visualizar cardápio do mês completo"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Visualizar</span>
+                        </button>
 
-                    <button
-                      type="button"
-                      onClick={() => handlePrintBlank(doc.id)}
-                      className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all active:scale-95 cursor-pointer border border-slate-200"
-                      title="Imprimir modelo em branco para preenchimento manual"
-                    >
-                      <Printer className="w-3.5 h-3.5 text-slate-600" />
-                      <span>Imprimir</span>
-                    </button>
+                        <button
+                          type="button"
+                          onClick={() => handlePrintBlank(doc.id)}
+                          className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all active:scale-95 cursor-pointer border border-slate-200"
+                          title="Imprimir cardápio em folha A4"
+                        >
+                          <Printer className="w-3.5 h-3.5 text-slate-600" />
+                          <span>Imprimir</span>
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDoc(doc.id, true)}
+                          className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl bg-[#0E7B86] hover:bg-[#095962] text-white text-xs font-bold transition-all shadow-2xs active:scale-95 cursor-pointer"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span>Preencher</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handlePrintBlank(doc.id)}
+                          className="flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all active:scale-95 cursor-pointer border border-slate-200"
+                          title="Imprimir modelo em branco para preenchimento manual"
+                        >
+                          <Printer className="w-3.5 h-3.5 text-slate-600" />
+                          <span>Imprimir</span>
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -572,15 +625,20 @@ export const DocumentosViewer: React.FC = () => {
         {/* Interactive Document Editor / Preview Modal */}
         {activeDoc && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-5 overflow-y-auto">
-            <div className="bg-white rounded-3xl max-w-5xl w-full border border-slate-200 shadow-2xl overflow-hidden my-auto flex flex-col max-h-[95vh]">
+            <div className={`bg-white rounded-3xl w-full border border-slate-200 shadow-2xl overflow-hidden my-auto flex flex-col max-h-[95vh] ${activeDoc === 'cardapio-refeitorio' ? 'max-w-6xl' : 'max-w-5xl'}`}>
               {/* Modal Header */}
               <div className="p-4 sm:p-5 bg-gradient-to-r from-[#0E7B86] to-[#095962] text-white flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-white" />
+                    {activeDoc === 'cardapio-refeitorio' ? (
+                      <Utensils className="w-5 h-5 text-white" />
+                    ) : (
+                      <FileText className="w-5 h-5 text-white" />
+                    )}
                   </div>
                   <div>
                     <h3 className="text-sm sm:text-base font-black tracking-tight leading-tight">
+                      {activeDoc === 'cardapio-refeitorio' && 'Cardápio Rotativo Refeitório – Outubro 2026 (Master Massas)'}
                       {activeDoc === 'declaracao-comparecimento' && 'Declaração de Comparecimento – Hospital Palmas Medical'}
                       {activeDoc === 'fusex' && 'Termo de Compromisso FUSEx – Exército Brasileiro'}
                       {activeDoc === 'hora-extra' && 'Autorização Pagamento de Hora Extra – Rede Medical'}
@@ -588,7 +646,9 @@ export const DocumentosViewer: React.FC = () => {
                       {activeDoc === 'nota-fiscal' && 'Solicitação de Nota Fiscal – Rede Medical'}
                     </h3>
                     <p className="text-[11px] text-teal-100 font-medium mt-0.5">
-                      {isEditMode 
+                      {activeDoc === 'cardapio-refeitorio'
+                        ? 'Documento oficial de consulta e visualização dos colaboradores. Somente leitura.'
+                        : isEditMode 
                         ? 'Modo Preenchimento: digite os dados nos campos destacados para impressão personalizada.'
                         : 'Modo Documento em Branco: modelo limpo pronto para impressão e assinatura manual.'}
                     </p>
@@ -632,33 +692,40 @@ export const DocumentosViewer: React.FC = () => {
 
               {/* Mode Switcher & Actions Bar */}
               <div className="p-3 px-5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsEditMode(true)}
-                    className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
-                      isEditMode
-                        ? 'bg-[#0E7B86] text-white shadow-2xs'
-                        : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    Digitar Dados (Em Tela)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsEditMode(false)}
-                    className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
-                      !isEditMode
-                        ? 'bg-[#0E7B86] text-white shadow-2xs'
-                        : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    Modelo Limpo em Branco
-                  </button>
-                </div>
+                {activeDoc === 'cardapio-refeitorio' ? (
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 font-bold text-xs">
+                    <Eye className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Documento Somente Leitura • Visualização Direta</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditMode(true)}
+                      className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                        isEditMode
+                          ? 'bg-[#0E7B86] text-white shadow-2xs'
+                          : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      Digitar Dados (Em Tela)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditMode(false)}
+                      className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                        !isEditMode
+                          ? 'bg-[#0E7B86] text-white shadow-2xs'
+                          : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      Modelo Limpo em Branco
+                    </button>
+                  </div>
+                )}
 
                 <div className="flex items-center gap-2">
-                  {isEditMode && (
+                  {isEditMode && activeDoc !== 'cardapio-refeitorio' && (
                     <>
                       <button
                         type="button"
@@ -696,6 +763,9 @@ export const DocumentosViewer: React.FC = () => {
 
               {/* Document Preview Content */}
               <div className="p-4 sm:p-6 overflow-y-auto bg-slate-100/70 flex-1">
+                {activeDoc === 'cardapio-refeitorio' && (
+                  <CardapioRefeitorioPrint />
+                )}
                 {activeDoc === 'declaracao-comparecimento' && (
                   <DeclaracaoComparecimentoPrint
                     data={declaracaoData}

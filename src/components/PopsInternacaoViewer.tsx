@@ -123,7 +123,9 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
 
   const copyCodeToClipboard = async (code: string) => {
     try {
-      await navigator.clipboard.writeText(code);
+      const match = code.match(/\b\d{8}\b/);
+      const toCopy = match ? match[0] : code;
+      await navigator.clipboard.writeText(toCopy);
       setCopiedCode(code);
       setTimeout(() => setCopiedCode(null), 1300);
     } catch {

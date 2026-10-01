@@ -23,6 +23,7 @@ export interface ConvenioDiariasRules {
   category: 'Autogestão' | 'Seguradora' | 'Privado' | 'Militar' | 'Estadual';
   criticalRule?: string;
   urgenciaRegra?: string;
+  solicitarJunto?: string;
   parecer: string;
   matMed: string;
   exLab: string;
@@ -805,44 +806,15 @@ export const TABELA_DIARIAS_DATA: ConvenioDiariasRules[] = [
     outrasInformacoes: 'No Débito no Procedimento: CATETER VENOSO CENTRAL - 40813232',
     itens: [
       {
-        id: 'geap-1',
-        convenioId: 'GEAP',
-        convenioName: 'Geap Saúde',
-        badge: 'GE',
-        category: 'Autogestão',
-        code: '98910094',
-        acomodacao: 'PACOTE PRONTOSOCORRO/PRONTOATENDIMENTO',
-        tipo: 'Hospital Dia',
-        parecer: '10102019',
-        matMed: 'Ver regra de quimio e OPMEs',
-        exLab: 'Necessita',
-        exRad: 'Necessita. Sem anestesia',
-        fisioIntern: 'Não necessita. Incluso no pacote na Enfermaria e UTI.'
-      },
-      {
-        id: 'geap-2',
-        convenioId: 'GEAP',
-        convenioName: 'Geap Saúde',
-        badge: 'GE',
-        category: 'Autogestão',
-        code: '98910043',
-        acomodacao: 'PACOTE PRONTOSOCORRO/PRONTOATENDIMENTO- PEDIATRIA',
-        tipo: 'Hospital Dia',
-        parecer: '10102019',
-        matMed: 'Ver regra de quimio e OPMEs',
-        exLab: 'Necessita',
-        exRad: 'Necessita. Sem anestesia',
-        fisioIntern: 'Não necessita. Incluso no pacote na Enfermaria e UTI.'
-      },
-      {
         id: 'geap-3',
         convenioId: 'GEAP',
         convenioName: 'Geap Saúde',
         badge: 'GE',
         category: 'Autogestão',
         code: '98980181',
-        acomodacao: 'DIARIAGLOBAL DE ENFERMARIA',
+        acomodacao: 'DIÁRIA GLOBAL DE ENFERMARIA',
         tipo: 'Enfermaria',
+        solicitarJunto: '10102029 - VISITA MÉDICA HOSPITALAR',
         parecer: '10102019',
         matMed: 'Ver regra de quimio e OPMEs',
         exLab: 'Necessita',
@@ -856,8 +828,9 @@ export const TABELA_DIARIAS_DATA: ConvenioDiariasRules[] = [
         badge: 'GE',
         category: 'Autogestão',
         code: '98980173',
-        acomodacao: 'DIARIAGLOBAL DEAPARTAMENTO',
+        acomodacao: 'DIÁRIA GLOBAL DE APARTAMENTO',
         tipo: 'Apartamento',
+        solicitarJunto: '10102029 - VISITA MÉDICA HOSPITALAR',
         parecer: '10102019',
         matMed: 'Ver regra de quimio e OPMEs',
         exLab: 'Necessita',
@@ -871,7 +844,7 @@ export const TABELA_DIARIAS_DATA: ConvenioDiariasRules[] = [
         badge: 'GE',
         category: 'Autogestão',
         code: '98980025',
-        acomodacao: 'DIARIAGLOBAL PARAUNIDADE DE TERAPIAINTENSIVA',
+        acomodacao: 'DIÁRIA GLOBAL PARA UNIDADE DE TERAPIA INTENSIVA (UTI)',
         tipo: 'UTI',
         parecer: '10102019',
         matMed: 'Ver regra de quimio e OPMEs',
@@ -886,7 +859,7 @@ export const TABELA_DIARIAS_DATA: ConvenioDiariasRules[] = [
         badge: 'GE',
         category: 'Autogestão',
         code: '98980068',
-        acomodacao: 'UTI NEONIVEL I só até 30 dias de nascimento',
+        acomodacao: 'UTI NEONATAL NÍVEL I (só até 30 dias de nascimento)',
         tipo: 'UTI',
         observacoes: 'Só até 30 dias de nascimento',
         parecer: '10102019',

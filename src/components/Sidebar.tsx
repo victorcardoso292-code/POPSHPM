@@ -18,7 +18,8 @@ import {
   UserCheck,
   ClipboardList,
   ShieldCheck,
-  FolderOpen
+  FolderOpen,
+  UtensilsCrossed
 } from 'lucide-react';
 import { AppMode } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
@@ -128,11 +129,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
       badgeColor: 'bg-emerald-50 text-emerald-800 border border-emerald-200'
     },
     {
+      id: 'cardapio' as AppMode,
+      label: 'Cardápio do Refeitório',
+      subtitle: 'Nutrição dos colaboradores',
+      icon: UtensilsCrossed,
+      badge: 'Outubro 2026',
+      badgeColor: 'bg-amber-100 text-amber-900 border border-amber-300'
+    },
+    {
       id: 'documentos' as AppMode,
       label: 'Documentos',
-      subtitle: 'Declarações, termos e fichas',
+      subtitle: 'Declarações, termos e modelos',
       icon: FolderOpen,
-      badge: '5 Modelos',
+      badge: '6 Modelos',
       badgeColor: 'bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]'
     }
   ];

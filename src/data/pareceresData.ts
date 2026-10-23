@@ -450,3 +450,130 @@ export const ERROS_CRITICOS_GLOSA_PARECER: { title: string; desc: string; preven
     prevention: 'Exigir carimbo nítido com CRM, RQE e assinatura idêntica ao cadastro do prestador.'
   }
 ];
+
+export interface ParecerNeurologiaRule {
+  convenio: string;
+  ps: string;
+  uti: string;
+  ui: string;
+  observacoes?: string;
+  isSus?: boolean;
+  statusPs?: 'dentro-pacote' | 'particular' | 'fora-pacote-particular' | 'na';
+}
+
+export const PARECERES_NEUROLOGIA_DATA: ParecerNeurologiaRule[] = [
+  {
+    convenio: 'Amil',
+    ps: 'Cobrar particular',
+    uti: 'Cobrar particular',
+    ui: 'Cobrar particular',
+    observacoes: 'Conta aberta',
+    statusPs: 'particular'
+  },
+  {
+    convenio: 'Assefaz',
+    ps: 'Cobrar particular',
+    uti: 'Cobrar particular',
+    ui: 'Cobrar particular',
+    observacoes: 'Conta aberta',
+    statusPs: 'particular'
+  },
+  {
+    convenio: 'Best Saúde',
+    ps: 'Fora do pacote, cobrar particular',
+    uti: 'Fora do pacote, cobrar particular',
+    ui: 'Fora do pacote, cobrar particular',
+    observacoes: '',
+    statusPs: 'fora-pacote-particular'
+  },
+  {
+    convenio: 'Bradesco',
+    ps: 'Dentro do pacote. Não cobrar particular',
+    uti: 'Cobrar particular',
+    ui: 'Cobrar particular',
+    observacoes: '',
+    statusPs: 'dentro-pacote'
+  },
+  {
+    convenio: 'Cassi',
+    ps: 'Cobrar particular',
+    uti: 'Cobrar particular',
+    ui: 'Cobrar particular',
+    observacoes: 'Conta aberta',
+    statusPs: 'particular'
+  },
+  {
+    convenio: 'Fusex',
+    ps: 'Sob consulta / Ver regulação militar',
+    uti: 'Sob consulta',
+    ui: 'Sob consulta',
+    observacoes: 'Guia de Encaminhamento do 22º BI',
+    statusPs: 'particular'
+  },
+  {
+    convenio: 'Geap',
+    ps: 'Dentro do pacote. Não cobrar particular',
+    uti: 'Fora do pacote, cobrar particular',
+    ui: 'Fora do pacote, cobrar particular',
+    observacoes: '',
+    statusPs: 'dentro-pacote'
+  },
+  {
+    convenio: 'PlanAssiste',
+    ps: 'Cobrar particular',
+    uti: 'Cobrar particular',
+    ui: 'Cobrar particular',
+    observacoes: 'Conta aberta',
+    statusPs: 'particular'
+  },
+  {
+    convenio: 'Postal Saúde',
+    ps: 'Fora do pacote, cobrar particular',
+    uti: 'Fora do pacote, cobrar particular',
+    ui: 'Fora do pacote, cobrar particular',
+    observacoes: '',
+    statusPs: 'fora-pacote-particular'
+  },
+  {
+    convenio: 'Saúde Caixa',
+    ps: 'Fora do pacote, cobrar particular',
+    uti: 'Fora do pacote, cobrar particular',
+    ui: 'Fora do pacote, cobrar particular',
+    observacoes: '',
+    statusPs: 'fora-pacote-particular'
+  },
+  {
+    convenio: 'Servir',
+    ps: 'Fora do pacote, cobrar particular',
+    uti: 'Fora do pacote, cobrar particular',
+    ui: 'Cobrar particular',
+    observacoes: '',
+    statusPs: 'fora-pacote-particular'
+  },
+  {
+    convenio: 'Sul America',
+    ps: 'Dentro do pacote. Não cobrar particular',
+    uti: 'Fora do pacote, cobrar particular',
+    ui: 'Fora do pacote, cobrar particular',
+    observacoes: '',
+    statusPs: 'dentro-pacote'
+  },
+  {
+    convenio: 'SUS (nunca cobrar da família)',
+    ps: 'N.A.',
+    uti: 'N.A.',
+    ui: 'N.A.',
+    observacoes: '⚠️ NUNCA cobrar da família (Proibido por lei e regulação SUS)',
+    isSus: true,
+    statusPs: 'na'
+  },
+  {
+    convenio: 'Vale Pasa',
+    ps: 'Fora do pacote, cobrar particular',
+    uti: 'Fora do pacote, cobrar particular',
+    ui: 'Fora do pacote, cobrar particular',
+    observacoes: '',
+    statusPs: 'fora-pacote-particular'
+  }
+];
+

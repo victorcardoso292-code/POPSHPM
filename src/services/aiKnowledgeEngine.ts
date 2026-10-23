@@ -10,7 +10,7 @@ import { PORTAIS_CREDENCIAIS, PORTAIS_RULES, PortalCredential } from '../data/po
 import { PS_EXAM_DATA_ORIGINAL, LAB_EXAM_DATA_ORIGINAL, AMOR_EXAM_DATA_ORIGINAL, isImagingExamWithContrast } from '../data/examData';
 import { PROCEDIMENTOS_GERAIS, PROCEDIMENTOS_MEDICOS_ESPECIFICOS, PROCEDURES_METADATA } from '../data/proceduresData';
 import { HOSPITAL_EXTENSIONS, HOSPITAL_REPORTS, HOSPITAL_WHATSAPP_CONTACTS } from '../data/hospitalData';
-import { PARECERES_CONVENIOS_DATA, PARECER_WORKFLOW_STEPS, ERROS_CRITICOS_GLOSA_PARECER } from '../data/pareceresData';
+import { PARECERES_CONVENIOS_DATA, PARECERES_NEUROLOGIA_DATA, PARECER_WORKFLOW_STEPS, ERROS_CRITICOS_GLOSA_PARECER } from '../data/pareceresData';
 import { COBERTURA_CONVENIOS_DATA } from '../data/coberturaConveniosData';
 
 // ----------------------------------------------------
@@ -772,6 +772,22 @@ export function getUnifiedHospitalDatabase(): HospitalUnifiedItem[] {
       documentos: pr.documentosObrigatorios,
       alertas: pr.alertasCriticos,
       searchTokens: `parecer interconsulta medico especialista avaliacao ${pr.convenioId} ${pr.convenioName} ${pr.tussPs} ${pr.tussInternacao} ${pr.regraGeral}`
+    });
+  }
+
+  // 11.2 COBRANÇA DE PARECERES NEUROLOGIA (Tabela Oficial: PS, UTI, UI)
+  for (const nr of PARECERES_NEUROLOGIA_DATA) {
+    items.push({
+      id: `parecer-neuro-${cleanStr(nr.convenio)}`,
+      convenioId: nr.convenio.toUpperCase(),
+      convenioName: nr.convenio,
+      area: 'internacao',
+      subarea: 'parecer_neurologia',
+      title: `Parecer Neurologia — ${nr.convenio}`,
+      description: `Regra de Cobrança Parecer Neurologia (${nr.convenio}): PS: ${nr.ps} | UTI: ${nr.uti} | UI: ${nr.ui} ${nr.observacoes ? `| Observação: ${nr.observacoes}` : ''}`,
+      parecer: `PS: ${nr.ps} | UTI: ${nr.uti} | UI: ${nr.ui}`,
+      alertas: nr.isSus ? ['SUS: NUNCA COBRAR DA FAMÍLIA (Proibido por lei e regulamento SUS).'] : (nr.observacoes ? [nr.observacoes] : undefined),
+      searchTokens: `parecer neurologia neuro neurologista neurocirurgia cobranca cobrar ${nr.convenio} ps uti ui internacao particular pacote ${nr.ps} ${nr.uti} ${nr.ui} ${nr.observacoes || ''}`
     });
   }
 

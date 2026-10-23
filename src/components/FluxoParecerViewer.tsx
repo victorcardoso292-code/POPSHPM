@@ -21,14 +21,17 @@ import {
   FileCheck2,
   CheckCircle2,
   XCircle,
-  ArrowRight
+  ArrowRight,
+  Brain
 } from 'lucide-react';
 import { 
   PARECER_WORKFLOW_STEPS, 
   PARECERES_CONVENIOS_DATA, 
+  PARECERES_NEUROLOGIA_DATA,
   ESPECIALIDADES_PARECER, 
   ERROS_CRITICOS_GLOSA_PARECER,
-  ConvenioParecerRule 
+  ConvenioParecerRule,
+  ParecerNeurologiaRule 
 } from '../data/pareceresData';
 
 interface FluxoParecerViewerProps {
@@ -41,7 +44,7 @@ export const FluxoParecerViewer: React.FC<FluxoParecerViewerProps> = ({
   initialConvenioId
 }) => {
   // Navigation tabs
-  const [activeTab, setActiveTab] = useState<'simulador' | 'matriz' | 'fluxo' | 'antiglosa'>('simulador');
+  const [activeTab, setActiveTab] = useState<'simulador' | 'matriz' | 'neurologia' | 'fluxo' | 'antiglosa'>('simulador');
   
   // Simulator states
   const [selectedConvenioId, setSelectedConvenioId] = useState<string>(initialConvenioId || 'SERVIR');
@@ -54,6 +57,10 @@ export const FluxoParecerViewer: React.FC<FluxoParecerViewerProps> = ({
   // Search & Filters in Matrix
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [authFilter, setAuthFilter] = useState<'all' | 'direto' | 'autorizar' | 'especiais'>('all');
+
+  // Search & Filters in Neurologia
+  const [neuroSearch, setNeuroSearch] = useState<string>('');
+  const [neuroFilter, setNeuroFilter] = useState<'all' | 'pacote_ps' | 'particular' | 'conta_aberta' | 'sus'>('all');
 
   // Copy states
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -95,6 +102,54 @@ export const FluxoParecerViewer: React.FC<FluxoParecerViewerProps> = ({
       );
     });
   }, [searchQuery, authFilter]);
+
+  // Neuro rule matching currently selected convênio in simulator
+  const activeNeuroRule = useMemo(() => {
+    const convName = activeRule.convenioName.toLowerCase();
+    const convId = activeRule.convenioId.toLowerCase();
+    return PARECERES_NEUROLOGIA_DATA.find(n => {
+      const nName = n.convenio.toLowerCase();
+      return (
+        convName.includes(nName) || 
+        nName.includes(convName) || 
+        convId.includes(nName) || 
+        nName.includes(convId) ||
+        (nName.includes('sul') && convName.includes('sul')) ||
+        (nName.includes('caixa') && convName.includes('caixa')) ||
+        (nName.includes('geap') && convName.includes('geap')) ||
+        (nName.includes('bradesco') && convName.includes('bradesco')) ||
+        (nName.includes('servir') && convName.includes('servir')) ||
+        (nName.includes('cassi') && convName.includes('cassi')) ||
+        (nName.includes('amil') && convName.includes('amil')) ||
+        (nName.includes('assefaz') && convName.includes('assefaz')) ||
+        (nName.includes('best') && convName.includes('best')) ||
+        (nName.includes('pasa') && convName.includes('pasa')) ||
+        (nName.includes('postal') && convName.includes('postal')) ||
+        (nName.includes('planassiste') && convName.includes('planassiste')) ||
+        (nName.includes('fusex') && convName.includes('fusex'))
+      );
+    });
+  }, [activeRule]);
+
+  // Filtered Neurologia list
+  const filteredNeurologia = useMemo(() => {
+    return PARECERES_NEUROLOGIA_DATA.filter(item => {
+      if (neuroFilter === 'pacote_ps' && item.statusPs !== 'dentro-pacote') return false;
+      if (neuroFilter === 'particular' && item.statusPs !== 'particular' && item.statusPs !== 'fora-pacote-particular') return false;
+      if (neuroFilter === 'conta_aberta' && !item.observacoes.toLowerCase().includes('aberta')) return false;
+      if (neuroFilter === 'sus' && !item.isSus) return false;
+
+      if (!neuroSearch) return true;
+      const q = neuroSearch.toLowerCase().trim();
+      return (
+        item.convenio.toLowerCase().includes(q) ||
+        item.ps.toLowerCase().includes(q) ||
+        item.uti.toLowerCase().includes(q) ||
+        item.ui.toLowerCase().includes(q) ||
+        item.observacoes.toLowerCase().includes(q)
+      );
+    });
+  }, [neuroSearch, neuroFilter]);
 
   // Copy code helper
   const handleCopy = (code: string) => {
@@ -265,6 +320,26 @@ export const FluxoParecerViewer: React.FC<FluxoParecerViewerProps> = ({
 
           <button
             type="button"
+            onClick={() => setActiveTab('neurologia')}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'neurologia'
+                ? 'bg-purple-900 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            }`}
+          >
+            <Brain className="w-4 h-4 text-purple-400" />
+            <span>Cobrança Neurologia</span>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+              activeTab === 'neurologia'
+                ? 'bg-white/20 text-white'
+                : 'bg-purple-100 text-purple-800'
+            }`}>
+              {PARECERES_NEUROLOGIA_DATA.length} Convênios
+            </span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('fluxo')}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'fluxo'
@@ -382,6 +457,63 @@ export const FluxoParecerViewer: React.FC<FluxoParecerViewerProps> = ({
                   ))}
                 </select>
               </div>
+
+              {/* Callout Específico de Neurologia quando selecionado */}
+              {selectedEspecialidade.toLowerCase().includes('neuro') && (
+                <div className="p-3.5 bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-xl space-y-2 animate-in fade-in">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Brain className="w-4 h-4 text-purple-700" />
+                      <span className="text-xs font-black text-purple-900 uppercase tracking-wide">
+                        Regra Oficial de Neurologia ({activeNeuroRule ? activeNeuroRule.convenio : activeRule.convenioName})
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('neurologia')}
+                      className="text-[11px] font-black text-purple-700 hover:text-purple-900 underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>Ver Tabela Completa</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
+
+                  {activeNeuroRule ? (
+                    <div className="grid grid-cols-3 gap-2 pt-1 text-xs">
+                      <div className={`p-2 rounded-lg border ${
+                        selectedAmbiente === 'PS' ? 'bg-purple-100/90 border-purple-400 font-black' : 'bg-white/80 border-slate-200'
+                      }`}>
+                        <span className="text-[10px] uppercase font-bold text-slate-500 block">PS:</span>
+                        <span className={activeNeuroRule.statusPs === 'dentro-pacote' ? 'text-emerald-800 font-bold' : (activeNeuroRule.statusPs === 'na' ? 'text-red-700 font-bold' : 'text-amber-800 font-bold')}>
+                          {activeNeuroRule.ps}
+                        </span>
+                      </div>
+                      <div className={`p-2 rounded-lg border ${
+                        selectedAmbiente === 'UTI' ? 'bg-purple-100/90 border-purple-400 font-black' : 'bg-white/80 border-slate-200'
+                      }`}>
+                        <span className="text-[10px] uppercase font-bold text-slate-500 block">UTI:</span>
+                        <span className="text-slate-800 font-bold">{activeNeuroRule.uti}</span>
+                      </div>
+                      <div className={`p-2 rounded-lg border ${
+                        selectedAmbiente === 'INTERNACAO' ? 'bg-purple-100/90 border-purple-400 font-black' : 'bg-white/80 border-slate-200'
+                      }`}>
+                        <span className="text-[10px] uppercase font-bold text-slate-500 block">Internação / UI:</span>
+                        <span className="text-slate-800 font-bold">{activeNeuroRule.ui}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-purple-900 m-0">
+                      Consulte a aba <strong>Cobrança Neurologia</strong> para verificar o status de faturamento (pacote vs particular vs conta aberta).
+                    </p>
+                  )}
+
+                  {activeNeuroRule?.observacoes && (
+                    <div className="text-[11px] font-bold text-purple-950 bg-white/70 px-2.5 py-1 rounded-md border border-purple-200">
+                      Obs: {activeNeuroRule.observacoes}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Dados do Paciente e Leito (Opcionais) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
@@ -724,6 +856,354 @@ export const FluxoParecerViewer: React.FC<FluxoParecerViewerProps> = ({
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================
+          ABA: COBRANÇA DE PARECERES - NEUROLOGIA (OFICIAL)
+      ======================================================== */}
+      {activeTab === 'neurologia' && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          {/* Header Banner com Título e Ações */}
+          <div className="bg-gradient-to-r from-purple-950 via-indigo-900 to-slate-900 rounded-3xl p-6 sm:p-7 text-white shadow-lg relative overflow-hidden border border-purple-800/40">
+            <div className="absolute right-0 top-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="bg-purple-500/30 text-purple-200 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider border border-purple-400/40 flex items-center gap-1.5">
+                    <Brain className="w-3.5 h-3.5 text-purple-300" />
+                    Tabela Oficial da Especialidade
+                  </span>
+                  <span className="bg-emerald-500/20 text-emerald-300 text-xs font-bold px-3 py-1 rounded-full border border-emerald-400/30">
+                    {PARECERES_NEUROLOGIA_DATA.length} Convênios Regulados
+                  </span>
+                  <span className="bg-white/10 text-slate-200 text-xs font-bold px-3 py-1 rounded-full">
+                    PS • UTI • Unidade de Internação
+                  </span>
+                </div>
+
+                <h2 className="text-xl sm:text-3xl font-black text-white m-0 tracking-tight">
+                  Cobrança de Pareceres — Neurologia
+                </h2>
+
+                <p className="text-slate-300 text-xs sm:text-sm max-w-3xl leading-relaxed m-0 font-medium">
+                  Matriz regulatória oficial de cobrança e faturamento de pareceres neurológicos por convênio. Determina com precisão quando o parecer está <strong>dentro do pacote do hospital</strong>, quando opera via <strong>conta aberta</strong>, quando deve ser <strong>cobrado particular</strong> e o <strong>alerta vermelho para o SUS</strong>.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2.5 flex-wrap flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all border border-white/20 cursor-pointer shadow-xs"
+                >
+                  <Printer className="w-4 h-4 text-purple-200" />
+                  <span>Imprimir Tabela</span>
+                </button>
+
+                {onOpenAiWithPrompt && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenAiWithPrompt('Quais são as regras de cobrança de parecer de Neurologia no Palmas Medical para Bradesco, Geap, Cassi, Amil e Servir? Quais estão dentro do pacote e quais cobram particular?')}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-400 hover:bg-amber-500 text-amber-950 rounded-xl text-xs font-black transition-all shadow-md cursor-pointer"
+                  >
+                    <Sparkles className="w-4 h-4 text-amber-950" />
+                    <span>Dúvidas com IA</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* 4 Cards de Resumo Rápido das Diretrizes */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* 1. Dentro do Pacote no PS */}
+            <div className="bg-emerald-50/80 border-2 border-emerald-300 rounded-2xl p-4 space-y-2 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-200/60 px-2 py-0.5 rounded-md">
+                  Dentro do Pacote PS
+                </span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              </div>
+              <div className="text-sm font-black text-emerald-950">
+                Bradesco • Geap • Sul América
+              </div>
+              <p className="text-xs text-emerald-800 font-medium leading-relaxed m-0">
+                <strong>Não cobrar particular no PS</strong>. O parecer já está absorvido no pacote de atendimento de urgência do hospital.
+              </p>
+            </div>
+
+            {/* 2. Conta Aberta */}
+            <div className="bg-purple-50/80 border-2 border-purple-300 rounded-2xl p-4 space-y-2 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-wider text-purple-800 bg-purple-200/60 px-2 py-0.5 rounded-md">
+                  Conta Aberta
+                </span>
+                <FileText className="w-4 h-4 text-purple-700" />
+              </div>
+              <div className="text-sm font-black text-purple-950">
+                Amil • Assefaz • Cassi • PlanAssiste
+              </div>
+              <p className="text-xs text-purple-900 font-medium leading-relaxed m-0">
+                Faturamento direto na conta da internação pelo convênio através de relatório médico e guia TISS.
+              </p>
+            </div>
+
+            {/* 3. Fora do Pacote / Cobrar Particular */}
+            <div className="bg-amber-50/80 border-2 border-amber-300 rounded-2xl p-4 space-y-2 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-wider text-amber-800 bg-amber-200/60 px-2 py-0.5 rounded-md">
+                  Cobrar Particular
+                </span>
+                <AlertTriangle className="w-4 h-4 text-amber-700" />
+              </div>
+              <div className="text-sm font-black text-amber-950">
+                Best Saúde • Postal • Caixa • Servir • Vale Pasa
+              </div>
+              <p className="text-xs text-amber-900 font-medium leading-relaxed m-0">
+                Fora do pacote nos ambientes listados. Cobrança de honorário realizada diretamente conforme tabela do serviço.
+              </p>
+            </div>
+
+            {/* 4. SUS Alerta Vermelho */}
+            <div className="bg-red-50/90 border-2 border-red-400 rounded-2xl p-4 space-y-2 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-wider text-red-800 bg-red-200/80 px-2 py-0.5 rounded-md">
+                  Vedação Legal
+                </span>
+                <XCircle className="w-4 h-4 text-red-600" />
+              </div>
+              <div className="text-sm font-black text-red-950">
+                SUS (Nunca cobrar da família)
+              </div>
+              <p className="text-xs text-red-900 font-medium leading-relaxed m-0">
+                ⚠️ <strong>Vedado por Lei Federal</strong> (Lei nº 8.080/90). É terminantemente proibido exigir qualquer valor do paciente ou familiar.
+              </p>
+            </div>
+          </div>
+
+          {/* Barra de Filtros e Busca Interativa */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Buscar convênio, status de cobrança ou observação (ex: Bradesco, Conta aberta, Pacote)..."
+                  value={neuroSearch}
+                  onChange={e => setNeuroSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:ring-2 focus:ring-purple-600 focus:bg-white outline-none"
+                />
+              </div>
+
+              {/* Botões de Filtro Rápido */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                {[
+                  { id: 'all' as const, label: `Todos (${PARECERES_NEUROLOGIA_DATA.length})` },
+                  { id: 'pacote_ps' as const, label: `Dentro do Pacote PS (3)` },
+                  { id: 'particular' as const, label: `Cobrar Particular (9)` },
+                  { id: 'conta_aberta' as const, label: `Conta Aberta (4)` },
+                  { id: 'sus' as const, label: `SUS Alerta (1)` }
+                ].map(f => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setNeuroFilter(f.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
+                      neuroFilter === f.id
+                        ? 'bg-purple-900 text-white shadow-xs'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Tabela de Planilha Oficial com Design Fiel ao Documento */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileCheck2 className="w-4 h-4 text-purple-700" />
+                <h3 className="text-sm font-black text-slate-900 m-0">
+                  Planilha Oficial: Cobrança de Pareceres Neurologia
+                </h3>
+              </div>
+              <span className="text-xs font-bold text-slate-500">
+                Mostrando {filteredNeurologia.length} de {PARECERES_NEUROLOGIA_DATA.length} convênios
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-100/90 text-slate-700 text-xs font-black uppercase tracking-wider border-b border-slate-200">
+                    <th className="py-3 px-4 w-[22%]">Convênio</th>
+                    <th className="py-3 px-4 w-[20%] text-center">Pronto-Socorro (PS)</th>
+                    <th className="py-3 px-4 w-[20%] text-center">UTI</th>
+                    <th className="py-3 px-4 w-[20%] text-center">Unidade de Internação (UI)</th>
+                    <th className="py-3 px-4 w-[18%]">Observações / Tipo de Conta</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs font-medium">
+                  {filteredNeurologia.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-10 text-center text-slate-400 font-semibold">
+                        Nenhum convênio encontrado com os filtros selecionados.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredNeurologia.map((row, idx) => {
+                      const isSus = row.isSus;
+                      return (
+                        <tr
+                          key={idx}
+                          className={`transition-colors ${
+                            isSus
+                              ? 'bg-red-50/70 hover:bg-red-100/70 border-l-4 border-l-red-600 font-bold'
+                              : (idx % 2 === 0 ? 'bg-white hover:bg-purple-50/40' : 'bg-slate-50/50 hover:bg-purple-50/40')
+                          }`}
+                        >
+                          {/* Convênio */}
+                          <td className="py-3.5 px-4 font-black text-slate-900">
+                            <div className="flex items-center gap-2">
+                              {isSus ? (
+                                <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping flex-shrink-0" />
+                              ) : (
+                                <span className="w-2 h-2 rounded-full bg-purple-600 flex-shrink-0" />
+                              )}
+                              <span className={isSus ? 'text-red-950 font-black text-sm' : 'text-slate-900 text-sm'}>
+                                {row.convenio}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Pronto-Socorro (PS) */}
+                          <td className="py-3.5 px-4 text-center">
+                            {row.ps.includes('Dentro do pacote') ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-2xs">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" />
+                                <span>{row.ps}</span>
+                              </span>
+                            ) : row.ps.includes('N.A.') ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-red-100 text-red-900 border border-red-300">
+                                <XCircle className="w-3.5 h-3.5 text-red-700 flex-shrink-0" />
+                                <span>N.A.</span>
+                              </span>
+                            ) : row.ps.includes('Sob consulta') ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300">
+                                <HelpCircle className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
+                                <span>{row.ps}</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-100 text-amber-950 border border-amber-300">
+                                <AlertTriangle className="w-3.5 h-3.5 text-amber-700 flex-shrink-0" />
+                                <span>{row.ps}</span>
+                              </span>
+                            )}
+                          </td>
+
+                          {/* UTI */}
+                          <td className="py-3.5 px-4 text-center">
+                            {row.uti.includes('N.A.') ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-red-100 text-red-900 border border-red-300">
+                                <XCircle className="w-3.5 h-3.5 text-red-700 flex-shrink-0" />
+                                <span>N.A.</span>
+                              </span>
+                            ) : row.uti.includes('Sob consulta') ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300">
+                                <HelpCircle className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
+                                <span>{row.uti}</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200">
+                                <span>{row.uti}</span>
+                              </span>
+                            )}
+                          </td>
+
+                          {/* UI (Unidade de Internação) */}
+                          <td className="py-3.5 px-4 text-center">
+                            {row.ui.includes('N.A.') ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-red-100 text-red-900 border border-red-300">
+                                <XCircle className="w-3.5 h-3.5 text-red-700 flex-shrink-0" />
+                                <span>N.A.</span>
+                              </span>
+                            ) : row.ui.includes('Sob consulta') ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300">
+                                <HelpCircle className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
+                                <span>{row.ui}</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200">
+                                <span>{row.ui}</span>
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Observações / Tipo de Conta */}
+                          <td className="py-3.5 px-4">
+                            {row.observacoes ? (
+                              row.observacoes.includes('aberta') ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-purple-100 text-purple-900 border border-purple-300">
+                                  <FileText className="w-3.5 h-3.5 text-purple-700 flex-shrink-0" />
+                                  <span>{row.observacoes}</span>
+                                </span>
+                              ) : isSus ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black bg-red-200 text-red-950 border border-red-400">
+                                  <AlertTriangle className="w-3.5 h-3.5 text-red-800 flex-shrink-0" />
+                                  <span>{row.observacoes}</span>
+                                </span>
+                              ) : (
+                                <span className="text-slate-700 text-xs font-semibold">
+                                  {row.observacoes}
+                                </span>
+                              )
+                            ) : (
+                              <span className="text-slate-300 text-xs italic">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Dicionário Operacional & Legislação */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-1.5">
+              <span className="font-black text-slate-900 uppercase tracking-wider text-[11px] block">
+                O que é "Dentro do Pacote" (PS)?
+              </span>
+              <p className="text-slate-600 leading-relaxed font-medium m-0">
+                Nos atendimentos de emergência no Pronto-Socorro com taxa de urgência em pacote (Bradesco, Geap, Sul América), a avaliação do neurologista é coberta pelo próprio hospital. Nenhuma taxa pode ser cobrada do paciente ou de sua família no guichê.
+              </p>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-1.5">
+              <span className="font-black text-slate-900 uppercase tracking-wider text-[11px] block">
+                O que significa "Conta Aberta"?
+              </span>
+              <p className="text-slate-600 leading-relaxed font-medium m-0">
+                Para planos como Amil, Assefaz, Cassi e PlanAssiste, o parecer médico é faturado diretamente com o convênio durante o fechamento da conta hospitalar, através de Guia SP/SADT e relatório assinado com carimbo do especialista.
+              </p>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-1.5">
+              <span className="font-black text-red-900 uppercase tracking-wider text-[11px] block">
+                Regra Legal do SUS (Alerta Vermelho)
+              </span>
+              <p className="text-slate-600 leading-relaxed font-medium m-0">
+                Conforme a Lei Orgânica da Saúde (Lei nº 8.080/1990) e a Portaria GM/MS nº 2/2017, o atendimento pelo SUS é 100% gratuito. É vedada a cobrança de qualquer taxa, complemento ou honorário particular ao paciente ou responsável.
+              </p>
             </div>
           </div>
         </div>

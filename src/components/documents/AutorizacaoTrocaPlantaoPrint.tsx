@@ -1,4 +1,5 @@
 import React from 'react';
+import { ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 export interface AutorizacaoTrocaPlantaoData {
   funcionarioSolicitante: string;
@@ -63,193 +64,245 @@ export const AutorizacaoTrocaPlantaoPrint: React.FC<AutorizacaoTrocaPlantaoPrint
       onChange('funcao', label);
     }
   };
+
   return (
     <div 
-      className="text-black bg-white p-4 sm:p-8 max-w-[820px] mx-auto text-[11px] leading-tight border border-black print:border-none print:p-0 rounded-none shadow-xs page-break-avoid"
-      style={{ fontFamily: "Arial, 'Helvetica Neue', Helvetica, sans-serif" }}
+      className="text-slate-900 bg-white p-5 sm:p-9 max-w-[840px] mx-auto text-[11px] leading-tight border border-slate-300 rounded-2xl shadow-md print:border-none print:shadow-none print:p-0 print:m-0 print:rounded-none page-break-avoid"
+      style={{ 
+        fontFamily: "Inter, Arial, 'Helvetica Neue', Helvetica, sans-serif",
+        WebkitPrintColorAdjust: 'exact',
+        printColorAdjust: 'exact'
+      }}
     >
-      {/* Top Logo Rede Medical */}
-      <div className="flex items-center justify-end pb-2">
-        <div className="flex items-center gap-2">
-          {/* Stylized Cross Logo */}
-          <div className="text-[#0E7B86] flex items-center justify-center">
-            <svg className="w-8 h-8" viewBox="0 0 40 40" fill="none" stroke="#0E7B86" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M16 8 H24 V16 H32 V24 H24 V32 H16 V24 H8 V16 H16 Z" />
-              <path d="M10 16 C6 16 6 24 10 24" />
+      {/* Top Header com Logo Corporativo Rede Medical */}
+      <div className="flex items-center justify-between pb-3 border-b-2 border-[#0E7B86]">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#EBF7F8] border border-[#C4E5E8] flex items-center justify-center text-[#0E7B86] shadow-xs print:border-black print:bg-white">
+            <svg className="w-6 h-6 text-[#0E7B86] print:text-black" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 4.5C12 3.12 13.12 2 14.5 2H17.5C18.88 2 20 3.12 20 4.5V10C20 11.1 20.9 12 22 12H27.5C28.88 12 30 13.12 30 14.5V17.5C30 18.88 28.88 20 27.5 20H22C20.9 20 20 20.9 20 22V27.5C20 28.88 18.88 30 17.5 30H14.5C13.12 30 12 28.88 12 27.5V22C12 20.9 11.1 20 10 20H4.5C3.12 20 2 18.88 2 17.5V14.5C2 13.12 3.12 12 4.5 12H10C11.1 12 12 11.1 12 10V4.5Z" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" fill="#D8ECEE" />
             </svg>
           </div>
-          <div className="text-left leading-none">
-            <span className="block text-[9px] font-semibold text-slate-500 uppercase tracking-wider">
+          <div>
+            <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none">
               Rede
             </span>
-            <span className="block text-xl font-black text-[#0E7B86] tracking-tight">
+            <span className="block text-xl sm:text-2xl font-black text-[#0E7B86] tracking-tight leading-none mt-0.5 print:text-black">
               Medical
             </span>
           </div>
         </div>
+
+        <div className="text-right">
+          <span className="inline-block px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200 print:border-black print:text-black print:bg-transparent">
+            Gestão de Pessoas • RH & Escalas
+          </span>
+          <span className="block text-[9px] text-slate-400 font-medium mt-1 print:text-black">
+            Hospital Palmas Medical
+          </span>
+        </div>
       </div>
 
-      {/* Título Principal em Caixa de Borda Sólida */}
-      <div className="border border-black bg-slate-50/60 py-2 px-3 text-center mb-0">
-        <h1 className="text-[13px] sm:text-[14px] font-black uppercase tracking-wider text-black m-0">
+      {/* Faixa Título Principal */}
+      <div className="my-3 py-2 px-4 rounded-lg bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white text-center shadow-xs border border-slate-800 print:bg-black print:text-white print:rounded-none">
+        <h1 className="text-xs sm:text-sm font-black uppercase tracking-widest m-0 drop-shadow-xs">
           AUTORIZAÇÃO PARA TROCA DE PLANTÃO
         </h1>
       </div>
 
-      {/* Caixa 1: Dados dos Funcionários Solicitante e Solicitado */}
-      <div className="border-x border-b border-black p-3 space-y-2.5 bg-white text-[11px]">
-        {/* Funcionário Solicitante */}
-        <div className="flex items-end gap-1.5 flex-wrap sm:flex-nowrap">
-          <span className="font-bold whitespace-nowrap text-black">Funcionário Solicitante:</span>
-          <div className="border-b border-black flex-1 min-h-[20px] pb-0.5">
-            {isEditable ? (
-              <input
-                type="text"
-                value={data.funcionarioSolicitante}
-                onChange={e => onChange?.('funcionarioSolicitante', e.target.value)}
-                placeholder="Nome completo do colaborador solicitante"
-                className="w-full outline-none text-[11px] bg-amber-50/50 print:bg-transparent px-1 font-bold"
-              />
-            ) : (
-              <span className="font-bold text-black px-1">{data.funcionarioSolicitante}</span>
-            )}
+      {/* Card 1: Dados do Solicitante e do Solicitado */}
+      <div className="border border-slate-300 rounded-xl p-3.5 mb-3 bg-white space-y-3 shadow-2xs print:border-black print:rounded-none">
+        {/* Bloco 1: Funcionário Solicitante */}
+        <div className="space-y-2 pb-2.5 border-b border-slate-200 print:border-black">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#0E7B86] print:bg-black"></span>
+            <span className="font-extrabold text-slate-800 text-[11px] print:text-black whitespace-nowrap">
+              Funcionário Solicitante:
+            </span>
+            <div className="flex-1">
+              {isEditable ? (
+                <input
+                  type="text"
+                  value={data.funcionarioSolicitante}
+                  onChange={e => onChange?.('funcionarioSolicitante', e.target.value)}
+                  placeholder="Nome completo do colaborador solicitante"
+                  className="w-full px-2.5 py-1 text-[11px] font-bold text-slate-900 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0E7B86] transition-all"
+                />
+              ) : (
+                <div className="border-b border-slate-400 min-h-[22px] px-1 font-bold text-slate-900 print:text-black print:border-black">
+                  {data.funcionarioSolicitante || '___________________________________________________________________'}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center pl-4">
+            <div className="sm:col-span-6 flex items-center gap-2">
+              <span className="font-semibold text-slate-700 text-[11px] print:text-black whitespace-nowrap">
+                Data do Plantão Solicitante:
+              </span>
+              <div className="flex-1">
+                {isEditable ? (
+                  <input
+                    type="text"
+                    value={data.dataPlantaoSolicitante}
+                    onChange={e => onChange?.('dataPlantaoSolicitante', e.target.value)}
+                    placeholder="DD/MM/AAAA"
+                    className="w-full px-2 py-1 text-[11px] font-bold text-center text-slate-900 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0E7B86]"
+                  />
+                ) : (
+                  <div className="border-b border-slate-400 min-h-[20px] text-center font-bold text-slate-900 print:text-black print:border-black">
+                    {data.dataPlantaoSolicitante || '____/____/_____'}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="sm:col-span-6 flex items-center gap-1.5 justify-end">
+              <span className="font-semibold text-slate-700 text-[11px] print:text-black whitespace-nowrap">
+                Horário:
+              </span>
+              <div className="w-24">
+                {isEditable ? (
+                  <input
+                    type="text"
+                    value={data.horarioSolicitanteInicio}
+                    onChange={e => onChange?.('horarioSolicitanteInicio', e.target.value)}
+                    placeholder="07:00"
+                    className="w-full px-2 py-1 text-[11px] font-bold text-center text-slate-900 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0E7B86]"
+                  />
+                ) : (
+                  <div className="border-b border-slate-400 min-h-[20px] text-center font-bold text-slate-900 print:text-black print:border-black">
+                    {data.horarioSolicitanteInicio || '_____'}
+                  </div>
+                )}
+              </div>
+              <span className="font-bold text-slate-500 px-1 print:text-black">às</span>
+              <div className="w-24">
+                {isEditable ? (
+                  <input
+                    type="text"
+                    value={data.horarioSolicitanteFim}
+                    onChange={e => onChange?.('horarioSolicitanteFim', e.target.value)}
+                    placeholder="19:00"
+                    className="w-full px-2 py-1 text-[11px] font-bold text-center text-slate-900 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0E7B86]"
+                  />
+                ) : (
+                  <div className="border-b border-slate-400 min-h-[20px] text-center font-bold text-slate-900 print:text-black print:border-black">
+                    {data.horarioSolicitanteFim || '______'}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Data e Horário Solicitante */}
-        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
-          <div className="sm:col-span-6 flex items-end gap-1.5">
-            <span className="font-bold whitespace-nowrap text-black">Data do Plantão Solicitante:</span>
-            <div className="border-b border-black flex-1 min-h-[20px] pb-0.5">
+        {/* Bloco 2: Funcionário Solicitado (Substituto) */}
+        <div className="space-y-2 pt-1">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-600 print:bg-black"></span>
+            <span className="font-extrabold text-slate-800 text-[11px] print:text-black whitespace-nowrap">
+              Funcionário Solicitado:
+            </span>
+            <div className="flex-1">
               {isEditable ? (
                 <input
                   type="text"
-                  value={data.dataPlantaoSolicitante}
-                  onChange={e => onChange?.('dataPlantaoSolicitante', e.target.value)}
-                  placeholder="DD/MM/AAAA"
-                  className="w-full outline-none text-[11px] bg-amber-50/50 print:bg-transparent text-center font-bold"
+                  value={data.funcionarioSolicitado}
+                  onChange={e => onChange?.('funcionarioSolicitado', e.target.value)}
+                  placeholder="Nome completo do colaborador que substituirá"
+                  className="w-full px-2.5 py-1 text-[11px] font-bold text-slate-900 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0E7B86] transition-all"
                 />
               ) : (
-                <span className="font-bold text-black text-center block">{data.dataPlantaoSolicitante || '___/___/_____'}</span>
+                <div className="border-b border-slate-400 min-h-[22px] px-1 font-bold text-slate-900 print:text-black print:border-black">
+                  {data.funcionarioSolicitado || '___________________________________________________________________'}
+                </div>
               )}
             </div>
           </div>
 
-          <div className="sm:col-span-6 flex items-end gap-1.5">
-            <span className="font-bold whitespace-nowrap text-black">Horário:</span>
-            <div className="border-b border-black w-20 min-h-[20px] pb-0.5 text-center">
-              {isEditable ? (
-                <input
-                  type="text"
-                  value={data.horarioSolicitanteInicio}
-                  onChange={e => onChange?.('horarioSolicitanteInicio', e.target.value)}
-                  placeholder="07:00"
-                  className="w-full outline-none text-[11px] bg-amber-50/50 print:bg-transparent text-center font-bold"
-                />
-              ) : (
-                <span className="font-bold text-black">{data.horarioSolicitanteInicio || '_____'}</span>
-              )}
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center pl-4">
+            <div className="sm:col-span-6 flex items-center gap-2">
+              <span className="font-semibold text-slate-700 text-[11px] print:text-black whitespace-nowrap">
+                Data do Plantão Solicitado:
+              </span>
+              <div className="flex-1">
+                {isEditable ? (
+                  <input
+                    type="text"
+                    value={data.dataPlantaoSolicitado}
+                    onChange={e => onChange?.('dataPlantaoSolicitado', e.target.value)}
+                    placeholder="DD/MM/AAAA"
+                    className="w-full px-2 py-1 text-[11px] font-bold text-center text-slate-900 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0E7B86]"
+                  />
+                ) : (
+                  <div className="border-b border-slate-400 min-h-[20px] text-center font-bold text-slate-900 print:text-black print:border-black">
+                    {data.dataPlantaoSolicitado || '____/____/_____'}
+                  </div>
+                )}
+              </div>
             </div>
-            <span className="font-bold text-black">às</span>
-            <div className="border-b border-black flex-1 min-h-[20px] pb-0.5 text-center">
-              {isEditable ? (
-                <input
-                  type="text"
-                  value={data.horarioSolicitanteFim}
-                  onChange={e => onChange?.('horarioSolicitanteFim', e.target.value)}
-                  placeholder="19:00"
-                  className="w-full outline-none text-[11px] bg-amber-50/50 print:bg-transparent text-center font-bold"
-                />
-              ) : (
-                <span className="font-bold text-black">{data.horarioSolicitanteFim || '______'}</span>
-              )}
-            </div>
-          </div>
-        </div>
 
-        {/* Funcionário Solicitado */}
-        <div className="flex items-end gap-1.5 flex-wrap sm:flex-nowrap pt-1">
-          <span className="font-bold whitespace-nowrap text-black">Funcionário Solicitado:</span>
-          <div className="border-b border-black flex-1 min-h-[20px] pb-0.5">
-            {isEditable ? (
-              <input
-                type="text"
-                value={data.funcionarioSolicitado}
-                onChange={e => onChange?.('funcionarioSolicitado', e.target.value)}
-                placeholder="Nome completo do colaborador que substituirá"
-                className="w-full outline-none text-[11px] bg-amber-50/50 print:bg-transparent px-1 font-bold"
-              />
-            ) : (
-              <span className="font-bold text-black px-1">{data.funcionarioSolicitado}</span>
-            )}
-          </div>
-        </div>
-
-        {/* Data e Horário Solicitado */}
-        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
-          <div className="sm:col-span-6 flex items-end gap-1.5">
-            <span className="font-bold whitespace-nowrap text-black">Data do Plantão Solicitado:</span>
-            <div className="border-b border-black flex-1 min-h-[20px] pb-0.5">
-              {isEditable ? (
-                <input
-                  type="text"
-                  value={data.dataPlantaoSolicitado}
-                  onChange={e => onChange?.('dataPlantaoSolicitado', e.target.value)}
-                  placeholder="DD/MM/AAAA"
-                  className="w-full outline-none text-[11px] bg-amber-50/50 print:bg-transparent text-center font-bold"
-                />
-              ) : (
-                <span className="font-bold text-black text-center block">{data.dataPlantaoSolicitado || '___/___/_____'}</span>
-              )}
-            </div>
-          </div>
-
-          <div className="sm:col-span-6 flex items-end gap-1.5">
-            <span className="font-bold whitespace-nowrap text-black">Horário:</span>
-            <div className="border-b border-black w-20 min-h-[20px] pb-0.5 text-center">
-              {isEditable ? (
-                <input
-                  type="text"
-                  value={data.horarioSolicitadoInicio}
-                  onChange={e => onChange?.('horarioSolicitadoInicio', e.target.value)}
-                  placeholder="07:00"
-                  className="w-full outline-none text-[11px] bg-amber-50/50 print:bg-transparent text-center font-bold"
-                />
-              ) : (
-                <span className="font-bold text-black">{data.horarioSolicitadoInicio || '_____'}</span>
-              )}
-            </div>
-            <span className="font-bold text-black">às</span>
-            <div className="border-b border-black flex-1 min-h-[20px] pb-0.5 text-center">
-              {isEditable ? (
-                <input
-                  type="text"
-                  value={data.horarioSolicitadoFim}
-                  onChange={e => onChange?.('horarioSolicitadoFim', e.target.value)}
-                  placeholder="19:00"
-                  className="w-full outline-none text-[11px] bg-amber-50/50 print:bg-transparent text-center font-bold"
-                />
-              ) : (
-                <span className="font-bold text-black">{data.horarioSolicitadoFim || '______'}</span>
-              )}
+            <div className="sm:col-span-6 flex items-center gap-1.5 justify-end">
+              <span className="font-semibold text-slate-700 text-[11px] print:text-black whitespace-nowrap">
+                Horário:
+              </span>
+              <div className="w-24">
+                {isEditable ? (
+                  <input
+                    type="text"
+                    value={data.horarioSolicitadoInicio}
+                    onChange={e => onChange?.('horarioSolicitadoInicio', e.target.value)}
+                    placeholder="07:00"
+                    className="w-full px-2 py-1 text-[11px] font-bold text-center text-slate-900 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0E7B86]"
+                  />
+                ) : (
+                  <div className="border-b border-slate-400 min-h-[20px] text-center font-bold text-slate-900 print:text-black print:border-black">
+                    {data.horarioSolicitadoInicio || '_____'}
+                  </div>
+                )}
+              </div>
+              <span className="font-bold text-slate-500 px-1 print:text-black">às</span>
+              <div className="w-24">
+                {isEditable ? (
+                  <input
+                    type="text"
+                    value={data.horarioSolicitadoFim}
+                    onChange={e => onChange?.('horarioSolicitadoFim', e.target.value)}
+                    placeholder="19:00"
+                    className="w-full px-2 py-1 text-[11px] font-bold text-center text-slate-900 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0E7B86]"
+                  />
+                ) : (
+                  <div className="border-b border-slate-400 min-h-[20px] text-center font-bold text-slate-900 print:text-black print:border-black">
+                    {data.horarioSolicitadoFim || '______'}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Caixa 2: FUNÇÃO */}
-      <div className="border-x border-b border-black p-3 bg-white">
-        <div className="flex items-center justify-between mb-2">
-          <span className="font-bold text-black uppercase tracking-wider block">FUNÇÃO:</span>
+      {/* Card 2: FUNÇÃO DO COLABORADOR */}
+      <div className="border border-slate-300 rounded-xl p-3.5 mb-3 bg-white shadow-2xs print:border-black print:rounded-none">
+        <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-200 print:border-black">
+          <div className="flex items-center gap-2">
+            <span className="font-black text-slate-900 uppercase tracking-wider text-[11px] print:text-black">
+              FUNÇÃO:
+            </span>
+            <span className="text-[10px] text-slate-400 font-medium print:hidden">
+              (Selecione a categoria do colaborador para a troca)
+            </span>
+          </div>
+
           {isEditable && (
-            <span className="text-[10px] font-semibold text-[#0E7B86] bg-[#EBF7F8] px-2 py-0.5 rounded border border-[#C4E5E8] print:hidden">
-              Clique no campo para marcar a função do colaborador ( X )
+            <span className="text-[9.5px] font-bold text-[#0E7B86] bg-[#EBF7F8] px-2 py-0.5 rounded border border-[#C4E5E8] print:hidden">
+              Clique para marcar ( X )
             </span>
           )}
         </div>
 
         {/* 2 Colunas Exatas da Folha Oficial */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-[11px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1.5 text-[11px]">
           {/* Coluna 1 */}
           <div className="space-y-1.5">
             {FUNCOES_COLUNA_1.map((label) => {
@@ -260,28 +313,29 @@ export const AutorizacaoTrocaPlantaoPrint: React.FC<AutorizacaoTrocaPlantaoPrint
                   onClick={() => {
                     if (isEditable) handleToggleFuncao(label);
                   }}
-                  className={`flex items-center gap-2 select-none transition-all ${
+                  className={`flex items-center gap-2.5 transition-all select-none rounded-lg p-1 ${
                     isEditable 
-                      ? 'cursor-pointer hover:bg-slate-50 p-1 rounded-md group' 
+                      ? checked 
+                        ? 'bg-[#EBF7F8] border border-[#C4E5E8] text-[#0E7B86] cursor-pointer' 
+                        : 'hover:bg-slate-50 border border-transparent cursor-pointer'
                       : ''
                   }`}
                 >
-                  {isEditable && (
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => handleToggleFuncao(label)}
-                      className="w-3.5 h-3.5 accent-[#0E7B86] rounded cursor-pointer print:hidden"
-                    />
-                  )}
-
-                  <span className="font-mono text-xs font-bold text-black w-6 text-center whitespace-pre">
+                  <span className={`font-mono text-xs font-black w-6 text-center whitespace-pre ${
+                    checked ? 'text-[#0E7B86] print:text-black' : 'text-slate-700 print:text-black'
+                  }`}>
                     ({checked ? ' X ' : '   '})
                   </span>
 
-                  <span className={`${checked ? 'font-black text-black' : 'text-black'} ${isEditable ? 'group-hover:text-[#0E7B86]' : ''}`}>
+                  <span className={`text-[11px] leading-tight ${
+                    checked ? 'font-black text-slate-900 print:font-bold' : 'font-medium text-slate-800'
+                  }`}>
                     {label}
                   </span>
+
+                  {checked && isEditable && (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#0E7B86] ml-auto mr-1 print:hidden flex-shrink-0" />
+                  )}
                 </div>
               );
             })}
@@ -297,28 +351,29 @@ export const AutorizacaoTrocaPlantaoPrint: React.FC<AutorizacaoTrocaPlantaoPrint
                   onClick={() => {
                     if (isEditable) handleToggleFuncao(label);
                   }}
-                  className={`flex items-center gap-2 select-none transition-all ${
+                  className={`flex items-center gap-2.5 transition-all select-none rounded-lg p-1 ${
                     isEditable 
-                      ? 'cursor-pointer hover:bg-slate-50 p-1 rounded-md group' 
+                      ? checked 
+                        ? 'bg-[#EBF7F8] border border-[#C4E5E8] text-[#0E7B86] cursor-pointer' 
+                        : 'hover:bg-slate-50 border border-transparent cursor-pointer'
                       : ''
                   }`}
                 >
-                  {isEditable && (
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => handleToggleFuncao(label)}
-                      className="w-3.5 h-3.5 accent-[#0E7B86] rounded cursor-pointer print:hidden"
-                    />
-                  )}
-
-                  <span className="font-mono text-xs font-bold text-black w-6 text-center whitespace-pre">
+                  <span className={`font-mono text-xs font-black w-6 text-center whitespace-pre ${
+                    checked ? 'text-[#0E7B86] print:text-black' : 'text-slate-700 print:text-black'
+                  }`}>
                     ({checked ? ' X ' : '   '})
                   </span>
 
-                  <span className={`${checked ? 'font-black text-black' : 'text-black'} ${isEditable ? 'group-hover:text-[#0E7B86]' : ''}`}>
+                  <span className={`text-[11px] leading-tight ${
+                    checked ? 'font-black text-slate-900 print:font-bold' : 'font-medium text-slate-800'
+                  }`}>
                     {label}
                   </span>
+
+                  {checked && isEditable && (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#0E7B86] ml-auto mr-1 print:hidden flex-shrink-0" />
+                  )}
                 </div>
               );
             })}
@@ -326,81 +381,88 @@ export const AutorizacaoTrocaPlantaoPrint: React.FC<AutorizacaoTrocaPlantaoPrint
         </div>
       </div>
 
-      {/* Caixa 3: Normas e Regras de Troca de Plantão */}
-      <div className="border-x border-b border-black p-3 bg-slate-50/40 text-[10px] leading-tight space-y-1.5">
-        <p className="font-bold text-black">
-          Fica assegurado a troca de plantões entre trabalhadores com limites de no máximo 02 (duas) ao mês, desde que cumpra-se o seguinte:
-        </p>
-        <ol className="list-decimal pl-4 space-y-1 text-black font-normal">
-          <li>Deve ser informado a Supervisão do setor e ao RH da empresa com intervalo mínimo 48 (Quarenta e Oito) horas de antecedência;</li>
-          <li>Será permitida apenas uma troca por mês entre o titular do plantão, seu substituto, e vice-versa;</li>
-          <li>O Formulário deve constar a assinatura do trabalhador titular do plantão, do substituto e da supervisão de setor para protocolo junto ao RH;</li>
-          <li>Após o acordo firmado, a responsabilidade do cumprimento do plantão será toda do trabalhador substituto;</li>
+      {/* Card 3: Normas e Regras de Troca de Plantão */}
+      <div className="border border-slate-300 rounded-xl p-3.5 mb-3 bg-slate-50/70 text-[9.5px] leading-normal shadow-2xs print:border-black print:rounded-none print:bg-transparent">
+        <div className="flex items-center gap-1.5 mb-1.5">
+          <ShieldCheck className="w-3.5 h-3.5 text-[#0E7B86] print:text-black flex-shrink-0" />
+          <span className="font-extrabold text-slate-900 print:text-black">
+            Fica assegurada a troca de plantões entre trabalhadores com limites de no máximo 02 (duas) ao mês, desde que cumpra-se o seguinte:
+          </span>
+        </div>
+
+        <ol className="list-decimal pl-4 space-y-1 text-slate-700 print:text-black font-medium">
+          <li>Deve ser informado à Supervisão do setor e ao RH da empresa com intervalo mínimo de <strong>48 (quarenta e oito) horas de antecedência</strong>;</li>
+          <li>Será permitida apenas <strong>uma troca por mês</strong> entre o titular do plantão, seu substituto, e vice-versa;</li>
+          <li>O Formulário deve constar a <strong>assinatura do trabalhador titular do plantão, do substituto e da supervisão de setor</strong> para protocolo junto ao RH;</li>
+          <li>Após o acordo firmado, a <strong>responsabilidade do cumprimento do plantão será toda do trabalhador substituto</strong>;</li>
           <li>Será permitida a troca de plantões caso o profissional não extrapole a jornada máxima permitida;</li>
-          <li>As trocas devem ser realizadas dentro do mesmo período de fechamento, sendo de 21 a 20 de cada mês.</li>
+          <li>As trocas devem ser realizadas dentro do mesmo período de fechamento, sendo de <strong>21 a 20 de cada mês</strong>;</li>
           <li>Não será aceito formulários de trocas com erro de preenchimento.</li>
         </ol>
       </div>
 
-      {/* Caixa 4: JUSTIFICATIVA DO SOLICITANTE */}
-      <div className="border-x border-b border-black">
-        <div className="border-b border-black bg-slate-100/70 py-1 px-3 text-center font-bold text-[11px] uppercase tracking-wider text-black">
+      {/* Card 4: JUSTIFICATIVA DO SOLICITANTE */}
+      <div className="border border-slate-300 rounded-xl mb-3 overflow-hidden shadow-2xs print:border-black print:rounded-none">
+        <div className="bg-slate-100 py-1.5 px-3 border-b border-slate-200 text-center font-black text-[10.5px] uppercase tracking-wider text-slate-800 print:border-black print:bg-slate-200 print:text-black">
           JUSTIFICATIVA DO SOLICITANTE
         </div>
-        <div className="p-3">
+        <div className="p-3 bg-white">
           {isEditable ? (
             <textarea
-              rows={3}
+              rows={2}
               value={data.justificativaSolicitante}
               onChange={e => onChange?.('justificativaSolicitante', e.target.value)}
-              placeholder="Descreva a justificativa e o motivo da solicitação da troca de plantão..."
-              className="w-full outline-none text-[11px] bg-amber-50/40 p-2 border border-slate-200 rounded-sm print:border-none print:bg-transparent resize-none leading-relaxed"
+              placeholder="Descreva detalhadamente o motivo da solicitação da troca de plantão..."
+              className="w-full outline-none text-[11px] bg-slate-50 p-2.5 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-[#0E7B86] print:border-none print:bg-transparent resize-none leading-relaxed"
             />
           ) : (
-            <div className="min-h-[50px] text-[11px] text-black whitespace-pre-wrap leading-relaxed">
+            <div className="min-h-[42px] text-[11px] text-slate-800 print:text-black whitespace-pre-wrap leading-relaxed">
               {data.justificativaSolicitante || (
                 <div className="space-y-3 pt-1">
-                  <div className="border-b border-slate-300 h-4"></div>
-                  <div className="border-b border-slate-300 h-4"></div>
+                  <div className="border-b border-slate-300 print:border-black h-4"></div>
+                  <div className="border-b border-slate-300 print:border-black h-4"></div>
                 </div>
               )}
             </div>
           )}
 
           {/* Assinaturas Solicitante e Solicitado */}
-          <div className="grid grid-cols-2 gap-8 pt-8 pb-1 text-center">
+          <div className="grid grid-cols-2 gap-8 pt-7 pb-1 text-center">
             <div>
-              <div className="border-t border-black w-4/5 mx-auto"></div>
-              <span className="block text-[10px] font-bold text-black mt-1">Assinatura Solicitante</span>
+              <div className="border-t border-slate-400 print:border-black w-4/5 mx-auto"></div>
+              <span className="block text-[10px] font-bold text-slate-800 print:text-black mt-1 uppercase tracking-wider">
+                Assinatura Solicitante
+              </span>
             </div>
             <div>
-              <div className="border-t border-black w-4/5 mx-auto"></div>
-              <span className="block text-[10px] font-bold text-black mt-1">Assinatura Solicitado</span>
+              <div className="border-t border-slate-400 print:border-black w-4/5 mx-auto"></div>
+              <span className="block text-[10px] font-bold text-slate-800 print:text-black mt-1 uppercase tracking-wider">
+                Assinatura Solicitado
+              </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Caixa 5: JUSTIFICATIVA DO SUPERVISOR */}
-      <div className="border-x border-b border-black">
-        <div className="border-b border-black bg-slate-100/70 py-1 px-3 text-center font-bold text-[11px] uppercase tracking-wider text-black">
+      {/* Card 5: JUSTIFICATIVA DO SUPERVISOR */}
+      <div className="border border-slate-300 rounded-xl mb-3 overflow-hidden shadow-2xs print:border-black print:rounded-none">
+        <div className="bg-slate-100 py-1.5 px-3 border-b border-slate-200 text-center font-black text-[10.5px] uppercase tracking-wider text-slate-800 print:border-black print:bg-slate-200 print:text-black">
           JUSTIFICATIVA DO SUPERVISOR
         </div>
-        <div className="p-3">
+        <div className="p-3 bg-white">
           {isEditable ? (
             <textarea
               rows={2}
               value={data.justificativaSupervisor}
               onChange={e => onChange?.('justificativaSupervisor', e.target.value)}
-              placeholder="Parecer da supervisão sobre a viabilidade operacional e cobertura do setor..."
-              className="w-full outline-none text-[11px] bg-amber-50/40 p-2 border border-slate-200 rounded-sm print:border-none print:bg-transparent resize-none leading-relaxed"
+              placeholder="Parecer da supervisão sobre a viabilidade operacional e cobertura assistencial do setor..."
+              className="w-full outline-none text-[11px] bg-slate-50 p-2.5 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-[#0E7B86] print:border-none print:bg-transparent resize-none leading-relaxed"
             />
           ) : (
-            <div className="min-h-[35px] text-[11px] text-black whitespace-pre-wrap leading-relaxed">
+            <div className="min-h-[35px] text-[11px] text-slate-800 print:text-black whitespace-pre-wrap leading-relaxed">
               {data.justificativaSupervisor || (
                 <div className="space-y-3 pt-1">
-                  <div className="border-b border-slate-300 h-4"></div>
-                  <div className="border-b border-slate-300 h-4"></div>
+                  <div className="border-b border-slate-300 print:border-black h-4"></div>
                 </div>
               )}
             </div>
@@ -408,54 +470,60 @@ export const AutorizacaoTrocaPlantaoPrint: React.FC<AutorizacaoTrocaPlantaoPrint
         </div>
       </div>
 
-      {/* Caixa 6: APROVAÇÃO */}
-      <div className="border-x border-b border-black">
-        <div className="border-b border-black bg-slate-100/70 py-1 px-3 text-center font-bold text-[11px] uppercase tracking-wider text-black">
+      {/* Card 6: APROVAÇÃO */}
+      <div className="border border-slate-300 rounded-xl mb-3 overflow-hidden shadow-2xs print:border-black print:rounded-none">
+        <div className="bg-slate-100 py-1.5 px-3 border-b border-slate-200 text-center font-black text-[10.5px] uppercase tracking-wider text-slate-800 print:border-black print:bg-slate-200 print:text-black">
           APROVAÇÃO
         </div>
-        <div className="p-3 space-y-4">
+        <div className="p-3.5 bg-white space-y-4">
           {/* Linha da Data em Palmas - TO */}
-          <div className="flex items-end justify-center gap-1.5 text-[11px]">
-            <span className="font-bold text-black">Palmas - TO,</span>
-            <div className="border-b border-black w-10 text-center pb-0.5">
+          <div className="flex items-center justify-center gap-2 text-[11px]">
+            <span className="font-bold text-slate-900 print:text-black">Palmas - TO,</span>
+            <div className="w-12 text-center">
               {isEditable ? (
                 <input
                   type="text"
                   value={data.diaAprovacao}
                   onChange={e => onChange?.('diaAprovacao', e.target.value)}
                   placeholder="DD"
-                  className="w-full outline-none text-[11px] bg-amber-50/50 print:bg-transparent text-center font-bold"
+                  className="w-full px-1.5 py-0.5 text-[11px] font-bold text-center bg-slate-50 border border-slate-300 rounded-md focus:bg-white focus:ring-1 focus:ring-[#0E7B86]"
                 />
               ) : (
-                <span className="font-bold text-black">{data.diaAprovacao || '______'}</span>
+                <div className="border-b border-slate-400 print:border-black font-bold text-slate-900 print:text-black min-h-[18px]">
+                  {data.diaAprovacao || '______'}
+                </div>
               )}
             </div>
-            <span className="text-black">de</span>
-            <div className="border-b border-black w-36 text-center pb-0.5">
+            <span className="text-slate-600 print:text-black">de</span>
+            <div className="w-40 text-center">
               {isEditable ? (
                 <input
                   type="text"
                   value={data.mesAprovacao}
                   onChange={e => onChange?.('mesAprovacao', e.target.value)}
                   placeholder="Mês por extenso"
-                  className="w-full outline-none text-[11px] bg-amber-50/50 print:bg-transparent text-center font-bold"
+                  className="w-full px-2 py-0.5 text-[11px] font-bold text-center bg-slate-50 border border-slate-300 rounded-md focus:bg-white focus:ring-1 focus:ring-[#0E7B86]"
                 />
               ) : (
-                <span className="font-bold text-black">{data.mesAprovacao || '______________'}</span>
+                <div className="border-b border-slate-400 print:border-black font-bold text-slate-900 print:text-black min-h-[18px]">
+                  {data.mesAprovacao || '______________'}
+                </div>
               )}
             </div>
-            <span className="text-black">de</span>
-            <div className="border-b border-black w-16 text-center pb-0.5">
+            <span className="text-slate-600 print:text-black">de</span>
+            <div className="w-16 text-center">
               {isEditable ? (
                 <input
                   type="text"
                   value={data.anoAprovacao}
                   onChange={e => onChange?.('anoAprovacao', e.target.value)}
                   placeholder="AAAA"
-                  className="w-full outline-none text-[11px] bg-amber-50/50 print:bg-transparent text-center font-bold"
+                  className="w-full px-1.5 py-0.5 text-[11px] font-bold text-center bg-slate-50 border border-slate-300 rounded-md focus:bg-white focus:ring-1 focus:ring-[#0E7B86]"
                 />
               ) : (
-                <span className="font-bold text-black">{data.anoAprovacao || '_________'}</span>
+                <div className="border-b border-slate-400 print:border-black font-bold text-slate-900 print:text-black min-h-[18px]">
+                  {data.anoAprovacao || '_________'}
+                </div>
               )}
             </div>
           </div>
@@ -463,49 +531,61 @@ export const AutorizacaoTrocaPlantaoPrint: React.FC<AutorizacaoTrocaPlantaoPrint
           {/* Assinaturas da Supervisão do Setor e Recursos Humanos */}
           <div className="grid grid-cols-2 gap-8 pt-6 pb-2 text-center">
             <div>
-              <div className="border-t border-black w-4/5 mx-auto"></div>
-              <span className="block text-[10px] font-bold text-black mt-1">Supervisão do Setor</span>
+              <div className="border-t border-slate-400 print:border-black w-4/5 mx-auto"></div>
+              <span className="block text-[10px] font-bold text-slate-800 print:text-black mt-1 uppercase tracking-wider">
+                Supervisão do Setor
+              </span>
             </div>
             <div>
-              <div className="border-t border-black w-4/5 mx-auto"></div>
-              <span className="block text-[10px] font-bold text-black mt-1">Recursos Humanos</span>
+              <div className="border-t border-slate-400 print:border-black w-4/5 mx-auto"></div>
+              <span className="block text-[10px] font-bold text-slate-800 print:text-black mt-1 uppercase tracking-wider">
+                Recursos Humanos
+              </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Caixa 7: Rodapé de Lançamento no Sistema */}
-      <div className="border-x border-b border-black p-2.5 flex items-end justify-between gap-4 text-[11px] bg-white">
-        <div className="flex items-end gap-1.5">
-          <span className="font-bold text-black whitespace-nowrap">Lançado no sistema</span>
-          <div className="border-b border-black w-28 text-center pb-0.5">
+      {/* Card 7: Rodapé de Lançamento no Sistema */}
+      <div className="border border-slate-300 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[11px] bg-slate-50/60 shadow-2xs print:border-black print:rounded-none print:bg-transparent">
+        <div className="flex items-center gap-2">
+          <span className="font-extrabold text-slate-800 print:text-black whitespace-nowrap">
+            Lançado no sistema:
+          </span>
+          <div className="w-32">
             {isEditable ? (
               <input
                 type="text"
                 value={data.dataLancadoSistema}
                 onChange={e => onChange?.('dataLancadoSistema', e.target.value)}
                 placeholder="DD/MM/AAAA"
-                className="w-full outline-none text-[11px] bg-amber-50/50 print:bg-transparent text-center font-bold"
+                className="w-full px-2 py-0.5 text-[11px] font-bold text-center bg-white border border-slate-300 rounded-md focus:ring-1 focus:ring-[#0E7B86]"
               />
             ) : (
-              <span className="font-bold text-black">{data.dataLancadoSistema || '____/____/_____'}</span>
+              <div className="border-b border-slate-400 print:border-black text-center font-bold text-slate-900 print:text-black min-h-[18px]">
+                {data.dataLancadoSistema || '____/____/_____'}
+              </div>
             )}
           </div>
         </div>
 
-        <div className="flex items-end gap-1.5 flex-1">
-          <span className="font-bold text-black whitespace-nowrap">Visto:</span>
-          <div className="border-b border-black flex-1 min-h-[18px] pb-0.5">
+        <div className="flex items-center gap-2 flex-1 sm:max-w-md">
+          <span className="font-extrabold text-slate-800 print:text-black whitespace-nowrap">
+            Visto:
+          </span>
+          <div className="flex-1">
             {isEditable ? (
               <input
                 type="text"
                 value={data.vistoLancado}
                 onChange={e => onChange?.('vistoLancado', e.target.value)}
                 placeholder="Assinatura / Visto do responsável pelo lançamento"
-                className="w-full outline-none text-[11px] bg-amber-50/50 print:bg-transparent px-1 font-bold"
+                className="w-full px-2 py-0.5 text-[11px] font-bold bg-white border border-slate-300 rounded-md focus:ring-1 focus:ring-[#0E7B86]"
               />
             ) : (
-              <span className="font-bold text-black px-1">{data.vistoLancado}</span>
+              <div className="border-b border-slate-400 print:border-black font-bold text-slate-900 print:text-black min-h-[18px] px-1">
+                {data.vistoLancado || '________________________________________________'}
+              </div>
             )}
           </div>
         </div>

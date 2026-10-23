@@ -271,29 +271,12 @@ export const AutorizacaoHoraExtraPrint: React.FC<AutorizacaoHoraExtraPrintProps>
               </td>
             </tr>
 
-            {/* Linha de Colaborador e Matrícula */}
+            {/* Linha de Matrícula e Colaborador (Invertidos conforme solicitação) */}
             <tr className="border-t border-black text-[11px]" style={{ borderTop: '1px solid #000000' }}>
               <td 
                 className="p-2 border-r border-black"
                 style={{ borderRight: '1px solid #000000' }}
               >
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold whitespace-nowrap text-black">Colaborador:</span>
-                  {isEditable ? (
-                    <input
-                      type="text"
-                      value={data.colaborador}
-                      onChange={e => onChangeHeader?.('colaborador', e.target.value)}
-                      placeholder="Nome completo do colaborador"
-                      className="w-full outline-none text-[11px] bg-amber-50/50 print:bg-transparent"
-                      style={{ fontFamily: 'Arial, sans-serif' }}
-                    />
-                  ) : (
-                    <span className="font-bold text-black">{data.colaborador}</span>
-                  )}
-                </div>
-              </td>
-              <td className="p-2">
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold whitespace-nowrap text-black">Matrícula:</span>
                   {isEditable ? (
@@ -302,11 +285,28 @@ export const AutorizacaoHoraExtraPrint: React.FC<AutorizacaoHoraExtraPrintProps>
                       value={data.matricula}
                       onChange={e => onChangeHeader?.('matricula', e.target.value)}
                       placeholder="Nº da matrícula"
-                      className="w-48 outline-none text-[11px] font-mono bg-amber-50/50 print:bg-transparent"
+                      className="w-full outline-none text-[11px] font-mono bg-amber-50/50 print:bg-transparent"
                       style={{ fontFamily: 'Arial, sans-serif' }}
                     />
                   ) : (
                     <span className="font-mono font-bold text-black">{data.matricula}</span>
+                  )}
+                </div>
+              </td>
+              <td className="p-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold whitespace-nowrap text-black">Colaborador:</span>
+                  {isEditable ? (
+                    <input
+                      type="text"
+                      value={data.colaborador}
+                      onChange={e => onChangeHeader?.('colaborador', e.target.value)}
+                      placeholder="Nome completo do colaborador"
+                      className="w-full outline-none text-[11px] bg-amber-50/50 print:bg-transparent font-bold"
+                      style={{ fontFamily: 'Arial, sans-serif' }}
+                    />
+                  ) : (
+                    <span className="font-bold text-black">{data.colaborador}</span>
                   )}
                 </div>
               </td>

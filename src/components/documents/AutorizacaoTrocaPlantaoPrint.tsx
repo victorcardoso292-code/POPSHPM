@@ -25,15 +25,18 @@ interface AutorizacaoTrocaPlantaoPrintProps {
   isEditable?: boolean;
 }
 
-const FUNCOES_DISPONIVEIS = [
-  { id: 'enfermeiro', label: 'Enfermeiro(a)' },
-  { id: 'copeira', label: 'Copeira' },
-  { id: 'tec-enfermagem', label: 'Téc. Em Enfermagem' },
-  { id: 'fisioterapeuta', label: 'Fisioterapeuta' },
-  { id: 'recepcionista', label: 'Recepcionista' },
-  { id: 'nutricionista', label: 'Nutricionista' },
-  { id: 'servicos-gerais', label: 'Serviços Gerais' },
-  { id: 'farmaceutico', label: 'Farmacêutico(a) ou Auxiliar de Farmácia' },
+const FUNCOES_COLUNA_1 = [
+  'Enfermeiro(a)',
+  'Téc. Em Enfermagem',
+  'Recepcionista',
+  'Serviços Gerais'
+];
+
+const FUNCOES_COLUNA_2 = [
+  'Copeira',
+  'Fisioterapeuta',
+  'Nutricionista',
+  'Farmacêutico(a) ou Auxiliar de Farmácia'
 ];
 
 export const AutorizacaoTrocaPlantaoPrint: React.FC<AutorizacaoTrocaPlantaoPrintProps> = ({
@@ -41,6 +44,25 @@ export const AutorizacaoTrocaPlantaoPrint: React.FC<AutorizacaoTrocaPlantaoPrint
   onChange,
   isEditable = false
 }) => {
+  const isFuncaoChecked = (label: string) => {
+    if (!data.funcao) return false;
+    const clean = label.trim().toLowerCase();
+    const current = data.funcao.toLowerCase();
+    if (current === clean) return true;
+    const list = current.split(/[,;|]/).map(s => s.trim());
+    return list.includes(clean);
+  };
+
+  const handleToggleFuncao = (label: string) => {
+    if (!onChange) return;
+    if (isFuncaoChecked(label)) {
+      const parts = (data.funcao || '').split(/[,;|]/).map(s => s.trim()).filter(Boolean);
+      const filtered = parts.filter(p => p.toLowerCase() !== label.toLowerCase());
+      onChange('funcao', filtered.join(', '));
+    } else {
+      onChange('funcao', label);
+    }
+  };
   return (
     <div 
       className="text-black bg-white p-4 sm:p-8 max-w-[820px] mx-auto text-[11px] leading-tight border border-black print:border-none print:p-0 rounded-none shadow-xs page-break-avoid"
@@ -217,29 +239,90 @@ export const AutorizacaoTrocaPlantaoPrint: React.FC<AutorizacaoTrocaPlantaoPrint
 
       {/* Caixa 2: FUNÇÃO */}
       <div className="border-x border-b border-black p-3 bg-white">
-        <span className="font-bold text-black uppercase tracking-wider block mb-2">FUNÇÃO:</span>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-1.5 gap-x-6 text-[11px]">
-          {FUNCOES_DISPONIVEIS.map((f) => {
-            const isChecked = data.funcao === f.label || data.funcao === f.id;
-            return (
-              <label 
-                key={f.id} 
-                className={`flex items-center gap-2 cursor-pointer ${isEditable ? 'hover:text-[#0E7B86]' : ''}`}
-                onClick={() => {
-                  if (isEditable) {
-                    onChange?.('funcao', isChecked ? '' : f.label);
-                  }
-                }}
-              >
-                <span className="font-mono text-xs font-bold w-4 text-center">
-                  ( {isChecked ? 'X' : ' '} )
-                </span>
-                <span className={isChecked ? 'font-black text-black' : 'text-black'}>
-                  {f.label}
-                </span>
-              </label>
-            );
-          })}
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-bold text-black uppercase tracking-wider block">FUNÇÃO:</span>
+          {isEditable && (
+            <span className="text-[10px] font-semibold text-[#0E7B86] bg-[#EBF7F8] px-2 py-0.5 rounded border border-[#C4E5E8] print:hidden">
+              Clique no campo para marcar a função do colaborador ( X )
+            </span>
+          )}
+        </div>
+
+        {/* 2 Colunas Exatas da Folha Oficial */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-[11px]">
+          {/* Coluna 1 */}
+          <div className="space-y-1.5">
+            {FUNCOES_COLUNA_1.map((label) => {
+              const checked = isFuncaoChecked(label);
+              return (
+                <div
+                  key={label}
+                  onClick={() => {
+                    if (isEditable) handleToggleFuncao(label);
+                  }}
+                  className={`flex items-center gap-2 select-none transition-all ${
+                    isEditable 
+                      ? 'cursor-pointer hover:bg-slate-50 p-1 rounded-md group' 
+                      : ''
+                  }`}
+                >
+                  {isEditable && (
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => handleToggleFuncao(label)}
+                      className="w-3.5 h-3.5 accent-[#0E7B86] rounded cursor-pointer print:hidden"
+                    />
+                  )}
+
+                  <span className="font-mono text-xs font-bold text-black w-6 text-center whitespace-pre">
+                    ({checked ? ' X ' : '   '})
+                  </span>
+
+                  <span className={`${checked ? 'font-black text-black' : 'text-black'} ${isEditable ? 'group-hover:text-[#0E7B86]' : ''}`}>
+                    {label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Coluna 2 */}
+          <div className="space-y-1.5">
+            {FUNCOES_COLUNA_2.map((label) => {
+              const checked = isFuncaoChecked(label);
+              return (
+                <div
+                  key={label}
+                  onClick={() => {
+                    if (isEditable) handleToggleFuncao(label);
+                  }}
+                  className={`flex items-center gap-2 select-none transition-all ${
+                    isEditable 
+                      ? 'cursor-pointer hover:bg-slate-50 p-1 rounded-md group' 
+                      : ''
+                  }`}
+                >
+                  {isEditable && (
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => handleToggleFuncao(label)}
+                      className="w-3.5 h-3.5 accent-[#0E7B86] rounded cursor-pointer print:hidden"
+                    />
+                  )}
+
+                  <span className="font-mono text-xs font-bold text-black w-6 text-center whitespace-pre">
+                    ({checked ? ' X ' : '   '})
+                  </span>
+
+                  <span className={`${checked ? 'font-black text-black' : 'text-black'} ${isEditable ? 'group-hover:text-[#0E7B86]' : ''}`}>
+                    {label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 

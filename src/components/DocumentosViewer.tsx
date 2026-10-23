@@ -23,8 +23,29 @@ import { SolicitacaoNotaFiscalPrint, SolicitacaoNotaFiscalData } from './documen
 import { AutorizacaoHoraExtraPrint, AutorizacaoHoraExtraData, HoraExtraRow, computeRowExtraHours } from './documents/AutorizacaoHoraExtraPrint';
 import { DeclaracaoComparecimentoPrint, DeclaracaoComparecimentoData } from './documents/DeclaracaoComparecimentoPrint';
 import { CardapioRefeitorioPrint } from './documents/CardapioRefeitorioPrint';
+import { AutorizacaoTrocaPlantaoPrint, AutorizacaoTrocaPlantaoData } from './documents/AutorizacaoTrocaPlantaoPrint';
+import { CalendarClock } from 'lucide-react';
 
-export type DocumentType = 'fusex' | 'retirada-corpo' | 'nota-fiscal' | 'hora-extra' | 'declaracao-comparecimento' | 'cardapio-refeitorio';
+export type DocumentType = 'troca-plantao' | 'fusex' | 'retirada-corpo' | 'nota-fiscal' | 'hora-extra' | 'declaracao-comparecimento' | 'cardapio-refeitorio';
+
+const INITIAL_TROCA_PLANTAO: AutorizacaoTrocaPlantaoData = {
+  funcionarioSolicitante: '',
+  dataPlantaoSolicitante: '',
+  horarioSolicitanteInicio: '',
+  horarioSolicitanteFim: '',
+  funcionarioSolicitado: '',
+  dataPlantaoSolicitado: '',
+  horarioSolicitadoInicio: '',
+  horarioSolicitadoFim: '',
+  funcao: '',
+  justificativaSolicitante: '',
+  justificativaSupervisor: '',
+  diaAprovacao: '',
+  mesAprovacao: '',
+  anoAprovacao: '',
+  dataLancadoSistema: '',
+  vistoLancado: ''
+};
 
 const INITIAL_FUSEX: TermoFusexData = {
   nomeTitular: '',
@@ -128,6 +149,7 @@ export const DocumentosViewer: React.FC = () => {
   const [isEditMode, setIsEditMode] = useState<boolean>(true);
 
   // Form Data States
+  const [trocaPlantaoData, setTrocaPlantaoData] = useState<AutorizacaoTrocaPlantaoData>(INITIAL_TROCA_PLANTAO);
   const [fusexData, setFusexData] = useState<TermoFusexData>(INITIAL_FUSEX);
   const [retiradaData, setRetiradaData] = useState<TermoRetiradaCorpoData>(INITIAL_RETIRADA_CORPO);
   const [notaFiscalData, setNotaFiscalData] = useState<SolicitacaoNotaFiscalData>(INITIAL_NOTA_FISCAL);
@@ -136,15 +158,27 @@ export const DocumentosViewer: React.FC = () => {
 
   const categories = [
     { id: 'todos', label: 'Todos os Documentos' },
+    { id: 'rh', label: 'RH, Plantões & Horas Extras' },
     { id: 'refeitorio', label: 'Cardápio & Refeitório' },
     { id: 'declaracoes', label: 'Declarações & Laudos' },
     { id: 'termos', label: 'Termos & Compromisso' },
-    { id: 'rh', label: 'RH & Horas Extras' },
     { id: 'obito', label: 'Liberação de Óbito' },
     { id: 'faturamento', label: 'Nota Fiscal & Faturamento' }
   ];
 
   const docList = [
+    {
+      id: 'troca-plantao' as DocumentType,
+      title: 'Autorização para Troca de Plantão – Rede Medical',
+      shortTitle: 'Autorização para Troca de Plantão',
+      category: 'rh',
+      orgao: 'Rede Medical • Gestão de Pessoas & RH',
+      description: 'Formulário padrão oficial para solicitação e autorização de troca de plantões entre colaboradores (Enfermagem, Recepção, Farmácia, Copeira, etc.), com regras (máx 02 trocas/mês), justificativas e aprovação do supervisor e RH.',
+      icon: CalendarClock,
+      badge: 'Escalas & RH',
+      badgeColor: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+      prazo: 'Mínimo 48h antecedência'
+    },
     {
       id: 'cardapio-refeitorio' as DocumentType,
       title: 'Cardápio Rotativo Refeitório – Outubro 2026 (Master Massas)',
@@ -247,6 +281,7 @@ export const DocumentosViewer: React.FC = () => {
       }, 250);
       return;
     }
+    if (docId === 'troca-plantao') setTrocaPlantaoData(INITIAL_TROCA_PLANTAO);
     if (docId === 'fusex') setFusexData(INITIAL_FUSEX);
     if (docId === 'retirada-corpo') setRetiradaData(INITIAL_RETIRADA_CORPO);
     if (docId === 'nota-fiscal') setNotaFiscalData(INITIAL_NOTA_FISCAL);
@@ -260,6 +295,7 @@ export const DocumentosViewer: React.FC = () => {
   };
 
   const handleClearCurrentForm = () => {
+    if (activeDoc === 'troca-plantao') setTrocaPlantaoData(INITIAL_TROCA_PLANTAO);
     if (activeDoc === 'fusex') setFusexData(INITIAL_FUSEX);
     if (activeDoc === 'retirada-corpo') setRetiradaData(INITIAL_RETIRADA_CORPO);
     if (activeDoc === 'nota-fiscal') setNotaFiscalData(INITIAL_NOTA_FISCAL);
@@ -275,7 +311,26 @@ export const DocumentosViewer: React.FC = () => {
     const mesAtual = now.toLocaleString('pt-BR', { month: 'long' });
     const anoAtual = String(now.getFullYear());
 
-    if (activeDoc === 'declaracao-comparecimento') {
+    if (activeDoc === 'troca-plantao') {
+      setTrocaPlantaoData({
+        funcionarioSolicitante: 'ANA PAULA SILVA SOUZA',
+        dataPlantaoSolicitante: '15/11/2026',
+        horarioSolicitanteInicio: '07:00',
+        horarioSolicitanteFim: '19:00',
+        funcionarioSolicitado: 'MARCOS VINICIUS PEREIRA',
+        dataPlantaoSolicitado: '22/11/2026',
+        horarioSolicitadoInicio: '07:00',
+        horarioSolicitadoFim: '19:00',
+        funcao: 'Téc. Em Enfermagem',
+        justificativaSolicitante: 'Necessidade de comparecimento a consulta médica e realização de exames laboratoriais agendados.',
+        justificativaSupervisor: 'Troca viável operacionalmente, sem prejuízo à escala e cobertura assistencial do setor.',
+        diaAprovacao: diaAtual,
+        mesAprovacao: mesAtual,
+        anoAprovacao: anoAtual,
+        dataLancadoSistema: dStr,
+        vistoLancado: 'Coordenação de Escalas'
+      });
+    } else if (activeDoc === 'declaracao-comparecimento') {
       setDeclaracaoData({
         nomePaciente: 'GABRIEL RODRIGUES DE CARVALHO',
         cpfPaciente: '852.147.963-00',
@@ -427,6 +482,12 @@ export const DocumentosViewer: React.FC = () => {
       {/* Printable Area when print is triggered */}
       {activeDoc && (
         <div id="documento-print-container" className="hidden print:block font-sans text-black w-full m-0 p-0">
+          {activeDoc === 'troca-plantao' && (
+            <AutorizacaoTrocaPlantaoPrint 
+              data={trocaPlantaoData} 
+              isEditable={false} 
+            />
+          )}
           {activeDoc === 'declaracao-comparecimento' && (
             <DeclaracaoComparecimentoPrint
               data={declaracaoData}
@@ -477,7 +538,7 @@ export const DocumentosViewer: React.FC = () => {
                   DOCUMENTOS & MODELOS HOSPITALARES
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]">
-                  6 Modelos & Documentos Oficiais
+                  7 Modelos & Documentos Oficiais
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
@@ -638,6 +699,7 @@ export const DocumentosViewer: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-sm sm:text-base font-black tracking-tight leading-tight">
+                      {activeDoc === 'troca-plantao' && 'Autorização para Troca de Plantão – Rede Medical'}
                       {activeDoc === 'cardapio-refeitorio' && 'Cardápio Rotativo Refeitório – Outubro 2026 (Master Massas)'}
                       {activeDoc === 'declaracao-comparecimento' && 'Declaração de Comparecimento – Hospital Palmas Medical'}
                       {activeDoc === 'fusex' && 'Termo de Compromisso FUSEx – Exército Brasileiro'}
@@ -763,6 +825,13 @@ export const DocumentosViewer: React.FC = () => {
 
               {/* Document Preview Content */}
               <div className="p-4 sm:p-6 overflow-y-auto bg-slate-100/70 flex-1">
+                {activeDoc === 'troca-plantao' && (
+                  <AutorizacaoTrocaPlantaoPrint 
+                    data={trocaPlantaoData}
+                    isEditable={isEditMode}
+                    onChange={(field, val) => setTrocaPlantaoData(prev => ({ ...prev, [field]: val }))}
+                  />
+                )}
                 {activeDoc === 'cardapio-refeitorio' && (
                   <CardapioRefeitorioPrint />
                 )}

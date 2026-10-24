@@ -8,7 +8,8 @@ import {
   LogOut,
   AlertTriangle,
   Moon,
-  Sun
+  Sun,
+  RotateCcw
 } from 'lucide-react';
 import { AppMode } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
@@ -43,6 +44,50 @@ export const Header: React.FC<HeaderProps> = ({
   isDarkMode = false,
   onToggleDarkMode
 }) => {
+  const [isClearingCache, setIsClearingCache] = React.useState(false);
+
+  const handleClearCacheHardReload = async () => {
+    setIsClearingCache(true);
+    try {
+      // 1. Limpa todos os caches do CacheStorage da aplicação
+      if ('caches' in window) {
+        const cacheNames = await window.caches.keys();
+        await Promise.all(cacheNames.map(name => window.caches.delete(name)));
+      }
+
+      // 2. Desregistra todos os Service Workers registrados
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(r => r.unregister()));
+      }
+
+      // 3. Limpa sessionStorage temporário
+      try {
+        sessionStorage.clear();
+      } catch {}
+
+      // 4. Executa recarregamento forçado com parâmetro de invalidação de cache (equivalente a Ctrl + Shift + R)
+      const url = new URL(window.location.href);
+      url.searchParams.set('_hard_reload', Date.now().toString());
+      window.location.replace(url.toString());
+      window.location.reload();
+    } catch (err) {
+      console.error('Erro ao limpar cache:', err);
+      window.location.reload();
+    }
+  };
+
+  // Suporte adicional ao atalho Ctrl + Shift + R ou Cmd + Shift + R
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'R' || e.key === 'r')) {
+        handleClearCacheHardReload();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <header className="bg-white text-slate-800 shadow-xs border-b border-slate-200/90 sticky top-0 z-40">
       {/* Caixa de Alerta Operacional: PEGAR ASSINATURAS NAS GUIAS */}
@@ -167,6 +212,22 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>{selectedExamsCount} Exame{selectedExamsCount > 1 ? 's' : ''}</span>
               </button>
             )}
+
+            {/* Botão LIMPAR O CACHE com funcionalidade equivalente a Ctrl + Shift + R */}
+            <button
+              type="button"
+              onClick={handleClearCacheHardReload}
+              disabled={isClearingCache}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black bg-slate-100 hover:bg-[#0E7B86] hover:text-white dark:bg-slate-800 dark:hover:bg-[#0E7B86] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-all shadow-2xs cursor-pointer group disabled:opacity-50"
+              title="Limpar o Cache e Recarregar Forçado (Equivalente ao atalho Ctrl + Shift + R)"
+              aria-label="Limpar o Cache"
+            >
+              <RotateCcw className={`w-3.5 h-3.5 text-[#0E7B86] group-hover:text-white dark:text-[#4FD1C5] transition-transform ${isClearingCache ? 'animate-spin' : 'group-hover:-rotate-90'}`} />
+              <span className="tracking-tight">{isClearingCache ? 'LIMPANDO...' : 'LIMPAR O CACHE'}</span>
+              <span className="hidden xl:inline text-[9px] font-mono font-bold bg-white/80 dark:bg-slate-700/80 group-hover:bg-white/20 px-1.5 py-0.5 rounded text-slate-500 group-hover:text-white border border-slate-200/60 dark:border-slate-600/60">
+                Ctrl+Shift+R
+              </span>
+            </button>
 
             {/* PWA Install Button */}
             <PWAInstallButton variant="header" />

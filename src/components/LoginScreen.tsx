@@ -8,7 +8,8 @@ import {
   AlertCircle, 
   ArrowRight,
   Building2,
-  CheckCircle2
+  CheckCircle2,
+  RotateCcw
 } from 'lucide-react';
 import { verifySystemCredentials, setSystemAuth } from '../services/storageService';
 
@@ -74,9 +75,34 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           </div>
         </div>
 
-        <div className="hidden sm:flex items-center gap-1.5 text-xs text-[#095962] font-semibold bg-white/80 border border-[#C4E5E8] px-3 py-1.5 rounded-full shadow-2xs">
-          <Building2 className="w-3.5 h-3.5 text-[#0E7B86]" />
-          <span>Hospital Palmas Medical</span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={async () => {
+              if ('caches' in window) {
+                const names = await caches.keys();
+                await Promise.all(names.map(n => caches.delete(n)));
+              }
+              if ('serviceWorker' in navigator) {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                await Promise.all(regs.map(r => r.unregister()));
+              }
+              const url = new URL(window.location.href);
+              url.searchParams.set('_hard_reload', Date.now().toString());
+              window.location.replace(url.toString());
+              window.location.reload();
+            }}
+            className="flex items-center gap-1.5 text-xs text-[#095962] font-black bg-white/90 hover:bg-[#0E7B86] hover:text-white border border-[#C4E5E8] px-3 py-1.5 rounded-xl shadow-2xs transition-colors cursor-pointer"
+            title="Limpar o Cache e Recarregar Forçado (Ctrl + Shift + R)"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>LIMPAR O CACHE</span>
+          </button>
+
+          <div className="hidden sm:flex items-center gap-1.5 text-xs text-[#095962] font-semibold bg-white/80 border border-[#C4E5E8] px-3 py-1.5 rounded-full shadow-2xs">
+            <Building2 className="w-3.5 h-3.5 text-[#0E7B86]" />
+            <span>Hospital Palmas Medical</span>
+          </div>
         </div>
       </div>
 

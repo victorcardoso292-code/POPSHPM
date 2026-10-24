@@ -389,7 +389,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
   const tableRefName = useMemo(() => {
     if (activeTable === 'amor') return 'Tabela Amor Saúde Contratual 2026';
     if (activeTable === 'lab') return 'Tabela Laboratorial TUSS';
-    return 'Pronto-Socorro / Particular';
+    return 'Exames de Imagem';
   }, [activeTable]);
 
   const quoteItemsForExams: QuoteItem[] = useMemo(() => {
@@ -485,7 +485,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
     if (patientNameQuote.trim()) {
       text += `👤 Paciente: ${patientNameQuote.trim()}\n`;
     }
-    text += `📋 Base/Tabela: ${activeTable === 'amor' ? 'Amor Saúde (Contratual)' : (activeTable === 'lab' ? 'Exames Laboratoriais' : 'Pronto-Socorro / Particular')}\n`;
+    text += `📋 Base/Tabela: ${activeTable === 'amor' ? 'Amor Saúde (Contratual)' : (activeTable === 'lab' ? 'Exames Laboratoriais' : 'Exames de Imagem')}\n`;
     text += `--------------------------------------------------\n`;
 
     selectedList.forEach((item, i) => {
@@ -548,7 +548,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
                   : 'bg-slate-100 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86]'
               }`}
             >
-              <span>Pronto-Socorro / Particular</span>
+              <span>Exames de Imagem</span>
               <span className={`text-xs px-2 py-0.5 rounded-lg font-black ${
                 activeTable === 'ps' ? 'bg-[#095962] text-white' : 'bg-slate-200 text-slate-700'
               }`}>
@@ -660,7 +660,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
           {activeTable === 'ps' && (
             <div className="flex items-center gap-2 bg-[#EBF7F8] border border-[#C4E5E8] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-[#0E7B86]">
               <span className="text-slate-500 font-medium">Tabela:</span>
-              <span className="font-black text-[#095962]">Particular / PS</span>
+              <span className="font-black text-[#095962]">Exames de Imagem</span>
             </div>
           )}
         </div>
@@ -1349,7 +1349,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
                   <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
                     <span className="text-[11px] font-bold text-slate-500 uppercase block">Tabela Referência</span>
                     <div className="text-xs font-extrabold text-slate-800 mt-2 truncate">
-                      {activeTable === 'amor' ? 'Amor Saúde' : (activeTable === 'lab' ? 'Laboratorial' : 'Pronto-Socorro / Particular')}
+                      {activeTable === 'amor' ? 'Amor Saúde' : (activeTable === 'lab' ? 'Laboratorial' : 'Exames de Imagem')}
                     </div>
                   </div>
                 </div>
@@ -1613,7 +1613,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
                 </div>
                 <div>
                   <h3 className="text-base sm:text-lg font-black tracking-tight">
-                    Importação em Lote de Exames ({activeTable === 'lab' ? 'Laboratoriais' : activeTable === 'amor' ? 'Amor Saúde' : 'Pronto-Socorro'})
+                    Importação em Lote de Exames ({activeTable === 'lab' ? 'Laboratoriais' : activeTable === 'amor' ? 'Amor Saúde' : 'Exames de Imagem'})
                   </h3>
                   <p className="text-xs text-teal-100 font-medium mt-0.5">
                     Cole as linhas da lista ou do PDF. Exames já cadastrados são identificados e desconsiderados automaticamente.

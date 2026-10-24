@@ -98,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       id: 'exames' as AppMode,
       label: 'Valores de Exames',
-      subtitle: 'PS, Amor Saúde e 1.200+ Labs',
+      subtitle: 'Imagem, Amor Saúde e 1.200+ Labs',
       icon: FileSpreadsheet,
       badge: selectedExamsCount > 0 ? `${selectedExamsCount} sel.` : 'Calculadora',
       badgeColor: selectedExamsCount > 0 ? 'bg-[#B01B52] text-white animate-pulse' : 'bg-slate-100 text-slate-700'

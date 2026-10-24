@@ -624,12 +624,12 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
 
         {/* Navigation Sub-Tabs & Actions Bar */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 shadow-xs">
-          {/* High-Tech Segmented Tabs */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100/90 rounded-xl overflow-x-auto">
+          {/* High-Tech Segmented Tabs (No Scrollbars - Fluid Wrap) */}
+          <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100/90 rounded-xl">
             <button
               type="button"
               onClick={() => setActiveTable('ps')}
-              className={`px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer ${
+              className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
                 activeTable === 'ps'
                   ? 'bg-gradient-to-r from-[#0E7B86] to-[#095962] text-white shadow-sm ring-1 ring-[#0E7B86]/30'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
@@ -647,7 +647,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
             <button
               type="button"
               onClick={() => setActiveTable('amor')}
-              className={`px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer ${
+              className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
                 activeTable === 'amor'
                   ? 'bg-gradient-to-r from-[#0E7B86] to-[#095962] text-white shadow-sm ring-1 ring-[#0E7B86]/30'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
@@ -665,7 +665,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
             <button
               type="button"
               onClick={() => setActiveTable('lab')}
-              className={`px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer ${
+              className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
                 activeTable === 'lab'
                   ? 'bg-gradient-to-r from-[#0E7B86] to-[#095962] text-white shadow-sm ring-1 ring-[#0E7B86]/30'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
@@ -734,10 +734,10 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
           </div>
         </div>
 
-        {/* Quick Filter Chips for Exames de Imagem */}
+        {/* Quick Filter Chips for Exames de Imagem (No Scrollbar - Fluid Wrap) */}
         {activeTable === 'ps' && (
           <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-xs">
-            <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="flex items-center justify-between gap-2 mb-2.5">
               <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600 uppercase tracking-wide">
                 <Filter className="w-3.5 h-3.5 text-[#0E7B86]" />
                 <span>Filtro Rápido por Modalidade de Imagem</span>
@@ -747,7 +747,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
               </span>
             </div>
 
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <div className="flex flex-wrap items-center gap-2">
               {[
                 { id: 'all', label: 'Todos os Exames', icon: '📋' },
                 { id: 'tc', label: 'Tomografia (TC)', icon: '🧠' },
@@ -763,9 +763,9 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
                     key={cat.id}
                     type="button"
                     onClick={() => setImageCategoryFilter(cat.id as any)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer border ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border ${
                       isActive
-                        ? 'bg-[#0E7B86] text-white border-[#0E7B86] shadow-xs'
+                        ? 'bg-[#0E7B86] text-white border-[#0E7B86] shadow-xs ring-1 ring-[#0E7B86]/30'
                         : 'bg-slate-50 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86] border-slate-200'
                     }`}
                   >
@@ -817,9 +817,9 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
           </div>
         </div>
 
-        {/* Alphabet quick jump for Laboratory */}
+        {/* Alphabet quick jump for Laboratory (No Scrollbar - Fluid Wrap) */}
         {activeTable === 'lab' && (
-          <div className="bg-white border border-slate-200 rounded-2xl p-3 shadow-xs flex items-center gap-1 overflow-x-auto">
+          <div className="bg-white border border-slate-200 rounded-2xl p-3 shadow-xs flex flex-wrap items-center gap-1">
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mr-2 flex-shrink-0">
               Índice A-Z:
             </span>

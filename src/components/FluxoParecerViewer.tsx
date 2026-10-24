@@ -22,7 +22,9 @@ import {
   CheckCircle2,
   XCircle,
   ArrowRight,
-  Brain
+  Brain,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { 
   PARECER_WORKFLOW_STEPS, 
@@ -53,6 +55,7 @@ export const FluxoParecerViewer: React.FC<FluxoParecerViewerProps> = ({
   const [pacienteNome, setPacienteNome] = useState<string>('');
   const [leitoBox, setLeitoBox] = useState<string>('');
   const [motivoClinico, setMotivoClinico] = useState<string>('');
+  const [showOptionalFields, setShowOptionalFields] = useState<boolean>(false);
 
   // Search & Filters in Matrix
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -189,131 +192,150 @@ export const FluxoParecerViewer: React.FC<FluxoParecerViewerProps> = ({
   return (
     <div className="space-y-6">
       {/* ========================================================
-          CABEÇALHO OFICIAL DO MÓDULO DE PARECERES
+          CABEÇALHO OFICIAL DO MÓDULO DE PARECERES (REMODELADO)
       ======================================================== */}
-      <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-[#0E7B86] rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
-        {/* Background decorative elements */}
-        <div className="absolute right-0 top-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -left-12 -bottom-12 w-64 h-64 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="bg-white/20 backdrop-blur-md text-white text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider border border-white/20">
-                Protocolo Operacional Oficial
-              </span>
-              <span className="bg-purple-400/20 text-purple-200 text-xs font-bold px-3 py-1 rounded-full border border-purple-300/30">
-                Pronto-Socorro • Internação • UTI
-              </span>
-              <span className="bg-emerald-500/30 text-emerald-200 text-xs font-bold px-3 py-1 rounded-full border border-emerald-400/30">
-                Padrão TISS / ANS 2026
-              </span>
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 sm:p-6 space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-900 flex items-center justify-center flex-shrink-0 shadow-xs border border-purple-200/80">
+              <Stethoscope className="w-6 h-6 text-purple-800" />
             </div>
-
-            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white m-0">
-              Fluxo de Pareceres & Interconsultas
-            </h1>
-
-            <p className="text-slate-200 text-sm sm:text-base font-medium max-w-3xl leading-relaxed m-0">
-              Guia completo para solicitação, autorização, preenchimento de guias TISS, códigos TUSS específicos e regras anti-glosa de pareceres médicos especializados no Hospital Palmas Medical.
-            </p>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight m-0">
+                  Fluxo de Pareceres & Interconsultas
+                </h1>
+                <span className="bg-purple-50 text-purple-800 border border-purple-200/70 text-[11px] font-black px-2.5 py-0.5 rounded-full">
+                  Hospital Palmas Medical
+                </span>
+                <span className="bg-emerald-50 text-emerald-700 border border-emerald-200/70 text-[11px] font-bold px-2.5 py-0.5 rounded-full hidden sm:inline-flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Padrão TISS / ANS
+                </span>
+              </div>
+              <p className="text-slate-500 text-xs sm:text-sm font-medium m-0 mt-0.5 leading-relaxed">
+                Guia operacional de autorização, códigos TUSS específicos e diretrizes de faturamento por convênio.
+              </p>
+            </div>
           </div>
 
           {/* Quick Actions Header */}
-          <div className="flex items-center gap-2.5 flex-wrap md:flex-col md:items-end flex-shrink-0">
+          <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
             <button
               type="button"
               onClick={handlePrint}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white rounded-xl text-xs font-black transition-all border border-white/20 cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl text-xs font-bold transition-all border border-slate-200/80 cursor-pointer shadow-2xs"
               title="Imprimir guia operacional"
             >
-              <Printer className="w-4 h-4 text-purple-200" />
-              <span>Imprimir Ficha</span>
+              <Printer className="w-3.5 h-3.5 text-slate-600" />
+              <span>Imprimir</span>
             </button>
 
             {onOpenAiWithPrompt && (
               <button
                 type="button"
                 onClick={() => onOpenAiWithPrompt('Quais são as regras para solicitação e faturamento de parecer médico no Servir, Cassi, Amil e Bradesco? Quais códigos TUSS usar e como evitar glosas?')}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-amber-950 rounded-xl text-xs font-black transition-all shadow-md cursor-pointer group"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-purple-900 hover:bg-purple-950 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer group"
               >
-                <Sparkles className="w-4 h-4 text-amber-950 group-hover:rotate-12 transition-transform" />
-                <span>Dúvidas de Parecer com IA</span>
+                <Sparkles className="w-3.5 h-3.5 text-purple-300 group-hover:rotate-12 transition-transform" />
+                <span>Dúvidas com IA</span>
               </button>
             )}
           </div>
         </div>
 
-        {/* Indicator Stats Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-6 pt-6 border-t border-white/15">
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 sm:p-4 border border-white/10">
-            <div className="text-purple-200 text-xs font-bold uppercase tracking-wider">
-              Total de Planos Mapeados
+        {/* Compact KPI Indicator Strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-3 border-t border-slate-100">
+          <div className="bg-slate-50/80 rounded-xl p-2.5 sm:p-3 border border-slate-200/70 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-900 flex items-center justify-center flex-shrink-0 font-bold">
+              <Building2 className="w-4 h-4 text-purple-700" />
             </div>
-            <div className="text-xl sm:text-2xl font-black text-white mt-1">
-              {PARECERES_CONVENIOS_DATA.length} Convênios
-            </div>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 sm:p-4 border border-white/10">
-            <div className="text-emerald-300 text-xs font-bold uppercase tracking-wider">
-              Liberação Direta (Sem Senha)
-            </div>
-            <div className="text-xl sm:text-2xl font-black text-white mt-1">
-              {PARECERES_CONVENIOS_DATA.filter(c => c.requiresAuth === 'NÃO').length} Planos
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                Planos Mapeados
+              </div>
+              <div className="text-sm sm:text-base font-black text-slate-900">
+                {PARECERES_CONVENIOS_DATA.length} Convênios
+              </div>
             </div>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 sm:p-4 border border-white/10">
-            <div className="text-amber-300 text-xs font-bold uppercase tracking-wider">
-              Exigem Autorização Prévia
+          <div className="bg-slate-50/80 rounded-xl p-2.5 sm:p-3 border border-slate-200/70 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-900 flex items-center justify-center flex-shrink-0 font-bold">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             </div>
-            <div className="text-xl sm:text-2xl font-black text-white mt-1">
-              {PARECERES_CONVENIOS_DATA.filter(c => c.requiresAuth === 'SIM').length} Planos (ex: Amil)
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                Liberação Direta
+              </div>
+              <div className="text-sm sm:text-base font-black text-emerald-700">
+                {PARECERES_CONVENIOS_DATA.filter(c => c.requiresAuth === 'NÃO').length} Planos (Sem Senha)
+              </div>
             </div>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 sm:p-4 border border-white/10">
-            <div className="text-cyan-300 text-xs font-bold uppercase tracking-wider">
-              Códigos Regulados
+          <div className="bg-slate-50/80 rounded-xl p-2.5 sm:p-3 border border-slate-200/70 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-900 flex items-center justify-center flex-shrink-0 font-bold">
+              <AlertTriangle className="w-4 h-4 text-amber-600" />
             </div>
-            <div className="text-xl sm:text-2xl font-black text-white mt-1">
-              Servir • Cassi • FA-Saúde
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                Exigem Autorização
+              </div>
+              <div className="text-sm sm:text-base font-black text-amber-700">
+                {PARECERES_CONVENIOS_DATA.filter(c => c.requiresAuth === 'SIM').length} Plano (ex: Amil)
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-slate-50/80 rounded-xl p-2.5 sm:p-3 border border-slate-200/70 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-900 flex items-center justify-center flex-shrink-0 font-bold">
+              <FileCheck2 className="w-4 h-4 text-indigo-700" />
+            </div>
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                Códigos Regulados
+              </div>
+              <div className="text-sm sm:text-base font-black text-indigo-900 truncate">
+                Servir • Cassi • FA-Saúde
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* ========================================================
-          NAVEGAÇÃO POR ABAS DO MÓDULO
+          NAVEGAÇÃO POR ABAS DO MÓDULO (SEGMENTED CONTROL MODERNO)
       ======================================================== */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-2 shadow-2xs flex items-center justify-between gap-2 overflow-x-auto">
-        <div className="flex items-center gap-1 sm:gap-2">
+      <div className="bg-slate-100/80 rounded-2xl p-1.5 border border-slate-200/90 shadow-2xs">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1.5">
           <button
             type="button"
             onClick={() => setActiveTab('simulador')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
               activeTab === 'simulador'
-                ? 'bg-purple-900 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                ? 'bg-purple-900 text-white shadow-xs font-black'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
             }`}
           >
-            <Stethoscope className="w-4 h-4" />
-            <span>Simulador de Parecer</span>
+            <Stethoscope className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Simulador</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('matriz')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
               activeTab === 'matriz'
-                ? 'bg-purple-900 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                ? 'bg-purple-900 text-white shadow-xs font-black'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
             }`}
           >
-            <FileText className="w-4 h-4" />
-            <span>Matriz de Códigos & Convênios</span>
-            <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
+            <FileText className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Matriz de Códigos</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+              activeTab === 'matriz' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
+            }`}>
               {PARECERES_CONVENIOS_DATA.length}
             </span>
           </button>
@@ -321,70 +343,68 @@ export const FluxoParecerViewer: React.FC<FluxoParecerViewerProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('neurologia')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
               activeTab === 'neurologia'
-                ? 'bg-purple-900 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                ? 'bg-purple-900 text-white shadow-xs font-black'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
             }`}
           >
-            <Brain className="w-4 h-4 text-purple-400" />
-            <span>Cobrança Neurologia</span>
-            <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
-              activeTab === 'neurologia'
-                ? 'bg-white/20 text-white'
-                : 'bg-purple-100 text-purple-800'
+            <Brain className="w-4 h-4 text-purple-400 flex-shrink-0" />
+            <span className="truncate">Cobrança Neurologia</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+              activeTab === 'neurologia' ? 'bg-white/20 text-white' : 'bg-purple-200/70 text-purple-800'
             }`}>
-              {PARECERES_NEUROLOGIA_DATA.length} Convênios
+              {PARECERES_NEUROLOGIA_DATA.length}
             </span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('fluxo')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
               activeTab === 'fluxo'
-                ? 'bg-purple-900 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                ? 'bg-purple-900 text-white shadow-xs font-black'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
             }`}
           >
-            <Clock className="w-4 h-4" />
-            <span>Fluxo Operacional (6 Passos)</span>
+            <Clock className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Fluxo (6 Passos)</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('antiglosa')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-xs sm:text-sm transition-all cursor-pointer whitespace-nowrap ${
+            className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
               activeTab === 'antiglosa'
-                ? 'bg-purple-900 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                ? 'bg-purple-900 text-white shadow-xs font-black'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
             }`}
           >
-            <ShieldCheck className="w-4 h-4" />
-            <span>Guia Anti-Glosa & Checklist</span>
+            <ShieldCheck className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Guia Anti-Glosa</span>
           </button>
         </div>
       </div>
 
       {/* ========================================================
-          ABA 1: SIMULADOR INTERATIVO DE PARECER
+          ABA 1: SIMULADOR INTERATIVO DE PARECER (REMODELADO)
       ======================================================== */}
       {activeTab === 'simulador' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in duration-200">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 animate-in fade-in duration-200">
           {/* Formulário de Configuração do Parecer */}
-          <div className="lg:col-span-6 space-y-5">
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-2xs space-y-4">
+          <div className="lg:col-span-6 space-y-4">
+            <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-900 flex items-center justify-center font-black">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-purple-100 text-purple-900 flex items-center justify-center font-black text-xs">
                     1
                   </div>
-                  <h2 className="text-base font-black text-slate-900 m-0">
-                    Definir Dados do Atendimento
+                  <h2 className="text-sm sm:text-base font-black text-slate-900 m-0">
+                    Configurar Dados da Interconsulta
                   </h2>
                 </div>
-                <span className="text-xs font-bold text-slate-400 uppercase">
-                  Passo a Passo
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Etapa 1 de 2
                 </span>
               </div>
 
@@ -395,9 +415,9 @@ export const FluxoParecerViewer: React.FC<FluxoParecerViewerProps> = ({
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { id: 'PS' as const, label: 'Pronto-Socorro (PS)', icon: Ambulance },
-                    { id: 'INTERNACAO' as const, label: 'Internação / Enferm.', icon: BedDouble },
-                    { id: 'UTI' as const, label: 'UTI Geral / Cardio', icon: Building2 }
+                    { id: 'PS' as const, label: 'Pronto-Socorro', sub: 'Urgência', icon: Ambulance },
+                    { id: 'INTERNACAO' as const, label: 'Internação', sub: 'Enfermaria/Apto', icon: BedDouble },
+                    { id: 'UTI' as const, label: 'UTI', sub: 'Geral / Cardio', icon: Building2 }
                   ].map(amb => {
                     const Icon = amb.icon;
                     const isSel = selectedAmbiente === amb.id;
@@ -406,15 +426,21 @@ export const FluxoParecerViewer: React.FC<FluxoParecerViewerProps> = ({
                         key={amb.id}
                         type="button"
                         onClick={() => setSelectedAmbiente(amb.id)}
-                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col items-start gap-1.5 ${
+                        className={`p-2.5 sm:p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col items-start gap-1 ${
                           isSel
-                            ? 'bg-purple-50 border-purple-600 text-purple-900 shadow-2xs'
+                            ? 'bg-purple-50/90 border-purple-600 text-purple-900 shadow-2xs'
                             : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100'
                         }`}
                       >
-                        <Icon className={`w-4 h-4 ${isSel ? 'text-purple-700' : 'text-slate-400'}`} />
+                        <div className="flex items-center justify-between w-full">
+                          <Icon className={`w-4 h-4 ${isSel ? 'text-purple-700' : 'text-slate-400'}`} />
+                          {isSel && <span className="w-1.5 h-1.5 rounded-full bg-purple-600" />}
+                        </div>
                         <span className="text-xs font-black leading-tight">
                           {amb.label}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          {amb.sub}
                         </span>
                       </button>
                     );
@@ -460,12 +486,12 @@ export const FluxoParecerViewer: React.FC<FluxoParecerViewerProps> = ({
 
               {/* Callout Específico de Neurologia quando selecionado */}
               {selectedEspecialidade.toLowerCase().includes('neuro') && (
-                <div className="p-3.5 bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-xl space-y-2 animate-in fade-in">
+                <div className="p-3.5 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-300 rounded-xl space-y-2 animate-in fade-in">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Brain className="w-4 h-4 text-purple-700" />
                       <span className="text-xs font-black text-purple-900 uppercase tracking-wide">
-                        Regra Oficial de Neurologia ({activeNeuroRule ? activeNeuroRule.convenio : activeRule.convenioName})
+                        Regra de Neurologia ({activeNeuroRule ? activeNeuroRule.convenio : activeRule.convenioName})
                       </span>
                     </div>
                     <button
@@ -497,13 +523,13 @@ export const FluxoParecerViewer: React.FC<FluxoParecerViewerProps> = ({
                       <div className={`p-2 rounded-lg border ${
                         selectedAmbiente === 'INTERNACAO' ? 'bg-purple-100/90 border-purple-400 font-black' : 'bg-white/80 border-slate-200'
                       }`}>
-                        <span className="text-[10px] uppercase font-bold text-slate-500 block">Internação / UI:</span>
+                        <span className="text-[10px] uppercase font-bold text-slate-500 block">Internação:</span>
                         <span className="text-slate-800 font-bold">{activeNeuroRule.ui}</span>
                       </div>
                     </div>
                   ) : (
                     <p className="text-xs text-purple-900 m-0">
-                      Consulte a aba <strong>Cobrança Neurologia</strong> para verificar o status de faturamento (pacote vs particular vs conta aberta).
+                      Consulte a aba <strong>Cobrança Neurologia</strong> para verificar o status de faturamento.
                     </p>
                   )}
 
@@ -515,188 +541,218 @@ export const FluxoParecerViewer: React.FC<FluxoParecerViewerProps> = ({
                 </div>
               )}
 
-              {/* Dados do Paciente e Leito (Opcionais) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-600">
-                    Nome do Paciente (Opcional)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Ex: Maria José de Sousa"
-                    value={pacienteNome}
-                    onChange={e => setPacienteNome(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-purple-600 focus:bg-white outline-none text-slate-800"
-                  />
-                </div>
+              {/* Botão para Expandir Dados Complementares (Opcionais) */}
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowOptionalFields(!showOptionalFields)}
+                  className="w-full flex items-center justify-between px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-colors cursor-pointer"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <span>Identificação do Paciente & Motivo</span>
+                    <span className="text-[10px] font-normal text-slate-400">(Opcional para despacho)</span>
+                  </span>
+                  {showOptionalFields ? (
+                    <ChevronUp className="w-4 h-4 text-slate-500" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-slate-500" />
+                  )}
+                </button>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-600">
-                    Leito / Box (Opcional)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Ex: Leito 204B ou Box 03"
-                    value={leitoBox}
-                    onChange={e => setLeitoBox(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-purple-600 focus:bg-white outline-none text-slate-800"
-                  />
-                </div>
-              </div>
+                {showOptionalFields && (
+                  <div className="pt-3 space-y-3 animate-in fade-in duration-150">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-600">
+                          Nome do Paciente
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Ex: Maria José de Sousa"
+                          value={pacienteNome}
+                          onChange={e => setPacienteNome(e.target.value)}
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-purple-600 focus:bg-white outline-none text-slate-800"
+                        />
+                      </div>
 
-              {/* Motivo Clínico / Justificativa */}
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-600">
-                  Motivo Clínico / Hipótese Diagnóstica (Evita Glosa)
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="Ex: Paciente com dor precordial típica e alteração no ECG; solicitar avaliação cardiológica urgente."
-                  value={motivoClinico}
-                  onChange={e => setMotivoClinico(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-purple-600 focus:bg-white outline-none text-slate-800 resize-none"
-                />
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-600">
+                          Leito / Box
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Ex: Leito 204B ou Box 03"
+                          value={leitoBox}
+                          onChange={e => setLeitoBox(e.target.value)}
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-purple-600 focus:bg-white outline-none text-slate-800"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-600">
+                        Motivo Clínico / Hipótese Diagnóstica (Evita Glosa)
+                      </label>
+                      <textarea
+                        rows={2}
+                        placeholder="Ex: Avaliação cardiológica por dor precordial atípica..."
+                        value={motivoClinico}
+                        onChange={e => setMotivoClinico(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-purple-600 focus:bg-white outline-none text-slate-800 resize-none"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Banner de Atenção Vermelha */}
-            <div className="bg-red-50 border-2 border-red-300 rounded-2xl p-4 flex items-start gap-3 shadow-2xs">
-              <div className="w-9 h-9 rounded-xl bg-red-600 text-white flex items-center justify-center font-black flex-shrink-0">
-                <AlertTriangle className="w-5 h-5" />
+            {/* Aviso Anti-Glosa Moderno & Discreto */}
+            <div className="bg-amber-50/80 border border-amber-300/80 rounded-2xl p-3.5 flex items-start gap-3 shadow-2xs">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-800 flex items-center justify-center font-black flex-shrink-0">
+                <ShieldCheck className="w-4 h-4 text-amber-700" />
               </div>
-              <div className="space-y-1">
-                <h4 className="text-xs font-black text-red-950 uppercase tracking-wider m-0">
-                  REGRA DE OURO HOSPITALAR: PEGAR ASSINATURA NA GUIA
+              <div className="space-y-0.5">
+                <h4 className="text-xs font-black text-amber-950 uppercase tracking-wide m-0">
+                  Atenção Anti-Glosa: Assinatura e Carimbo
                 </h4>
-                <p className="text-xs text-red-900 leading-snug m-0 font-medium">
-                  Parecer sem assinatura do paciente (ou responsável) e sem carimbo legível com CRM do médico parecerista gera <strong>glosa irreversível</strong> em todos os convênios.
+                <p className="text-xs text-amber-900 leading-snug m-0 font-medium">
+                  Toda guia TISS exige assinatura do paciente (ou responsável) e carimbo legível com CRM do médico parecerista para evitar glosa irreversível.
                 </p>
               </div>
             </div>
           </div>
 
           {/* Painel de Resultado & Instrução Operacional Instantânea */}
-          <div className="lg:col-span-6 space-y-5">
-            <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 sm:p-6 shadow-md border border-slate-700 space-y-5">
-              <div className="flex items-center justify-between border-b border-slate-700/80 pb-3">
+          <div className="lg:col-span-6 space-y-4">
+            <div className="bg-white rounded-2xl border-2 border-slate-200/90 shadow-sm overflow-hidden flex flex-col justify-between">
+              {/* Header do Card de Resultado */}
+              <div className="bg-slate-900 text-white px-5 py-3.5 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-xs font-black tracking-wider uppercase text-slate-300">
-                    Resultado da Simulação
+                  <span className="text-xs font-black tracking-wider uppercase text-slate-200">
+                    Diretriz de Faturamento
                   </span>
                 </div>
-                <span className="text-xs font-mono font-bold bg-white/10 px-2.5 py-0.5 rounded text-emerald-300">
-                  {activeRule.convenioId}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold bg-white/10 text-slate-300 px-2.5 py-0.5 rounded-md">
+                    {selectedAmbiente === 'PS' ? 'Pronto-Socorro' : (selectedAmbiente === 'UTI' ? 'UTI' : 'Internação')}
+                  </span>
+                  <span className="text-xs font-mono font-black bg-purple-500/30 text-purple-200 border border-purple-400/30 px-2.5 py-0.5 rounded-md">
+                    {activeRule.convenioId}
+                  </span>
+                </div>
               </div>
 
-              {/* Destaque do Código TUSS */}
-              <div className="bg-white/10 rounded-2xl p-4 border border-white/10 space-y-2">
-                <div className="flex items-center justify-between text-xs text-slate-300 font-bold">
-                  <span>CÓDIGO TUSS PARA DIGITAR NA GUIA:</span>
-                  <span className="text-purple-300">
-                    Ambiente: {selectedAmbiente}
+              {/* Corpo do Resultado */}
+              <div className="p-5 space-y-4">
+                {/* Destaque do Código TUSS */}
+                <div className="bg-purple-50/80 rounded-2xl p-4 border border-purple-200/90 space-y-2">
+                  <div className="flex items-center justify-between text-xs text-purple-900 font-bold">
+                    <span>CÓDIGO TUSS PARA DIGITAR NA GUIA:</span>
+                    <span className="text-purple-700 font-extrabold uppercase text-[11px]">
+                      {activeRule.convenioName}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-purple-950">
+                      {targetTussCode}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(targetTussCode)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
+                      title="Copiar código TUSS"
+                    >
+                      {copiedCode === targetTussCode ? (
+                        <>
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Copiado!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copiar Código</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Status de Autorização Prévia */}
+                <div className="flex items-center justify-between gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <span className="text-xs font-bold text-slate-700">
+                    Autorização Prévia no Portal:
+                  </span>
+                  <span className={`text-xs font-black px-3 py-1 rounded-full uppercase ${
+                    activeRule.requiresAuth === 'SIM'
+                      ? 'bg-rose-100 text-rose-800 border border-rose-300'
+                      : (activeRule.requiresAuth === 'NÃO'
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                          : 'bg-amber-100 text-amber-800 border border-amber-300')
+                  }`}>
+                    {activeRule.requiresAuth === 'SIM' ? '⚠️ SIM • AUTORIZAR ANTES' : (activeRule.requiresAuth === 'NÃO' ? '✅ NÃO • LIBERAÇÃO DIRETA' : 'CONDICIONAL')}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between gap-3">
-                  <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-white">
-                    {targetTussCode}
-                  </div>
+                {/* Diretriz Operacional do Convênio */}
+                <div className="space-y-1">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                    Regra Específica do Plano:
+                  </span>
+                  <p className="text-xs text-slate-800 font-medium leading-relaxed bg-slate-50/80 p-3 rounded-xl border border-slate-200 m-0">
+                    {activeRule.regraGeral}
+                  </p>
+                </div>
 
+                {/* Documentos Obrigatórios */}
+                <div className="space-y-1">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                    Documentação Obrigatória na Conta:
+                  </span>
+                  <ul className="text-xs text-slate-700 space-y-1 m-0 pl-4 list-disc font-medium">
+                    {activeRule.documentosObrigatorios.map((doc, idx) => (
+                      <li key={idx}>{doc}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Portal do Convênio Link (se houver) */}
+                {activeRule.portalUrl && (
+                  <div className="pt-0.5">
+                    <a
+                      href={activeRule.portalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-purple-700 hover:text-purple-900 underline transition-colors"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Acessar {activeRule.portalNome || 'Portal do Prestador'}</span>
+                    </a>
+                  </div>
+                )}
+
+                {/* Botão Copiar Resumo / Despacho Completo */}
+                <div className="pt-2 border-t border-slate-100">
                   <button
                     type="button"
-                    onClick={() => handleCopy(targetTussCode)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-black transition-all cursor-pointer shadow-xs"
-                    title="Copiar código TUSS"
+                    onClick={handleCopyDispatch}
+                    className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 bg-purple-900 hover:bg-purple-950 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
                   >
-                    {copiedCode === targetTussCode ? (
+                    {copiedText ? (
                       <>
-                        <Check className="w-3.5 h-3.5" />
-                        <span>Copiado!</span>
+                        <Check className="w-4 h-4 text-emerald-300" />
+                        <span>Despacho Copiado para Área de Transferência!</span>
                       </>
                     ) : (
                       <>
-                        <Copy className="w-3.5 h-3.5" />
-                        <span>Copiar Código</span>
+                        <Send className="w-4 h-4" />
+                        <span>Copiar Despacho Formatado (WhatsApp / TASY)</span>
                       </>
                     )}
                   </button>
                 </div>
-              </div>
-
-              {/* Status de Autorização Prévia */}
-              <div className="flex items-center justify-between gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
-                <span className="text-xs font-bold text-slate-300">
-                  Exige Autorização Prévia no Portal?
-                </span>
-                <span className={`text-xs font-black px-3 py-1 rounded-full uppercase ${
-                  activeRule.requiresAuth === 'SIM'
-                    ? 'bg-red-500/20 text-red-300 border border-red-400/40'
-                    : (activeRule.requiresAuth === 'NÃO'
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
-                        : 'bg-amber-500/20 text-amber-300 border border-amber-400/40')
-                }`}>
-                  {activeRule.requiresAuth === 'SIM' ? '⚠️ SIM • AUTORIZAR ANTES' : (activeRule.requiresAuth === 'NÃO' ? '✅ NÃO • LIBERAÇÃO DIRETA' : 'CONDICIONAL')}
-                </span>
-              </div>
-
-              {/* Diretriz Operacional do Convênio */}
-              <div className="space-y-1.5">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                  Regra Específica do Plano:
-                </span>
-                <p className="text-xs text-slate-200 font-medium leading-relaxed bg-white/5 p-3 rounded-xl border border-white/10 m-0">
-                  {activeRule.regraGeral}
-                </p>
-              </div>
-
-              {/* Documentos Obrigatórios */}
-              <div className="space-y-1.5">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                  Documentação Obrigatória na Conta:
-                </span>
-                <ul className="text-xs text-slate-300 space-y-1 m-0 pl-4 list-disc font-medium">
-                  {activeRule.documentosObrigatorios.map((doc, idx) => (
-                    <li key={idx}>{doc}</li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Portal do Convênio Link (se houver) */}
-              {activeRule.portalUrl && (
-                <div className="pt-1">
-                  <a
-                    href={activeRule.portalUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-xs font-bold text-purple-300 hover:text-white underline transition-colors"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span>Acessar {activeRule.portalNome || 'Portal do Prestador'}</span>
-                  </a>
-                </div>
-              )}
-
-              {/* Botão Copiar Resumo / Despacho Completo */}
-              <div className="pt-2 border-t border-slate-700 flex items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={handleCopyDispatch}
-                  className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black transition-all cursor-pointer shadow-md"
-                >
-                  {copiedText ? (
-                    <>
-                      <Check className="w-4 h-4 text-emerald-300" />
-                      <span>Despacho Copiado para Área de Transferência!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      <span>Copiar Despacho do Parecer (WhatsApp / TASY)</span>
-                    </>
-                  )}
-                </button>
               </div>
             </div>
           </div>

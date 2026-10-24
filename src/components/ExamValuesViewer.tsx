@@ -26,7 +26,13 @@ import {
   SlidersHorizontal,
   FileUp,
   FileSpreadsheet,
-  AlertCircle
+  AlertCircle,
+  Heart,
+  FlaskConical,
+  Zap,
+  Filter,
+  CreditCard,
+  Calculator
 } from 'lucide-react';
 import { ExamRow, ExamTableType, SelectedExamItem } from '../types';
 import { parseMoneyValue, formatCurrencyBRL, isImagingExamWithContrast } from '../data/examData';
@@ -197,6 +203,15 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
   const [labLetter, setLabLetter] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [jumpPageInput, setJumpPageInput] = useState<string>('');
+  const [imageCategoryFilter, setImageCategoryFilter] = useState<'all' | 'tc' | 'rm' | 'rx' | 'usg' | 'contraste' | 'popular'>('all');
+  const [copiedCodeNotice, setCopiedCodeNotice] = useState<string | null>(null);
+
+  const handleCopyCode = (code: string) => {
+    if (!code) return;
+    navigator.clipboard.writeText(code);
+    setCopiedCodeNotice(code);
+    setTimeout(() => setCopiedCodeNotice(null), 2000);
+  };
 
   React.useEffect(() => {
     if (initialSearch) {
@@ -328,13 +343,39 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
       );
     }
 
+    if (activeTable === 'ps' && imageCategoryFilter !== 'all') {
+      const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase();
+      result = result.filter(({ exam }) => {
+        const desc = normalize(exam.description);
+        if (imageCategoryFilter === 'tc') {
+          return desc.includes('TOMOGRAFIA') || desc.includes('TC ') || desc.includes('ANGIOTOMOGRAFIA');
+        }
+        if (imageCategoryFilter === 'rm') {
+          return desc.includes('RESSONANCIA') || desc.includes('RM ') || desc.includes('ANGIORESSONANCIA');
+        }
+        if (imageCategoryFilter === 'rx') {
+          return desc.includes('RAIO') || desc.includes('RX') || desc.includes('RADIOGRAFIA');
+        }
+        if (imageCategoryFilter === 'usg') {
+          return desc.includes('ULTRASSONOGRAFIA') || desc.includes('ECOCARDIOGRAMA') || desc.includes('USG') || desc.includes('DOPPLER');
+        }
+        if (imageCategoryFilter === 'contraste') {
+          return isImagingExamWithContrast(exam.description);
+        }
+        if (imageCategoryFilter === 'popular') {
+          return desc.includes('TORAX') || desc.includes('CRANIO') || desc.includes('ABDOMEN') || desc.includes('PELVE') || desc.includes('COLUNA');
+        }
+        return true;
+      });
+    }
+
     if (activeTable === 'lab' && labLetter) {
       const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase();
       result = result.filter(({ exam }) => normalize(exam.description).startsWith(labLetter));
     }
 
     return result;
-  }, [currentDataset, searchTerm, activeTable, labLetter]);
+  }, [currentDataset, searchTerm, activeTable, labLetter, imageCategoryFilter]);
 
   // Pagination calculation
   const totalPages = Math.max(1, Math.ceil(filteredExams.length / PAGE_SIZE));
@@ -349,7 +390,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
   React.useEffect(() => {
     setCurrentPage(1);
     setJumpPageInput('');
-  }, [searchTerm, labLetter, activeTable]);
+  }, [searchTerm, labLetter, activeTable, imageCategoryFilter]);
 
   // Selected items list & Calculations
   const selectedEntries = useMemo(() => Object.entries(selectedExams), [selectedExams]);
@@ -536,62 +577,112 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
 
       {/* Main Interactive Screen View */}
       <div className="print:hidden space-y-5">
-        {/* Navigation Sub-Tabs */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs">
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+        {/* Executive Workstation Tech Header */}
+        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-5 border border-slate-700/80 shadow-md relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-48 h-48 bg-[#0E7B86]/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="flex h-2.5 w-2.5 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </span>
+                <span className="text-[11px] font-black uppercase tracking-wider text-emerald-400">
+                  Tarifário Oficial • Hospital Palmas Medical
+                </span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
+                <Layers className="w-6 h-6 text-[#4FD1C5]" />
+                <span>Central Inteligente de Tarifas & Exames</span>
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl font-medium">
+                Consulte valores particulares e contratuais, aplique taxas de contraste (+R$ 250) e monte orçamentos hospitalares com cálculo em tempo real.
+              </p>
+            </div>
+
+            {/* Live KPI Quick Pills */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1 lg:pt-0">
+              <div className="bg-slate-800/90 border border-slate-700 rounded-xl p-2.5 px-3 flex flex-col justify-center">
+                <span className="text-[10px] text-slate-400 uppercase font-bold">Exames de Imagem</span>
+                <span className="text-base font-black text-[#4FD1C5] font-mono">{psExams.length}</span>
+              </div>
+              <div className="bg-slate-800/90 border border-slate-700 rounded-xl p-2.5 px-3 flex flex-col justify-center">
+                <span className="text-[10px] text-slate-400 uppercase font-bold">Amor Saúde</span>
+                <span className="text-base font-black text-rose-300 font-mono">{amorExams.length}</span>
+              </div>
+              <div className="bg-slate-800/90 border border-slate-700 rounded-xl p-2.5 px-3 flex flex-col justify-center">
+                <span className="text-[10px] text-slate-400 uppercase font-bold">Laboratório TUSS</span>
+                <span className="text-base font-black text-sky-300 font-mono">{labExams.length}</span>
+              </div>
+              <div className="bg-[#0E7B86]/40 border border-[#4FD1C5]/40 rounded-xl p-2.5 px-3 flex flex-col justify-center">
+                <span className="text-[10px] text-[#A7F3D0] uppercase font-bold">Orçamento Ativo</span>
+                <span className="text-base font-black text-white font-mono">{totalExamItemsCount} itens</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation Sub-Tabs & Actions Bar */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 shadow-xs">
+          {/* High-Tech Segmented Tabs */}
+          <div className="flex items-center gap-1.5 p-1 bg-slate-100/90 rounded-xl overflow-x-auto">
             <button
               type="button"
               onClick={() => setActiveTable('ps')}
-              className={`px-4 py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer ${
+              className={`px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer ${
                 activeTable === 'ps'
-                  ? 'bg-[#0E7B86] text-white shadow-xs'
-                  : 'bg-slate-100 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86]'
+                  ? 'bg-gradient-to-r from-[#0E7B86] to-[#095962] text-white shadow-sm ring-1 ring-[#0E7B86]/30'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
               }`}
             >
+              <Layers className={`w-4 h-4 ${activeTable === 'ps' ? 'text-white' : 'text-[#0E7B86]'}`} />
               <span>Exames de Imagem</span>
-              <span className={`text-xs px-2 py-0.5 rounded-lg font-black ${
-                activeTable === 'ps' ? 'bg-[#095962] text-white' : 'bg-slate-200 text-slate-700'
+              <span className={`text-[11px] px-2 py-0.5 rounded-full font-black ${
+                activeTable === 'ps' ? 'bg-[#095962] text-white' : 'bg-slate-200/80 text-slate-700'
               }`}>
                 {psExams.length}
               </span>
             </button>
+
             <button
               type="button"
               onClick={() => setActiveTable('amor')}
-              className={`px-4 py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer ${
+              className={`px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer ${
                 activeTable === 'amor'
-                  ? 'bg-[#0E7B86] text-white shadow-xs'
-                  : 'bg-slate-100 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86]'
+                  ? 'bg-gradient-to-r from-[#0E7B86] to-[#095962] text-white shadow-sm ring-1 ring-[#0E7B86]/30'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
               }`}
             >
+              <Heart className={`w-4 h-4 ${activeTable === 'amor' ? 'text-white' : 'text-[#B01B52]'}`} />
               <span>Amor Saúde (Contratual)</span>
-              <span className={`text-xs px-2 py-0.5 rounded-lg font-black ${
-                activeTable === 'amor' ? 'bg-[#095962] text-white' : 'bg-slate-200 text-slate-700'
+              <span className={`text-[11px] px-2 py-0.5 rounded-full font-black ${
+                activeTable === 'amor' ? 'bg-[#095962] text-white' : 'bg-slate-200/80 text-slate-700'
               }`}>
                 {amorExams.length}
               </span>
             </button>
+
             <button
               type="button"
               onClick={() => setActiveTable('lab')}
-              className={`px-4 py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer ${
+              className={`px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer ${
                 activeTable === 'lab'
-                  ? 'bg-[#0E7B86] text-white shadow-xs'
-                  : 'bg-slate-100 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86]'
+                  ? 'bg-gradient-to-r from-[#0E7B86] to-[#095962] text-white shadow-sm ring-1 ring-[#0E7B86]/30'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
               }`}
             >
+              <FlaskConical className={`w-4 h-4 ${activeTable === 'lab' ? 'text-white' : 'text-[#0E7B86]'}`} />
               <span>Exames Laboratoriais</span>
-              <span className={`text-xs px-2 py-0.5 rounded-lg font-black ${
-                activeTable === 'lab' ? 'bg-[#095962] text-white' : 'bg-slate-200 text-slate-700'
+              <span className={`text-[11px] px-2 py-0.5 rounded-full font-black ${
+                activeTable === 'lab' ? 'bg-[#095962] text-white' : 'bg-slate-200/80 text-slate-700'
               }`}>
                 {labExams.length}
               </span>
             </button>
           </div>
 
-          {/* Master Edit Actions */}
-          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-            {/* Batch Import Button - Always accessible, ideal for importing lab exams */}
+          {/* Master & Tools Actions */}
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-end">
             <button
               type="button"
               onClick={() => {
@@ -599,10 +690,10 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
                 setBatchImportSuccessMsg('');
                 setShowBatchImportModal(true);
               }}
-              className="flex items-center gap-1.5 bg-[#0E7B86] hover:bg-[#095962] text-white px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-all cursor-pointer"
+              className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-all cursor-pointer border border-slate-700"
               title="Importar lista ou colar exames com desconsideração automática de duplicatas"
             >
-              <FileUp className="w-4 h-4" />
+              <FileUp className="w-4 h-4 text-emerald-400" />
               <span>Importar Lista / Lote</span>
             </button>
 
@@ -611,7 +702,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
                 <button
                   type="button"
                   onClick={handleOpenAdd}
-                  className="flex items-center gap-1.5 bg-[#0E7B86] hover:bg-[#095962] text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 bg-[#0E7B86] hover:bg-[#095962] text-white px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-all cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Adicionar Exame</span>
@@ -623,56 +714,120 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
                       onResetExams(activeTable);
                     }
                   }}
-                  className="flex items-center gap-1 bg-slate-100 hover:bg-[#FDF2F6] text-slate-600 hover:text-[#B01B52] px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border border-slate-200 transition-colors cursor-pointer"
+                  className="flex items-center gap-1 bg-slate-100 hover:bg-[#FDF2F6] text-slate-600 hover:text-[#B01B52] px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border border-slate-200 transition-colors cursor-pointer"
                   title="Restaurar tabela padrão"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Restaurar Padrão</span>
+                  <span className="hidden sm:inline">Restaurar</span>
                 </button>
               </>
             ) : (
               <button
                 type="button"
                 onClick={onOpenMaster}
-                className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-500 hover:text-[#0E7B86] font-semibold px-2 py-1 cursor-pointer"
+                className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-[#0E7B86] font-semibold px-2 py-1 cursor-pointer transition-colors"
               >
-                <Lock className="w-4 h-4 text-[#0E7B86]" />
-                <span>Entrar como Master para editar</span>
+                <Lock className="w-3.5 h-3.5 text-[#0E7B86]" />
+                <span>Entrar como Master</span>
               </button>
             )}
           </div>
         </div>
 
-        {/* Search & Price Basis Switch Bar */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Quick Filter Chips for Exames de Imagem */}
+        {activeTable === 'ps' && (
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-xs">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600 uppercase tracking-wide">
+                <Filter className="w-3.5 h-3.5 text-[#0E7B86]" />
+                <span>Filtro Rápido por Modalidade de Imagem</span>
+              </div>
+              <span className="text-[11px] font-semibold text-slate-400">
+                {filteredExams.length} de {psExams.length} exames
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+              {[
+                { id: 'all', label: 'Todos os Exames', icon: '📋' },
+                { id: 'tc', label: 'Tomografia (TC)', icon: '🧠' },
+                { id: 'rm', label: 'Ressonância (RM)', icon: '🧲' },
+                { id: 'rx', label: 'Raio-X (RX)', icon: '🩻' },
+                { id: 'usg', label: 'Ultrassom / Eco', icon: '🔊' },
+                { id: 'contraste', label: 'Permite Contraste (+R$ 250)', icon: '💉' },
+                { id: 'popular', label: 'Mais Frequentes (Tórax/Crânio)', icon: '⭐' },
+              ].map(cat => {
+                const isActive = imageCategoryFilter === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setImageCategoryFilter(cat.id as any)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer border ${
+                      isActive
+                        ? 'bg-[#0E7B86] text-white border-[#0E7B86] shadow-xs'
+                        : 'bg-slate-50 hover:bg-[#EBF7F8] text-slate-700 hover:text-[#0E7B86] border-slate-200'
+                    }`}
+                  >
+                    <span>{cat.icon}</span>
+                    <span>{cat.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Technological Search & Live Feedback Bar */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="relative flex-1">
             <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
-              type="search"
-              placeholder={`Buscar exame por nome, código TUSS ou termo... (${filteredExams.length} disponíveis)`}
+              type="text"
+              placeholder={`Pesquise pelo nome do exame, código TUSS ou termo... (${filteredExams.length} exames disponíveis)`}
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm sm:text-base font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white text-slate-900"
+              className="w-full pl-11 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#0E7B86] focus:bg-white text-slate-900 transition-all placeholder:text-slate-400"
             />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 rounded-md cursor-pointer"
+                title="Limpar pesquisa"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
-          {/* Basis Indicator for PS */}
-          {activeTable === 'ps' && (
-            <div className="flex items-center gap-2 bg-[#EBF7F8] border border-[#C4E5E8] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-[#0E7B86]">
-              <span className="text-slate-500 font-medium">Tabela:</span>
-              <span className="font-black text-[#095962]">Exames de Imagem</span>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {copiedCodeNotice && (
+              <div className="flex items-center gap-1.5 text-xs font-black text-emerald-800 bg-emerald-50 border border-emerald-300 px-3 py-2 rounded-xl animate-in fade-in duration-200">
+                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Código {copiedCodeNotice} copiado!</span>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 bg-slate-100 border border-slate-200 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700">
+              <span className="text-slate-400 font-medium">Visualizando:</span>
+              <span className="text-[#0E7B86] font-black">{filteredExams.length}</span>
+              <span className="text-slate-400">/ {currentDataset.length}</span>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Alphabet quick jump for Laboratory */}
         {activeTable === 'lab' && (
-          <div className="bg-white border border-slate-200 rounded-2xl p-3 shadow-sm flex items-center gap-1 overflow-x-auto">
+          <div className="bg-white border border-slate-200 rounded-2xl p-3 shadow-xs flex items-center gap-1 overflow-x-auto">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mr-2 flex-shrink-0">
+              Índice A-Z:
+            </span>
             <button
               type="button"
               onClick={() => setLabLetter('')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex-shrink-0 ${
-                labLetter === '' ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex-shrink-0 cursor-pointer ${
+                labLetter === '' ? 'bg-[#0E7B86] text-white shadow-xs' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
               Todos
@@ -682,8 +837,8 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
                 key={char}
                 type="button"
                 onClick={() => setLabLetter(char)}
-                className={`w-7 h-7 rounded-lg text-xs font-bold transition-all flex-shrink-0 flex items-center justify-center ${
-                  labLetter === char ? 'bg-teal-700 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-200'
+                className={`w-7 h-7 rounded-lg text-xs font-bold transition-all flex-shrink-0 flex items-center justify-center cursor-pointer ${
+                  labLetter === char ? 'bg-[#0E7B86] text-white shadow-xs' : 'bg-slate-50 text-slate-700 hover:bg-slate-200'
                 }`}
               >
                 {char}
@@ -896,9 +1051,19 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
                         {/* Code */}
                         <td className="py-4 px-3.5 font-mono text-slate-800 font-bold">
                           {exam.code ? (
-                            <span className="bg-slate-100 text-slate-900 px-2.5 py-1 rounded-lg border border-slate-200 font-mono text-xs sm:text-sm font-black">
-                              {exam.code}
-                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleCopyCode(exam.code)}
+                              className="group inline-flex items-center gap-1.5 bg-slate-100 hover:bg-[#EBF7F8] text-slate-800 hover:text-[#0E7B86] px-2.5 py-1 rounded-lg border border-slate-200 hover:border-[#0E7B86]/40 font-mono text-xs sm:text-sm font-black transition-all cursor-pointer shadow-2xs"
+                              title="Clique para copiar o código TUSS"
+                            >
+                              <span>{exam.code}</span>
+                              {copiedCodeNotice === exam.code ? (
+                                <Check className="w-3.5 h-3.5 text-emerald-600 animate-in zoom-in-75 duration-150" />
+                              ) : (
+                                <Copy className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0E7B86] transition-colors opacity-70 group-hover:opacity-100" />
+                              )}
+                            </button>
                           ) : (
                             <span className="text-slate-400 font-normal">—</span>
                           )}

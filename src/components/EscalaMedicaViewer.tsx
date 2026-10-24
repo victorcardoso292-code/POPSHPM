@@ -19,7 +19,18 @@ import {
   Sparkles,
   Hospital,
   AlertCircle,
-  HelpCircle
+  HelpCircle,
+  Users,
+  Grid,
+  List,
+  Check,
+  Building2,
+  Share2,
+  FileText,
+  UserCheck,
+  Sun,
+  Moon,
+  Sunset
 } from 'lucide-react';
 import { 
   ESCALAS_INICIAIS, 
@@ -44,8 +55,11 @@ export const EscalaMedicaViewer: React.FC<{ isMaster?: boolean }> = ({ isMaster 
     return ESCALAS_INICIAIS;
   });
 
-  // NÃO há escala geral: o usuário escolhe especificamente a especialidade desejada
+  // Especialidade ativa selecionada
   const [activeSpecialty, setActiveSpecialty] = useState<string>('ortopedia');
+  // Modo de visualização padronizado: Grade de Calendário ou Tabela Cronológica
+  const [viewMode, setViewMode] = useState<'calendar' | 'table'>('calendar');
+  // Busca rápida de médicos
   const [searchTerm, setSearchTerm] = useState<string>('');
   
   // Dia atual para destaque em tempo real
@@ -77,7 +91,7 @@ export const EscalaMedicaViewer: React.FC<{ isMaster?: boolean }> = ({ isMaster 
   };
 
   const handleResetToDefault = () => {
-    if (confirm(`Restaurar a escala oficial de fábrica de ${currentEscala.nome} (Outubro/2026)?`)) {
+    if (confirm(`Restaurar a escala oficial padronizada de ${currentEscala.nome} (Outubro/2026)?`)) {
       const updated = {
         ...escalasData,
         [activeSpecialty]: ESCALAS_INICIAIS[activeSpecialty]
@@ -133,11 +147,9 @@ export const EscalaMedicaViewer: React.FC<{ isMaster?: boolean }> = ({ isMaster 
     setShowEditModal(false);
   };
 
-  // Plantonista de HOJE na especialidade selecionada
-  const plantonistaHoje = useMemo(() => {
-    const diaObj = currentEscala.dias.find(d => d.dia === highlightedDay);
-    if (!diaObj) return null;
-    return diaObj;
+  // Objeto do dia selecionado
+  const diaSelecionadoObj = useMemo(() => {
+    return currentEscala.dias.find(d => d.dia === highlightedDay) || currentEscala.dias[0];
   }, [currentEscala, highlightedDay]);
 
   // Médicos filtrados pela busca
@@ -147,228 +159,291 @@ export const EscalaMedicaViewer: React.FC<{ isMaster?: boolean }> = ({ isMaster 
     return currentEscala.plantonistas.filter(p => 
       p.nome.toLowerCase().includes(q) ||
       (p.subArea && p.subArea.toLowerCase().includes(q)) ||
+      (p.crm && p.crm.toLowerCase().includes(q)) ||
       p.telefone.includes(q)
     );
   }, [currentEscala, searchTerm]);
 
-  // Lista dos 5 cartões de especialidades para o seletor tecnológico
+  // Lista padronizada das 5 especialidades médicas
   const specialtyList = [
     {
       id: 'ortopedia',
       nome: 'Ortopedia & Traumatologia',
-      badge: 'Plantão 24h • 3 Turnos',
-      medicosCount: 19,
+      sigla: 'ORT',
+      badge: 'Presencial 24h • 3 Turnos',
+      medicosCount: currentEscala.id === 'ortopedia' ? currentEscala.plantonistas.length : 19,
       icon: Stethoscope,
-      accent: 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
+      corBadge: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
     },
     {
       id: 'neurocirurgia',
       nome: 'Neurocirurgia',
-      badge: 'Sobreaviso PS Medical',
-      medicosCount: 3,
+      sigla: 'NCIR',
+      badge: 'Sobreaviso PS Medical 24h',
+      medicosCount: currentEscala.id === 'neurocirurgia' ? currentEscala.plantonistas.length : 3,
       icon: Activity,
-      accent: 'border-purple-500 bg-purple-500/10 text-purple-400'
+      corBadge: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20'
     },
     {
       id: 'vascular',
       nome: 'Cirurgia Vascular',
-      badge: 'Sobreaviso Rede Kora',
-      medicosCount: 6,
+      sigla: 'VASC',
+      badge: 'Sobreaviso Rede Kora 24h',
+      medicosCount: currentEscala.id === 'vascular' ? currentEscala.plantonistas.length : 6,
       icon: HeartRateIcon,
-      accent: 'border-rose-500 bg-rose-500/10 text-rose-400'
+      corBadge: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
     },
     {
       id: 'nefrologia',
       nome: 'Nefrologia',
+      sigla: 'NEFRO',
       badge: 'Hemodiálise & Pareceres',
-      medicosCount: 6,
+      medicosCount: currentEscala.id === 'nefrologia' ? currentEscala.plantonistas.length : 6,
       icon: Hospital,
-      accent: 'border-sky-500 bg-sky-500/10 text-sky-400'
+      corBadge: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20'
     },
     {
       id: 'neurologia',
       nome: 'Neurologia Clínica',
-      badge: 'Sobreaviso • Ligação',
-      medicosCount: 5,
+      sigla: 'NEURO',
+      badge: 'Sobreaviso por Ligação',
+      medicosCount: currentEscala.id === 'neurologia' ? currentEscala.plantonistas.length : 5,
       icon: PhoneCall,
-      accent: 'border-amber-500 bg-amber-500/10 text-amber-400'
+      corBadge: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
     }
   ];
 
+  // Helper para buscar o contato de um médico pelo nome (para botão de ligar do card hero)
+  const getDoctorContact = (name?: string) => {
+    if (!name) return null;
+    const clean = name.toLowerCase().replace(/dr\.|dra\./g, '').trim();
+    return currentEscala.plantonistas.find(p => {
+      const pclean = p.nome.toLowerCase().replace(/dr\.|dra\./g, '').trim();
+      return pclean.includes(clean) || clean.includes(pclean);
+    });
+  };
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* =========================================================================
-          IMPRESSÃO A4 ESPECÍFICA DA ESPECIALIDADE SELECIONADA
+          IMPRESSÃO A4 PADRONIZADA (DOCUMENTO OFICIAL HOSPITAL PALMAS MEDICAL)
           ========================================================================= */}
       <div id="print-escala-container" className="hidden print:block font-sans text-slate-900 w-full m-0 p-0 text-[10.5pt]">
-        <div className="border-b-2 border-slate-900 pb-2 mb-3 flex items-center justify-between">
+        <div className="border-b-2 border-slate-900 pb-3 mb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#0E7B86] text-white flex items-center justify-center font-black text-2xl">
+            <div className="w-12 h-12 rounded-xl bg-[#0E7B86] text-white flex items-center justify-center font-black text-2xl">
               ✚
             </div>
             <div>
-              <h1 className="text-lg font-black text-[#B01B52] leading-tight m-0">
+              <h1 className="text-xl font-black text-[#B01B52] leading-tight m-0">
                 HOSPITAL PALMAS MEDICAL CENTER
               </h1>
-              <p className="text-xs text-slate-700 font-bold m-0 uppercase">
-                ESCALA MÉDICA OFICIAL • {currentEscala.nome} • {currentEscala.mes} / {currentEscala.ano}
+              <p className="text-xs text-slate-800 font-black m-0 uppercase tracking-wide">
+                MODELO PADRÃO DE ESCALA MÉDICA • {currentEscala.nome.toUpperCase()}
+              </p>
+              <p className="text-[9pt] text-slate-600 m-0">
+                Mês de Vigência: <strong>{currentEscala.mes} / {currentEscala.ano}</strong> • Regime: <strong>{currentEscala.tipoPlantao}</strong>
               </p>
             </div>
           </div>
           <div className="text-right text-xs">
-            <div className="font-mono font-bold text-slate-900">PABX: (63) 3236-1818</div>
-            <div className="text-slate-500">Urgência & Emergência 24h</div>
+            <div className="font-mono font-bold text-slate-900">EMERGÊNCIA: (63) 3236-1800</div>
+            <div className="font-mono text-slate-700">PABX GERAL: (63) 3236-1818</div>
+            <div className="text-[8pt] text-slate-500">Av. LO 02, Lt 02 - Plano Diretor Sul, Palmas-TO</div>
           </div>
         </div>
 
         <table className="w-full border-collapse border border-slate-800 text-[9.5pt]">
           <thead>
             <tr className="bg-slate-900 text-white font-bold">
-              <th className="border border-slate-800 p-1.5 text-center w-12">Dia</th>
-              <th className="border border-slate-800 p-1.5 text-left w-28">Dia da Semana</th>
+              <th className="border border-slate-800 p-2 text-center w-12">Dia</th>
+              <th className="border border-slate-800 p-2 text-left w-28">Dia da Semana</th>
               {activeSpecialty === 'ortopedia' ? (
                 <>
-                  <th className="border border-slate-800 p-1.5 text-left">07h às 19h (Diurno)</th>
-                  <th className="border border-slate-800 p-1.5 text-left">19h às 22h</th>
-                  <th className="border border-slate-800 p-1.5 text-left">22h às 07h (Noturno)</th>
+                  <th className="border border-slate-800 p-2 text-left">Turno Diurno (07h às 19h)</th>
+                  <th className="border border-slate-800 p-2 text-left">Turno Intermediário (19h às 22h)</th>
+                  <th className="border border-slate-800 p-2 text-left">Turno Noturno (22h às 07h)</th>
                 </>
               ) : (
-                <th className="border border-slate-800 p-1.5 text-left">Médico Plantonista / Sobreaviso</th>
+                <th className="border border-slate-800 p-2 text-left">Médico Plantonista / Sobreaviso 24h</th>
               )}
             </tr>
           </thead>
           <tbody>
             {currentEscala.dias.map(d => (
               <tr key={d.dia} className="border-b border-slate-300">
-                <td className="border border-slate-400 p-1 text-center font-bold">{d.dia}</td>
-                <td className="border border-slate-400 p-1">{d.diaSemana}</td>
+                <td className="border border-slate-400 p-1.5 text-center font-bold">{d.dia}</td>
+                <td className="border border-slate-400 p-1.5">{d.diaSemana}</td>
                 {activeSpecialty === 'ortopedia' ? (
                   <>
-                    <td className="border border-slate-400 p-1 font-bold text-emerald-950">{d.turnoDiurno}</td>
-                    <td className="border border-slate-400 p-1 font-bold text-amber-950">{d.turnoIntermediario}</td>
-                    <td className="border border-slate-400 p-1 font-bold text-blue-950">{d.turnoNoturno}</td>
+                    <td className="border border-slate-400 p-1.5 font-bold text-emerald-950">{d.turnoDiurno}</td>
+                    <td className="border border-slate-400 p-1.5 font-bold text-amber-950">{d.turnoIntermediario}</td>
+                    <td className="border border-slate-400 p-1.5 font-bold text-blue-950">{d.turnoNoturno}</td>
                   </>
                 ) : (
-                  <td className="border border-slate-400 p-1 font-bold">{d.plantonista}</td>
+                  <td className="border border-slate-400 p-1.5 font-bold">{d.plantonista}</td>
                 )}
               </tr>
             ))}
           </tbody>
         </table>
 
-        {/* Rodapé de Contatos da Especialidade */}
-        <div className="mt-4 pt-3 border-t border-slate-300 text-[8.5pt] flex justify-between items-start">
-          <div>
-            <strong>Contatos dos Especialistas:</strong>
-            <div className="grid grid-cols-3 gap-x-4 gap-y-0.5 mt-1 font-mono text-[8pt]">
-              {currentEscala.plantonistas.map(p => (
-                <div key={p.id}>• {p.nome}: {p.telefone} {p.subArea ? `(${p.subArea})` : ''}</div>
-              ))}
+        {/* Rodapé Padronizado da Folha A4 */}
+        <div className="mt-5 pt-3 border-t-2 border-slate-800 text-[8.5pt]">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <strong className="text-slate-900 uppercase">Equipe Médica & Contatos Oficiais:</strong>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-1 font-mono text-[8pt]">
+                {currentEscala.plantonistas.map(p => (
+                  <div key={p.id}>• {p.nome}: {p.telefone} {p.subArea ? `(${p.subArea})` : ''}</div>
+                ))}
+              </div>
+            </div>
+            <div className="text-right flex flex-col justify-between">
+              {currentEscala.responsavelTecnico && (
+                <div>
+                  <strong className="text-slate-900 uppercase">Responsável Técnico / Coordenação:</strong>
+                  <div className="text-[8.5pt] text-slate-700">{currentEscala.responsavelTecnico}</div>
+                </div>
+              )}
+              <div className="mt-8 border-t border-slate-400 pt-1 text-[8pt] text-slate-500 text-center">
+                Hospital Palmas Medical Center • Documento Gerado em {new Date().toLocaleDateString('pt-BR')}
+              </div>
             </div>
           </div>
-          {currentEscala.responsavelTecnico && (
-            <div className="text-right text-[8pt] text-slate-600 max-w-xs">
-              <strong>Responsável Técnico:</strong><br />
-              {currentEscala.responsavelTecnico}
-            </div>
-          )}
         </div>
       </div>
 
       {/* =========================================================================
-          TELA INTERATIVA ELEVADA (SEM ESCALA GERAL - CADA ESPECIALIDADE DEDICADA)
+          SISTEMA INTERATIVO COM MODELO PADRONIZADO (UI MODERNA & TECNOLÓGICA)
           ========================================================================= */}
-      <div className="print:hidden space-y-5">
-        
-        {/* Painel de Comando Tecnológico do Cabeçalho */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-5 border border-slate-700/80 shadow-md relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-48 h-48 bg-[#0E7B86]/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="print:hidden space-y-6">
+
+        {/* 1. CABEÇALHO PADRONIZADO INSTITUCIONAL */}
+        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-3xl p-6 sm:p-7 border border-slate-700/80 shadow-lg relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-60 h-60 bg-[#0E7B86]/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
             <div>
-              <div className="flex items-center gap-2 mb-1.5">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
                 <span className="flex h-2.5 w-2.5 relative">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                 </span>
-                <span className="text-[11px] font-black uppercase tracking-wider text-emerald-400">
-                  Tarifário & Escalas Oficiais • Hospital Palmas Medical
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-[11px] font-black uppercase tracking-wider">
+                  Modelo Padronizado HPM
+                </span>
+                <span className="text-xs text-slate-400 font-medium hidden sm:inline">•</span>
+                <span className="text-xs text-slate-300 font-medium">
+                  Hospital Palmas Medical Center
                 </span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
-                <Stethoscope className="w-6 h-6 text-[#4FD1C5]" />
-                <span>Escala Médica Especialidade</span>
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl font-medium">
-                Selecione a especialidade médica abaixo para abrir o ambiente exclusivo de plantão, turnos diários e lista telefônica de acionamento.
+              
+              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#0E7B86] to-[#4FD1C5] text-white flex items-center justify-center shadow-md">
+                  <Stethoscope className="w-5 h-5 text-white" />
+                </div>
+                <span>Escalas Médicas Especializadas</span>
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-2xl font-normal leading-relaxed">
+                Ambiente hospitalar unificado e padronizado para controle de plantões presenciais 24h, turnos diários e sobreavisos médicos da unidade.
               </p>
             </div>
 
-            {/* Mês & Atualização */}
-            <div className="flex items-center gap-2.5">
-              <div className="bg-slate-800/90 border border-slate-700 rounded-xl p-2.5 px-3 flex flex-col justify-center">
-                <span className="text-[10px] text-slate-400 uppercase font-bold">Mês Vigente</span>
-                <span className="text-base font-black text-[#4FD1C5] font-mono">OUTUBRO / 2026</span>
+            {/* Metadados e Ações Globais */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="bg-slate-800/90 border border-slate-700/90 rounded-2xl p-3 px-4 flex flex-col justify-center shadow-inner">
+                <span className="text-[10px] text-slate-400 uppercase font-black tracking-wider">Mês Vigente</span>
+                <span className="text-base font-black text-[#4FD1C5] font-mono tracking-tight">OUTUBRO / 2026</span>
               </div>
-              <div className="bg-[#0E7B86]/40 border border-[#4FD1C5]/40 rounded-xl p-2.5 px-3 flex flex-col justify-center">
-                <span className="text-[10px] text-[#A7F3D0] uppercase font-bold">Atualização</span>
-                <span className="text-base font-black text-white font-mono">Mensal Oficial</span>
-              </div>
+
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="flex items-center gap-2 bg-[#B01B52] hover:bg-[#971444] text-white px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all cursor-pointer"
+                title="Imprimir folha A4 oficial padronizada"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Imprimir Escala A4</span>
+              </button>
+
+              {isMaster && (
+                <button
+                  type="button"
+                  onClick={handleResetToDefault}
+                  className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 py-3 rounded-2xl text-xs font-bold border border-slate-700 transition-colors cursor-pointer"
+                  title="Restaurar escala padrão de fábrica"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Restaurar</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
 
-        {/* SELETOR DE ESPECIALIDADES EXCLUSIVO (CADA ESPECIALIDADE NA SUA PRÓPRIA ESCALA) */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 shadow-xs">
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <span className="text-xs font-black uppercase text-slate-500 tracking-wider">
-              Selecione a Especialidade Médica Desejada:
-            </span>
-            <span className="text-xs font-bold text-[#0E7B86]">
-              5 Especialidades Disponíveis
+        {/* 2. SELETOR PADRONIZADO DE ESPECIALIDADES MÉDICAS (TUDO PADRONIZADO) */}
+        <div>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h2 className="text-xs font-black uppercase text-slate-500 tracking-wider flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-[#0E7B86]" />
+              <span>Selecione a Especialidade Médica</span>
+            </h2>
+            <span className="text-xs text-slate-400 font-mono">
+              5 Especialidades Cadastradas
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
-            {specialtyList.map(s => {
-              const Icon = s.icon;
-              const isSelected = activeSpecialty === s.id;
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            {specialtyList.map(item => {
+              const IconComponent = item.icon;
+              const isSelected = activeSpecialty === item.id;
               return (
                 <button
-                  key={s.id}
+                  key={item.id}
                   type="button"
                   onClick={() => {
-                    setActiveSpecialty(s.id);
+                    setActiveSpecialty(item.id);
                     setSearchTerm('');
                   }}
-                  className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+                  className={`text-left p-4 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
                     isSelected
-                      ? 'bg-gradient-to-br from-[#095962] to-[#0E7B86] text-white border-[#0E7B86] shadow-md ring-2 ring-[#0E7B86]/30'
-                      : 'bg-slate-50 hover:bg-slate-100 text-slate-800 border-slate-200 hover:border-slate-300'
+                      ? 'bg-white dark:bg-slate-800 border-[#0E7B86] shadow-md ring-2 ring-[#0E7B86]/20'
+                      : 'bg-white/80 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 hover:border-slate-300 hover:bg-white dark:hover:bg-slate-800'
                   }`}
                 >
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                        isSelected ? 'bg-white/20 text-white' : 'bg-white border border-slate-200 text-[#0E7B86]'
-                      }`}>
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
-                        isSelected ? 'bg-white text-[#095962]' : 'bg-slate-200 text-slate-700'
-                      }`}>
-                        {s.medicosCount} Médicos
-                      </span>
+                  {isSelected && (
+                    <div className="absolute top-0 right-0 w-8 h-8 bg-[#0E7B86] text-white flex items-center justify-center rounded-bl-xl shadow-xs">
+                      <Check className="w-4 h-4" />
                     </div>
+                  )}
 
-                    <div className="font-black text-xs sm:text-sm leading-snug">
-                      {s.nome}
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                      isSelected
+                        ? 'bg-[#0E7B86] text-white shadow-xs'
+                        : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                    }`}>
+                      <IconComponent className="w-5 h-5" />
+                    </div>
+                    <div className="pr-6">
+                      <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider font-mono">
+                        {item.sigla}
+                      </span>
+                      <h3 className={`text-xs sm:text-sm font-black leading-tight line-clamp-1 ${
+                        isSelected ? 'text-[#0E7B86] dark:text-[#4FD1C5]' : 'text-slate-900 dark:text-white'
+                      }`}>
+                        {item.nome}
+                      </h3>
                     </div>
                   </div>
 
-                  <div className={`text-[10.5px] font-bold mt-2 pt-2 border-t ${
-                    isSelected ? 'border-white/20 text-emerald-200' : 'border-slate-200 text-slate-500'
-                  }`}>
-                    {s.badge}
+                  <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
+                    <span className="text-slate-500 font-medium">
+                      {item.medicosCount} especialistas
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] border ${item.corBadge}`}>
+                      {item.badge.split('•')[0].trim()}
+                    </span>
                   </div>
                 </button>
               );
@@ -376,774 +451,704 @@ export const EscalaMedicaViewer: React.FC<{ isMaster?: boolean }> = ({ isMaster 
           </div>
         </div>
 
-        {/* BARRA SUPERIOR DE STATUS DO DIA & AÇÕES DA ESPECIALIDADE ATIVA */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          {/* Card de Quem está de plantão no Dia Selecionado */}
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0E7B86] to-[#095962] text-white flex items-center justify-center font-black text-lg shadow-sm flex-shrink-0">
-              {highlightedDay}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider">
-                  Plantonista Escalado para o Dia:
-                </span>
-                <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-mono text-[11px] font-black">
-                  {String(highlightedDay).padStart(2, '0')}/10/2026 ({plantonistaHoje?.diaSemana})
-                </span>
-                {highlightedDay === todayDate && (
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider animate-pulse">
-                    Hoje
-                  </span>
-                )}
+        {/* 3. HERO PADRONIZADO: PLANTONISTA ESCALADO NO DIA & NAVEGAÇÃO TEMPORAL */}
+        <div className="bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-3xl p-5 sm:p-6 shadow-sm">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 pb-5 border-b border-slate-100 dark:border-slate-700">
+            {/* Navegador de Dias */}
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#0E7B86] to-[#095962] text-white flex flex-col items-center justify-center shadow-md flex-shrink-0">
+                <span className="text-[10px] uppercase font-black tracking-wider text-teal-200">OUT</span>
+                <span className="text-xl font-black leading-none">{highlightedDay}</span>
               </div>
 
-              <div className="text-base sm:text-lg font-black text-slate-900 leading-tight mt-0.5">
-                {activeSpecialty === 'ortopedia' ? (
-                  <span className="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
-                    <span className="text-emerald-700 font-bold">07h-19h: {plantonistaHoje?.turnoDiurno}</span>
-                    <span className="text-slate-300">|</span>
-                    <span className="text-amber-700 font-bold">19h-22h: {plantonistaHoje?.turnoIntermediario}</span>
-                    <span className="text-slate-300">|</span>
-                    <span className="text-blue-700 font-bold">22h-07h: {plantonistaHoje?.turnoNoturno}</span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider">
+                    Plantonista Escalado para o Dia:
                   </span>
-                ) : (
-                  <span>{plantonistaHoje?.plantonista || 'Consulte a escala'}</span>
-                )}
+                  <span className="px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-950/50 text-[#0E7B86] dark:text-[#4FD1C5] font-mono text-[11px] font-black border border-teal-200 dark:border-teal-800">
+                    {String(highlightedDay).padStart(2, '0')}/10/2026 ({diaSelecionadoObj.diaSemana})
+                  </span>
+                  {highlightedDay === todayDate && (
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider animate-pulse">
+                      Hoje
+                    </span>
+                  )}
+                </div>
+
+                <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1">
+                  {currentEscala.nome}
+                </div>
               </div>
+            </div>
+
+            {/* Controles de Navegação Entre Dias */}
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setHighlightedDay(prev => Math.max(1, prev - 1))}
+                disabled={highlightedDay <= 1}
+                className="flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold disabled:opacity-40 transition-colors cursor-pointer"
+                title="Dia anterior"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Anterior</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setHighlightedDay(todayDate)}
+                className={`px-3 py-2 rounded-xl text-xs font-black transition-colors cursor-pointer ${
+                  highlightedDay === todayDate
+                    ? 'bg-[#0E7B86] text-white shadow-xs'
+                    : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200'
+                }`}
+              >
+                Hoje ({todayDate}/10)
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setHighlightedDay(prev => Math.min(31, prev + 1))}
+                disabled={highlightedDay >= 31}
+                className="flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold disabled:opacity-40 transition-colors cursor-pointer"
+                title="Próximo dia"
+              >
+                <span>Próximo</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleOpenEditDay(highlightedDay)}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#0E7B86]/10 text-[#0E7B86] dark:text-[#4FD1C5] hover:bg-[#0E7B86]/20 text-xs font-bold border border-[#0E7B86]/30 transition-colors cursor-pointer ml-1"
+                title="Editar médicos deste dia"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>Editar Dia {highlightedDay}</span>
+              </button>
             </div>
           </div>
 
-          {/* Ações da Especialidade */}
-          <div className="flex flex-wrap items-center gap-2 justify-end">
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="flex items-center gap-1.5 bg-[#B01B52] hover:bg-[#971444] text-white px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-all cursor-pointer"
-              title={`Imprimir escala oficial de ${currentEscala.nome}`}
-            >
-              <Printer className="w-4 h-4" />
-              <span>Imprimir Escala A4</span>
-            </button>
+          {/* Cards dos Médicos do Dia Selecionado */}
+          <div className="mt-5">
+            {activeSpecialty === 'ortopedia' ? (
+              /* Turnos de Ortopedia (3 Turnos Padronizados) */
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* 1. Diurno */}
+                <div className="bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-4 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between text-xs font-bold text-emerald-800 dark:text-emerald-400 mb-1">
+                      <span className="flex items-center gap-1.5 uppercase tracking-wide">
+                        <Sun className="w-4 h-4 text-emerald-600" />
+                        Turno Diurno
+                      </span>
+                      <span className="font-mono bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-700">
+                        07h às 19h
+                      </span>
+                    </div>
+                    <div className="text-base sm:text-lg font-black text-emerald-950 dark:text-emerald-200 mt-2">
+                      {diaSelecionadoObj.turnoDiurno || 'Não informado'}
+                    </div>
+                  </div>
+                  {diaSelecionadoObj.turnoDiurno && (
+                    <div className="mt-4 pt-3 border-t border-emerald-200 dark:border-emerald-800 flex items-center gap-2">
+                      {getDoctorContact(diaSelecionadoObj.turnoDiurno)?.telefone ? (
+                        <>
+                          <a
+                            href={`tel:${cleanPhone(getDoctorContact(diaSelecionadoObj.turnoDiurno)!.telefone)}`}
+                            className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 px-3 rounded-xl transition-colors"
+                          >
+                            <Phone className="w-3.5 h-3.5" />
+                            <span>Ligar</span>
+                          </a>
+                          <a
+                            href={formatWhatsappLink(
+                              getDoctorContact(diaSelecionadoObj.turnoDiurno)!.telefone,
+                              diaSelecionadoObj.turnoDiurno,
+                              currentEscala.nome
+                            )}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200 text-xs font-bold p-2 px-3 rounded-xl transition-colors"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            <span>WhatsApp</span>
+                          </a>
+                        </>
+                      ) : (
+                        <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono">
+                          Plantão Presencial Confirmado
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
 
-            {isMaster && (
-              <button
-                type="button"
-                onClick={handleResetToDefault}
-                className="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer"
-                title="Restaurar padrão oficial"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Restaurar</span>
-              </button>
+                {/* 2. Intermediário */}
+                <div className="bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between text-xs font-bold text-amber-800 dark:text-amber-400 mb-1">
+                      <span className="flex items-center gap-1.5 uppercase tracking-wide">
+                        <Sunset className="w-4 h-4 text-amber-600" />
+                        Turno Intermediário
+                      </span>
+                      <span className="font-mono bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-700">
+                        19h às 22h
+                      </span>
+                    </div>
+                    <div className="text-base sm:text-lg font-black text-amber-950 dark:text-amber-200 mt-2">
+                      {diaSelecionadoObj.turnoIntermediario || 'Não informado'}
+                    </div>
+                  </div>
+                  {diaSelecionadoObj.turnoIntermediario && (
+                    <div className="mt-4 pt-3 border-t border-amber-200 dark:border-amber-800 flex items-center gap-2">
+                      {getDoctorContact(diaSelecionadoObj.turnoIntermediario)?.telefone ? (
+                        <>
+                          <a
+                            href={`tel:${cleanPhone(getDoctorContact(diaSelecionadoObj.turnoIntermediario)!.telefone)}`}
+                            className="flex-1 flex items-center justify-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold py-2 px-3 rounded-xl transition-colors"
+                          >
+                            <Phone className="w-3.5 h-3.5" />
+                            <span>Ligar</span>
+                          </a>
+                          <a
+                            href={formatWhatsappLink(
+                              getDoctorContact(diaSelecionadoObj.turnoIntermediario)!.telefone,
+                              diaSelecionadoObj.turnoIntermediario,
+                              currentEscala.nome
+                            )}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-1 bg-amber-100 hover:bg-amber-200 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 text-xs font-bold p-2 px-3 rounded-xl transition-colors"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            <span>WhatsApp</span>
+                          </a>
+                        </>
+                      ) : (
+                        <span className="text-[11px] text-amber-700 dark:text-amber-400 font-mono">
+                          Reforço Noturno
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. Noturno */}
+                <div className="bg-blue-50/70 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between text-xs font-bold text-blue-800 dark:text-blue-400 mb-1">
+                      <span className="flex items-center gap-1.5 uppercase tracking-wide">
+                        <Moon className="w-4 h-4 text-blue-600" />
+                        Turno Noturno
+                      </span>
+                      <span className="font-mono bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-700">
+                        22h às 07h
+                      </span>
+                    </div>
+                    <div className="text-base sm:text-lg font-black text-blue-950 dark:text-blue-200 mt-2">
+                      {diaSelecionadoObj.turnoNoturno || 'Não informado'}
+                    </div>
+                  </div>
+                  {diaSelecionadoObj.turnoNoturno && (
+                    <div className="mt-4 pt-3 border-t border-blue-200 dark:border-blue-800 flex items-center gap-2">
+                      {getDoctorContact(diaSelecionadoObj.turnoNoturno)?.telefone ? (
+                        <>
+                          <a
+                            href={`tel:${cleanPhone(getDoctorContact(diaSelecionadoObj.turnoNoturno)!.telefone)}`}
+                            className="flex-1 flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-3 rounded-xl transition-colors"
+                          >
+                            <Phone className="w-3.5 h-3.5" />
+                            <span>Ligar</span>
+                          </a>
+                          <a
+                            href={formatWhatsappLink(
+                              getDoctorContact(diaSelecionadoObj.turnoNoturno)!.telefone,
+                              diaSelecionadoObj.turnoNoturno,
+                              currentEscala.nome
+                            )}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-1 bg-blue-100 hover:bg-blue-200 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200 text-xs font-bold p-2 px-3 rounded-xl transition-colors"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            <span>WhatsApp</span>
+                          </a>
+                        </>
+                      ) : (
+                        <span className="text-[11px] text-blue-700 dark:text-blue-400 font-mono">
+                          Plantão Noturno
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* Sobreaviso 24h Padronizado (Neurocirurgia, Vascular, Nefrologia, Neurologia) */
+              <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950 text-[#0E7B86] dark:text-[#4FD1C5] flex items-center justify-center border border-teal-200 dark:border-teal-800 shadow-xs flex-shrink-0">
+                    <UserCheck className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] uppercase font-black text-slate-400 tracking-wider">
+                        Médico de Sobreaviso 24 Horas
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-mono text-[10px] font-bold">
+                        Disponível
+                      </span>
+                    </div>
+                    <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                      {diaSelecionadoObj.plantonista || 'Médico não escalado'}
+                    </div>
+                    {getDoctorContact(diaSelecionadoObj.plantonista)?.crm && (
+                      <div className="text-xs text-slate-500 font-mono mt-0.5">
+                        CRM-TO: {getDoctorContact(diaSelecionadoObj.plantonista)!.crm}
+                        {getDoctorContact(diaSelecionadoObj.plantonista)?.subArea && (
+                          <span className="ml-2 text-slate-400">• {getDoctorContact(diaSelecionadoObj.plantonista)!.subArea}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {getDoctorContact(diaSelecionadoObj.plantonista)?.telefone ? (
+                    <>
+                      <a
+                        href={`tel:${cleanPhone(getDoctorContact(diaSelecionadoObj.plantonista)!.telefone)}`}
+                        className="flex items-center gap-2 bg-[#0E7B86] hover:bg-[#095962] text-white text-xs sm:text-sm font-bold py-2.5 px-4 rounded-xl shadow-xs transition-colors"
+                      >
+                        <PhoneCall className="w-4 h-4" />
+                        <span>Acionar por Ligação</span>
+                      </a>
+                      <a
+                        href={formatWhatsappLink(
+                          getDoctorContact(diaSelecionadoObj.plantonista)!.telefone,
+                          diaSelecionadoObj.plantonista || '',
+                          currentEscala.nome
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold py-2.5 px-4 rounded-xl shadow-xs transition-colors"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                        <span>WhatsApp</span>
+                      </a>
+                    </>
+                  ) : (
+                    <div className="text-xs text-slate-500 font-medium">
+                      Contato geral pela recepção / PS
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         </div>
 
-        {/* =========================================================================
-            LAYOUT EXCLUSIVO 1: ORTOPEDIA & TRAUMATOLOGIA (24H - 3 TURNOS)
-            ========================================================================= */}
-        {activeSpecialty === 'ortopedia' && (
-          <div className="space-y-4">
-            {/* Header da Folha de Ortopedia (Fiel à Imagem 1) */}
-            <div className="bg-white border-2 border-slate-900 rounded-2xl p-4 sm:p-5 shadow-xs">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b-2 border-slate-900 pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-950 text-white rounded-xl flex items-center justify-center font-black text-2xl">
-                    ✚
-                  </div>
-                  <div>
-                    <h2 className="text-lg sm:text-xl font-black text-blue-950 tracking-wide m-0">
-                      PALMAS MEDICAL CENTER — HOSPITAL
-                    </h2>
-                    <h3 className="text-base sm:text-lg font-black text-slate-900 uppercase tracking-tight m-0">
-                      ESCALA DE PLANTÃO ORTOPEDIA — OUTUBRO/2026
-                    </h3>
-                  </div>
-                </div>
+        {/* 4. VISUALIZADOR PRINCIPAL PADRONIZADO: COMUTADOR ENTRE GRADE MENSAL E TABELA CRONOLÓGICA */}
+        <div className="bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5">
+          {/* Barra de Ferramentas Superior */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-700">
+            <div>
+              <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-[#0E7B86]" />
+                <span>Escala Oficial de {currentEscala.nome}</span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Outubro / 2026 • 31 dias cadastrados • Regime: {currentEscala.tipoPlantao}
+              </p>
+            </div>
 
-                <div className="flex flex-wrap items-center gap-3 text-xs font-bold">
-                  <div className="bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-300">
-                    <span className="text-slate-500">SETOR:</span> <strong>ORTOPEDIA</strong>
+            {/* Alternador de Modo de Visualização */}
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-700/60 p-1 rounded-2xl border border-slate-200 dark:border-slate-600 self-start sm:self-auto">
+              <button
+                type="button"
+                onClick={() => setViewMode('calendar')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  viewMode === 'calendar'
+                    ? 'bg-white dark:bg-slate-800 text-[#0E7B86] dark:text-[#4FD1C5] shadow-xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                }`}
+              >
+                <Grid className="w-3.5 h-3.5" />
+                <span>Grade de Calendário</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('table')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  viewMode === 'table'
+                    ? 'bg-white dark:bg-slate-800 text-[#0E7B86] dark:text-[#4FD1C5] shadow-xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
+                }`}
+              >
+                <List className="w-3.5 h-3.5" />
+                <span>Tabela Cronológica</span>
+              </button>
+            </div>
+          </div>
+
+          {/* MODO 1: GRADE DE CALENDÁRIO PADRONIZADA (1 a 31) */}
+          {viewMode === 'calendar' && (
+            <div className="space-y-3">
+              {/* Cabeçalho dos Dias da Semana */}
+              <div className="grid grid-cols-7 gap-1.5 sm:gap-2 text-center">
+                {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map((diaNome, idx) => (
+                  <div 
+                    key={diaNome} 
+                    className={`py-2 rounded-xl text-xs font-black uppercase tracking-wider ${
+                      idx >= 5 
+                        ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400' 
+                        : 'bg-slate-100 text-slate-700 dark:bg-slate-700/50 dark:text-slate-300'
+                    }`}
+                  >
+                    {diaNome}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="flex items-center gap-1 text-emerald-800 bg-emerald-50 border border-emerald-300 px-2.5 py-1 rounded-lg">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span> 07h às 19h
-                    </span>
-                    <span className="flex items-center gap-1 text-amber-800 bg-amber-50 border border-amber-300 px-2.5 py-1 rounded-lg">
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-600"></span> 19h às 22h
-                    </span>
-                    <span className="flex items-center gap-1 text-blue-800 bg-blue-50 border border-blue-300 px-2.5 py-1 rounded-lg">
-                      <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span> 22h às 07h
-                    </span>
-                  </div>
-                </div>
+                ))}
               </div>
 
-              {/* Layout 2 Colunas: Tabela Diária na Esquerda (68%) e Lista Lateral na Direita (32%) */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mt-4">
-                {/* Coluna 1: Tabela dos 31 Dias de Ortopedia */}
-                <div className="lg:col-span-8 border border-slate-300 rounded-xl overflow-hidden">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="bg-blue-950 text-white font-black text-[11px]">
-                        <th className="p-2.5 text-center border-r border-blue-900 w-12">DATA</th>
-                        <th className="p-2.5 border-r border-blue-900 w-28">DIA DA SEMANA</th>
-                        <th className="p-2.5 border-r border-blue-900 bg-emerald-900 text-emerald-200">07h às 19h</th>
-                        <th className="p-2.5 border-r border-blue-900 bg-amber-900 text-amber-200">19h às 22h</th>
-                        <th className="p-2.5 bg-blue-900 text-blue-200">22h às 07h</th>
-                        {isMaster && <th className="p-2.5 text-center w-12">EDITAR</th>}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 font-medium">
-                      {currentEscala.dias.map(d => {
-                        const isCurrentDay = d.dia === highlightedDay;
-                        return (
-                          <tr 
-                            key={d.dia}
-                            onClick={() => setHighlightedDay(d.dia)}
-                            className={`cursor-pointer transition-colors hover:bg-teal-50/50 ${
-                              isCurrentDay ? 'bg-teal-50 font-bold ring-1 ring-[#0E7B86]' : ''
-                            }`}
-                          >
-                            <td className="p-2 text-center font-bold font-mono border-r border-slate-200">
-                              {String(d.dia).padStart(2, '0')}/10
-                            </td>
-                            <td className="p-2 text-slate-700 border-r border-slate-200 truncate">
-                              {d.diaSemana}
-                            </td>
-                            <td className="p-2 font-bold text-emerald-950 bg-emerald-50/30 border-r border-slate-200">
-                              {d.turnoDiurno}
-                            </td>
-                            <td className="p-2 font-bold text-amber-950 bg-amber-50/30 border-r border-slate-200">
-                              {d.turnoIntermediario}
-                            </td>
-                            <td className="p-2 font-bold text-blue-950 bg-blue-50/30">
-                              {d.turnoNoturno}
-                            </td>
-                            {isMaster && (
-                              <td className="p-1.5 text-center">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleOpenEditDay(d.dia);
-                                  }}
-                                  className="p-1 text-slate-400 hover:text-[#0E7B86] rounded"
-                                >
-                                  <Edit3 className="w-3.5 h-3.5" />
-                                </button>
-                              </td>
-                            )}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+              {/* Grid dos Dias do Mês */}
+              {/* Em Outubro/2026, dia 01 é Quinta-feira (offset de 3 dias no grid Seg=0, Ter=1, Qua=2, Qui=3) */}
+              <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
+                {/* 3 Células Vazias de preenchimento antes da Quinta-feira */}
+                <div className="h-28 sm:h-32 rounded-2xl bg-slate-50/50 dark:bg-slate-800/40 border border-dashed border-slate-200 dark:border-slate-700/50 hidden sm:block"></div>
+                <div className="h-28 sm:h-32 rounded-2xl bg-slate-50/50 dark:bg-slate-800/40 border border-dashed border-slate-200 dark:border-slate-700/50 hidden sm:block"></div>
+                <div className="h-28 sm:h-32 rounded-2xl bg-slate-50/50 dark:bg-slate-800/40 border border-dashed border-slate-200 dark:border-slate-700/50 hidden sm:block"></div>
 
-                {/* Coluna 2: Especialistas e Avisos Laterais (Fiel à Imagem 1) */}
-                <div className="lg:col-span-4 space-y-4">
-                  {/* Lista de Especialistas Plantonistas Numerada de 1 a 19 */}
-                  <div className="border border-slate-300 rounded-xl overflow-hidden shadow-2xs bg-white">
-                    <div className="bg-blue-950 text-white p-2.5 font-black text-xs uppercase tracking-wider text-center">
-                      LISTA DE ESPECIALISTAS PLANTONISTAS ({currentEscala.plantonistas.length})
-                    </div>
-                    <div className="max-h-[520px] overflow-y-auto divide-y divide-slate-100 text-xs">
-                      {currentEscala.plantonistas.map((p, idx) => (
-                        <div key={p.id} className="p-2 flex items-center justify-between gap-1 hover:bg-slate-50">
-                          <div className="flex items-center gap-1.5">
-                            <span className="w-5 text-slate-400 font-mono font-bold text-[11px]">
-                              {idx + 1}
-                            </span>
-                            <div>
-                              <span className="font-bold text-slate-900 block leading-tight">
-                                {p.nome.replace('Dr. ', '').replace('Dra. ', '')}
-                              </span>
-                              <span className="text-[10px] text-slate-500 font-semibold">
-                                {p.subArea}
-                              </span>
+                {currentEscala.dias.map(d => {
+                  const isSelected = d.dia === highlightedDay;
+                  const isToday = d.dia === todayDate;
+                  const isWeekend = d.diaSemana === 'Sábado' || d.diaSemana === 'Domingo';
+
+                  return (
+                    <div
+                      key={d.dia}
+                      onClick={() => setHighlightedDay(d.dia)}
+                      className={`min-h-[110px] sm:min-h-[125px] p-2 sm:p-2.5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between group ${
+                        isSelected
+                          ? 'border-[#0E7B86] bg-teal-50/30 dark:bg-teal-950/20 shadow-md ring-2 ring-[#0E7B86]/20'
+                          : isToday
+                          ? 'border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/20'
+                          : isWeekend
+                          ? 'border-slate-200 dark:border-slate-700 bg-slate-50/40 dark:bg-slate-900/30 hover:border-slate-300'
+                          : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 hover:shadow-xs'
+                      }`}
+                    >
+                      {/* Topo do Card do Dia */}
+                      <div className="flex items-center justify-between">
+                        <span className={`w-6 h-6 rounded-lg text-xs font-black flex items-center justify-center font-mono ${
+                          isSelected
+                            ? 'bg-[#0E7B86] text-white'
+                            : isToday
+                            ? 'bg-emerald-500 text-white'
+                            : isWeekend
+                            ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300'
+                            : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                        }`}>
+                          {d.dia}
+                        </span>
+
+                        {isToday && (
+                          <span className="text-[9px] font-black uppercase text-emerald-600 bg-emerald-100 dark:bg-emerald-950 px-1.5 py-0.5 rounded-md">
+                            Hoje
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Conteúdo do Plantonista no Dia */}
+                      <div className="my-1.5 flex-1 flex flex-col justify-center">
+                        {activeSpecialty === 'ortopedia' ? (
+                          <div className="space-y-1 text-[10px] font-bold">
+                            <div className="text-emerald-700 dark:text-emerald-400 line-clamp-1" title={`Diurno: ${d.turnoDiurno}`}>
+                              ☀️ {d.turnoDiurno?.replace('Dr. ', '').replace('Dra. ', '')}
+                            </div>
+                            <div className="text-amber-700 dark:text-amber-400 line-clamp-1" title={`Intermediário: ${d.turnoIntermediario}`}>
+                              🌆 {d.turnoIntermediario?.replace('Dr. ', '').replace('Dra. ', '')}
+                            </div>
+                            <div className="text-blue-700 dark:text-blue-400 line-clamp-1" title={`Noturno: ${d.turnoNoturno}`}>
+                              🌙 {d.turnoNoturno?.replace('Dr. ', '').replace('Dra. ', '')}
                             </div>
                           </div>
-                          <div className="flex items-center gap-1 font-mono text-[11px]">
-                            <a 
-                              href={formatWhatsappLink(p.telefone, p.nome, 'Ortopedia')}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-emerald-700 hover:text-emerald-900 font-bold flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200"
-                              title="Chamar no WhatsApp"
-                            >
-                              <MessageSquare className="w-3 h-3 text-emerald-600" />
-                              <span>{p.telefone.replace('(63) ', '')}</span>
-                            </a>
+                        ) : (
+                          <div className="text-[11px] font-bold text-slate-900 dark:text-slate-100 line-clamp-2 leading-tight">
+                            {d.plantonista}
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Quadro OBSERVAÇÕES GERAIS */}
-                  <div className="border border-blue-900 rounded-xl overflow-hidden">
-                    <div className="bg-blue-950 text-white p-2 text-xs font-black uppercase text-center">
-                      OBSERVAÇÕES GERAIS
-                    </div>
-                    <div className="p-3 bg-blue-50/50 text-xs text-blue-950 font-bold leading-relaxed">
-                      Casos cirúrgicos que chegarem devem ser colocados imediatamente no grupo geral do PS.
-                    </div>
-                  </div>
-
-                  {/* Quadro ATENÇÃO & URGÊNCIA */}
-                  <div className="border border-red-300 rounded-xl p-3 bg-red-50 text-red-950 text-xs font-bold leading-relaxed flex items-start gap-2">
-                    <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <strong className="block text-red-900 uppercase">ATENÇÃO:</strong>
-                      EM CASO DE EMERGÊNCIA, ACIONE O ATENDIMENTO AO PACIENTE E ACIONE O ESPECIALISTA RESPONSÁVEL.
-                    </div>
-                  </div>
-
-                  {/* Quadro CONTATOS IMPORTANTES */}
-                  <div className="border border-slate-300 rounded-xl p-3 bg-slate-50 text-xs space-y-1.5 font-medium">
-                    <div className="font-black text-slate-800 uppercase text-[11px] mb-1">
-                      CONTATOS IMPORTANTES:
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Pronto Socorro HMC:</span>
-                      <strong className="font-mono text-slate-900">63 3215-9123</strong>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Central Centro Cirúrgico HM:</span>
-                      <strong className="font-mono text-slate-900">63 3216-8883</strong>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Central Centro Cirúrgico HE:</span>
-                      <strong className="font-mono text-slate-900">63 3807-4078</strong>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* =========================================================================
-            LAYOUT EXCLUSIVO 2: NEUROCIRURGIA PS MEDICAL (Fiel à Imagem 2)
-            ========================================================================= */}
-        {activeSpecialty === 'neurocirurgia' && (
-          <div className="bg-white border-2 border-slate-200 rounded-2xl p-5 sm:p-7 shadow-xs space-y-6">
-            {/* Cabeçalho Oficial Rede Medical */}
-            <div className="flex items-center justify-between border-b-2 border-[#B01B52] pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-[#EBF7F8] border border-[#C4E5E8] flex items-center justify-center text-[#0E7B86] font-black text-2xl">
-                  ✚
-                </div>
-                <div>
-                  <div className="text-xl sm:text-2xl font-black text-[#B01B52] leading-none">
-                    Rede Medical
-                  </div>
-                  <div className="text-xs font-bold text-slate-600 uppercase tracking-widest mt-0.5">
-                    Hospital Palmas Medical Center
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-right">
-                <div className="inline-block bg-[#B01B52] text-white px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider">
-                  ESCALA NEUROCIRURGIA PS MEDICAL
-                </div>
-                <div className="text-sm font-black text-slate-900 mt-1 font-mono">
-                  OUTUBRO 2026
-                </div>
-              </div>
-            </div>
-
-            {/* Calendário Mensal com Blocos de Cores dos Neurocirurgiões */}
-            <div className="border border-slate-300 rounded-xl overflow-hidden shadow-xs">
-              <div className="grid grid-cols-7 bg-[#B01B52] text-white font-black text-center text-xs py-2 uppercase tracking-wider">
-                <div>DOMINGO</div>
-                <div>SEGUNDA</div>
-                <div>TERÇA</div>
-                <div>QUARTA</div>
-                <div>QUINTA</div>
-                <div>SEXTA</div>
-                <div>SÁBADO</div>
-              </div>
-
-              {/* Matriz Semanal de Outubro */}
-              <div className="grid grid-cols-7 divide-x divide-y divide-slate-200 text-xs">
-                {/* Dias vazios antes do dia 1 (Outubro começou em Quinta-feira) */}
-                <div className="bg-slate-100/60 p-2 min-h-[68px]"></div>
-                <div className="bg-slate-100/60 p-2 min-h-[68px]"></div>
-                <div className="bg-slate-100/60 p-2 min-h-[68px]"></div>
-                <div className="bg-slate-100/60 p-2 min-h-[68px]"></div>
-
-                {/* Dias 1 a 31 */}
-                {currentEscala.dias.map(d => {
-                  const isVinicius = d.dia >= 1 && d.dia <= 10;
-                  const isLeonardo = d.dia >= 11 && d.dia <= 20;
-                  const isAnaFlavia = d.dia >= 21;
-                  const isSelected = d.dia === highlightedDay;
-
-                  return (
-                    <div
-                      key={d.dia}
-                      onClick={() => setHighlightedDay(d.dia)}
-                      className={`p-2 min-h-[68px] flex flex-col justify-between cursor-pointer transition-colors ${
-                        isSelected ? 'ring-2 ring-purple-600 bg-purple-50' : ''
-                      } ${
-                        isVinicius ? 'bg-sky-50/70 hover:bg-sky-100' :
-                        isLeonardo ? 'bg-purple-50/70 hover:bg-purple-100' :
-                        'bg-emerald-50/70 hover:bg-emerald-100'
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <span className="font-bold text-slate-700 font-mono text-[11px]">{d.dia}</span>
-                        {isMaster && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenEditDay(d.dia);
-                            }}
-                            className="text-slate-400 hover:text-purple-700"
-                          >
-                            <Edit3 className="w-3 h-3" />
-                          </button>
                         )}
                       </div>
-                      <div className="font-black text-center text-xs sm:text-sm uppercase tracking-wide py-1 text-slate-900">
-                        {isVinicius ? 'VINICIUS' : isLeonardo ? 'LEONARDO' : 'ANA FLÁVIA'}
-                      </div>
-                      <div className={`text-[9px] font-bold text-center rounded py-0.5 ${
-                        isVinicius ? 'text-sky-800' : isLeonardo ? 'text-purple-800' : 'text-emerald-800'
-                      }`}>
-                        Sobreaviso PS
+
+                      {/* Botão sutil de editar ao hover */}
+                      <div className="pt-1 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[10px] text-slate-400">
+                        <span className="truncate">{d.diaSemana.split('-')[0]}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenEditDay(d.dia);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 hover:text-[#0E7B86] transition-opacity p-0.5"
+                          title="Editar escala deste dia"
+                        >
+                          <Edit3 className="w-3 h-3" />
+                        </button>
                       </div>
                     </div>
                   );
                 })}
               </div>
             </div>
+          )}
 
-            {/* Contatos dos Neurocirurgiões com Botões de Ação Direta */}
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-              <h4 className="font-black text-xs sm:text-sm uppercase text-slate-800 tracking-wide m-0">
-                Telefones para contato da equipe de Neurocirurgia:
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {currentEscala.plantonistas.map(p => (
-                  <div key={p.id} className="p-3 bg-white border border-slate-200 rounded-xl flex flex-col justify-between shadow-2xs">
-                    <div>
-                      <div className="font-black text-sm text-slate-900">{p.nome}</div>
-                      <div className="font-mono text-xs font-bold text-slate-600 mt-0.5">{p.telefone}</div>
-                    </div>
-                    <div className="flex items-center gap-1.5 mt-3 pt-2 border-t border-slate-100">
-                      <a
-                        href={`tel:${cleanPhone(p.telefone)}`}
-                        className="flex-1 py-1 px-2 bg-slate-900 hover:bg-slate-800 text-white rounded text-xs font-bold flex items-center justify-center gap-1"
-                      >
-                        <Phone className="w-3 h-3" />
-                        <span>Ligar</span>
-                      </a>
-                      <a
-                        href={formatWhatsappLink(p.telefone, p.nome, 'Neurocirurgia')}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 py-1 px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold flex items-center justify-center gap-1"
-                      >
-                        <MessageSquare className="w-3 h-3" />
-                        <span>WhatsApp</span>
-                      </a>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Rodapé Institucional */}
-            <div className="text-center text-xs text-slate-500 pt-3 border-t border-slate-200">
-              Endereço: Q. 401 Sul Avenida Joaquim Teotônio Segurado, S/N - Conjunto 02 Lote 04 - Plano Diretor Sul, Palmas - TO • Telefone: (63) 3236-1818
-            </div>
-          </div>
-        )}
-
-        {/* =========================================================================
-            LAYOUT EXCLUSIVO 3: CIRURGIA VASCULAR (Fiel à Imagem 3)
-            ========================================================================= */}
-        {activeSpecialty === 'vascular' && (
-          <div className="bg-white border-2 border-slate-200 rounded-2xl p-5 sm:p-7 shadow-xs space-y-6">
-            <div className="text-center border-b-2 border-slate-800 pb-3">
-              <h2 className="text-base sm:text-lg font-bold text-slate-800 uppercase tracking-wide m-0">
-                Escala Sobreaviso Cirurgia Vascular — Rede Kora Palmas
-              </h2>
-              <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-1 m-0">
-                OUTUBRO 2026
-              </h3>
-            </div>
-
-            {/* Calendário Segunda a Domingo (Fiel à Imagem 3) */}
-            <div className="border border-slate-400 rounded-xl overflow-hidden shadow-xs">
-              <div className="grid grid-cols-7 bg-slate-800 text-white font-bold text-center text-xs py-2 uppercase">
-                <div>Segunda</div>
-                <div>Terça</div>
-                <div>Quarta</div>
-                <div>Quinta</div>
-                <div>Sexta</div>
-                <div>Sábado</div>
-                <div>Domingo</div>
-              </div>
-
-              <div className="grid grid-cols-7 divide-x divide-y divide-slate-300 text-xs">
-                {/* Dias vazios antes de 1 de Outubro (Outubro começou em Quinta) */}
-                <div className="bg-slate-100 p-2 min-h-[64px]"></div>
-                <div className="bg-slate-100 p-2 min-h-[64px]"></div>
-                <div className="bg-slate-100 p-2 min-h-[64px]"></div>
-
-                {currentEscala.dias.map(d => {
-                  const isSelected = d.dia === highlightedDay;
-                  return (
-                    <div
-                      key={d.dia}
-                      onClick={() => setHighlightedDay(d.dia)}
-                      className={`p-2 min-h-[64px] flex flex-col justify-between cursor-pointer transition-colors ${
-                        isSelected ? 'bg-rose-50 ring-2 ring-rose-600' : 'bg-white hover:bg-slate-50'
-                      }`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <span className="font-bold text-slate-800 font-mono text-xs">{d.dia}</span>
-                        {isMaster && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenEditDay(d.dia);
-                            }}
-                            className="text-slate-400 hover:text-rose-700"
-                          >
-                            <Edit3 className="w-3 h-3" />
-                          </button>
-                        )}
-                      </div>
-                      <div className="font-bold text-center text-xs text-rose-950 py-1">
-                        {d.plantonista?.replace('Dr. ', '').replace('Dra. ', '')}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Contatos dos Cirurgiões Vasculares e Responsável Técnico */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-5 pt-2">
-              <div className="md:col-span-8 p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                <div className="font-black text-xs uppercase text-slate-800">
-                  Contatos da Equipe de Cirurgia Vascular:
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                  {currentEscala.plantonistas.map(p => (
-                    <div key={p.id} className="flex items-center justify-between p-2 bg-white rounded border border-slate-200">
-                      <div>
-                        <span className="font-bold text-slate-900 block">{p.nome}</span>
-                        <span className="font-mono text-slate-600 text-[11px]">{p.telefone}</span>
-                      </div>
-                      <a
-                        href={formatWhatsappLink(p.telefone, p.nome, 'Cirurgia Vascular')}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-1.5 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 rounded"
-                        title="WhatsApp"
-                      >
-                        <MessageSquare className="w-3.5 h-3.5" />
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="md:col-span-4 p-4 bg-rose-50/70 border border-rose-200 rounded-xl flex flex-col justify-center text-right text-xs">
-                <span className="font-bold text-rose-900 uppercase text-[10px]">Responsável Técnico:</span>
-                <span className="font-black text-slate-900 text-sm mt-0.5">Dr. Guilherme Marum Olmedo</span>
-                <span className="text-slate-600 text-[11px] mt-0.5">Médico – Cirurgião Vascular e Endovascular</span>
-                <span className="font-mono font-bold text-rose-950 mt-1">CRM TO: 7840 – RQE: 3578/3619/3643</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* =========================================================================
-            LAYOUT EXCLUSIVO 4: NEFROLOGIA (Fiel à Imagem 4)
-            ========================================================================= */}
-        {activeSpecialty === 'nefrologia' && (
-          <div className="bg-white border-2 border-slate-200 rounded-2xl p-5 sm:p-7 shadow-xs space-y-6">
-            <div className="border-b border-slate-200 pb-3">
-              <p className="text-xs sm:text-sm text-slate-700 font-medium italic m-0">
-                "Vimos, mui gentilmente, enviar nossa escala de trabalho médico na especialidade de Nefrologia do mês de OUTUBRO/2026."
-              </p>
-              <div className="flex items-center justify-between mt-3">
-                <div className="text-2xl sm:text-3xl font-black text-[#0E7B86] font-mono leading-none">
-                  OUTUBRO 2026
-                </div>
-                <div className="text-right text-xs font-semibold text-slate-500">
-                  MÊS: <strong>OUTUBRO</strong> • ANO: <strong>2026</strong> • UNIDADE: <strong>KORA PALMAS</strong>
-                </div>
-              </div>
-            </div>
-
-            {/* Grade Semanal de Nefrologia */}
-            <div className="border border-slate-300 rounded-xl overflow-hidden shadow-xs">
-              <div className="grid grid-cols-8 bg-sky-900 text-white font-bold text-center text-xs py-2">
-                <div>UNIDADE</div>
-                <div>segunda-feira</div>
-                <div>terça-feira</div>
-                <div>quarta-feira</div>
-                <div>quinta-feira</div>
-                <div>sexta-feira</div>
-                <div>sábado</div>
-                <div>domingo</div>
-              </div>
-
-              {/* Tabela de Nefrologia */}
-              <div className="divide-y divide-slate-200 text-xs">
-                {/* Linha das semanas */}
-                {[
-                  { range: [1, 2, 3, 4], prev: 3 },
-                  { range: [5, 6, 7, 8, 9, 10, 11] },
-                  { range: [12, 13, 14, 15, 16, 17, 18] },
-                  { range: [19, 20, 21, 22, 23, 24, 25] },
-                  { range: [26, 27, 28, 29, 30, 31], next: 1 }
-                ].map((row, rIdx) => (
-                  <div key={rIdx} className="grid grid-cols-8 divide-x divide-slate-200">
-                    <div className="bg-slate-100 p-2 font-bold text-center flex flex-col justify-center text-slate-600 text-[11px]">
-                      KORA
-                    </div>
-                    {/* Renderiza dias da semana correspondentes */}
-                    {Array.from({ length: 7 }, (_, colIdx) => {
-                      const dayNumber = rIdx === 0 
-                        ? (colIdx >= 3 ? row.range[colIdx - 3] : null)
-                        : (rIdx === 4 && colIdx >= 6 ? null : (row.range[colIdx] || null));
-                      
-                      if (!dayNumber) {
-                        return <div key={colIdx} className="bg-slate-50 p-2 min-h-[56px]"></div>;
-                      }
-
-                      const diaObj = currentEscala.dias.find(d => d.dia === dayNumber);
-                      const isSelected = dayNumber === highlightedDay;
-
-                      return (
-                        <div
-                          key={colIdx}
-                          onClick={() => setHighlightedDay(dayNumber)}
-                          className={`p-2 min-h-[56px] flex flex-col justify-between cursor-pointer transition-colors ${
-                            isSelected ? 'bg-sky-100 ring-2 ring-sky-600' : 'hover:bg-sky-50/60'
-                          }`}
-                        >
-                          <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 font-mono">
-                            <span>{dayNumber}</span>
-                            {isMaster && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleOpenEditDay(dayNumber);
-                                }}
-                                className="text-slate-400 hover:text-sky-700"
-                              >
-                                <Edit3 className="w-3 h-3" />
-                              </button>
-                            )}
-                          </div>
-                          <div className="font-black text-center text-xs text-sky-950 uppercase truncate">
-                            {diaObj?.plantonista?.replace('Dr. ', '').replace('Dra. ', '')}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Contatos dos Nefrologistas */}
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-              <div className="font-black text-xs uppercase text-slate-700">
-                Contatos da Equipe de Nefrologia:
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs">
-                {currentEscala.plantonistas.map(p => (
-                  <div key={p.id} className="p-2.5 bg-white border border-slate-200 rounded-lg flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-slate-900 block">{p.nome}</span>
-                      <span className="font-mono text-slate-600 text-[11px]">{p.telefone}</span>
-                    </div>
-                    <a
-                      href={formatWhatsappLink(p.telefone, p.nome, 'Nefrologia')}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded border border-emerald-200"
-                      title="WhatsApp"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5" />
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* =========================================================================
-            LAYOUT EXCLUSIVO 5: NEUROLOGIA CLÍNICA (Fiel à Imagem 5)
-            ========================================================================= */}
-        {activeSpecialty === 'neurologia' && (
-          <div className="bg-[#104A50] text-white rounded-2xl p-4 sm:p-6 shadow-md space-y-5">
-            {/* Top Bar macOS/Console Style */}
-            <div className="flex items-center justify-between border-b border-teal-700/60 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-rose-400"></span>
-                  <span className="w-3 h-3 rounded-full bg-amber-400"></span>
-                  <span className="w-3 h-3 rounded-full bg-emerald-400"></span>
-                </div>
-                <span className="text-xl sm:text-2xl font-black text-teal-200 uppercase tracking-tight ml-2">
-                  OUTUBRO 2026
-                </span>
-              </div>
-              <span className="text-xs font-black uppercase text-teal-300 tracking-widest bg-teal-900/80 px-3 py-1 rounded-full border border-teal-700">
-                ESCALA PLANTÃO DA NEUROLOGIA
-              </span>
-            </div>
-
-            {/* Layout 2 Colunas: Lateral de Acionamento e Grade do Calendário (Fiel à Imagem 5) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-              {/* Coluna 1: Painel Lateral com Aviso "ACIONAMENTO SEMPRE POR LIGAÇÃO" */}
-              <div className="lg:col-span-4 bg-teal-950/70 border border-teal-600/50 rounded-xl p-4 space-y-4 flex flex-col justify-between">
-                <div>
-                  <div className="border-b border-teal-700/60 pb-2 mb-3">
-                    <span className="text-[11px] font-black uppercase tracking-wider text-teal-300 block">
-                      PLANTONISTAS & CONTATOS
-                    </span>
-                    <span className="text-[10px] text-teal-400/80">Acionamento por chamada direta</span>
-                  </div>
-
-                  <div className="space-y-2 text-xs">
-                    {currentEscala.plantonistas.map(p => (
-                      <div key={p.id} className="p-2 bg-teal-900/60 rounded-lg border border-teal-700/60 flex items-center justify-between">
-                        <div>
-                          <strong className="block text-white text-xs">{p.nome}</strong>
-                          <span className="font-mono text-teal-300 text-[11px]">{p.telefone}</span>
-                        </div>
-                        <a
-                          href={`tel:${cleanPhone(p.telefone)}`}
-                          className="px-2 py-1 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded text-xs font-black flex items-center gap-1"
-                          title="Ligar"
-                        >
-                          <Phone className="w-3 h-3" />
-                          <span>Ligar</span>
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Banner Oficial: ACIONAMENTO SEMPRE POR LIGAÇÃO */}
-                <div className="p-3 bg-amber-400 text-slate-950 rounded-xl text-center font-black text-xs uppercase tracking-wider shadow-sm">
-                  ⚠️ ACIONAMENTO SEMPRE POR LIGAÇÃO
-                </div>
-              </div>
-
-              {/* Coluna 2: Grade de Calendário Dom a Sáb */}
-              <div className="lg:col-span-8 bg-teal-950/50 border border-teal-600/40 rounded-xl p-3">
-                <div className="grid grid-cols-7 text-center font-black text-xs text-teal-200 uppercase py-1 border-b border-teal-700/60 mb-2">
-                  <div>DOM</div>
-                  <div>SEG</div>
-                  <div>TER</div>
-                  <div>QUA</div>
-                  <div>QUI</div>
-                  <div>SEX</div>
-                  <div>SÁB</div>
-                </div>
-
-                <div className="grid grid-cols-7 gap-1.5 text-xs">
-                  {/* Dias vazios antes do dia 1 (Outubro começou em Quinta) */}
-                  <div className="bg-teal-900/30 rounded-lg min-h-[58px]"></div>
-                  <div className="bg-teal-900/30 rounded-lg min-h-[58px]"></div>
-                  <div className="bg-teal-900/30 rounded-lg min-h-[58px]"></div>
-                  <div className="bg-teal-900/30 rounded-lg min-h-[58px]"></div>
-
+          {/* MODO 2: TABELA CRONOLÓGICA PADRONIZADA (1 a 31) */}
+          {viewMode === 'table' && (
+            <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-900 text-white font-black text-[11px]">
+                    <th className="p-3 text-center border-r border-slate-800 w-16">DATA</th>
+                    <th className="p-3 border-r border-slate-800 w-32">DIA DA SEMANA</th>
+                    {activeSpecialty === 'ortopedia' ? (
+                      <>
+                        <th className="p-3 border-r border-slate-800 bg-emerald-950/70 text-emerald-300">07h às 19h (Diurno)</th>
+                        <th className="p-3 border-r border-slate-800 bg-amber-950/70 text-amber-300">19h às 22h</th>
+                        <th className="p-3 border-r border-slate-800 bg-blue-950/70 text-blue-300">22h às 07h (Noturno)</th>
+                      </>
+                    ) : (
+                      <th className="p-3 border-r border-slate-800">MÉDICO PLANTONISTA / SOBREAVISO</th>
+                    )}
+                    <th className="p-3 text-center w-28">AÇÃO</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-700 font-medium">
                   {currentEscala.dias.map(d => {
                     const isSelected = d.dia === highlightedDay;
+                    const isToday = d.dia === todayDate;
+
                     return (
-                      <div
+                      <tr
                         key={d.dia}
                         onClick={() => setHighlightedDay(d.dia)}
-                        className={`p-1.5 rounded-lg border transition-all cursor-pointer flex flex-col justify-between min-h-[58px] ${
+                        className={`cursor-pointer transition-colors ${
                           isSelected
-                            ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-sm font-black'
-                            : 'bg-white text-slate-900 border-teal-300/40 hover:bg-teal-50'
+                            ? 'bg-teal-50 dark:bg-teal-950/30 font-bold'
+                            : isToday
+                            ? 'bg-emerald-50/50 dark:bg-emerald-950/20'
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-700/40'
                         }`}
                       >
-                        <div className="flex justify-between items-center text-[10px]">
-                          <span className="font-bold font-mono">{d.dia}</span>
-                          {isMaster && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenEditDay(d.dia);
-                              }}
-                              className="text-slate-400 hover:text-teal-800"
-                            >
-                              <Edit3 className="w-2.5 h-2.5" />
-                            </button>
-                          )}
-                        </div>
-                        <div className="font-bold text-center text-[11px] leading-tight truncate">
-                          {d.plantonista?.replace('Dr. ', '').replace('Dra. ', '')}
-                        </div>
-                      </div>
+                        <td className="p-3 text-center font-mono font-bold border-r border-slate-200 dark:border-slate-700">
+                          <span className={`px-2 py-0.5 rounded-md ${
+                            isToday ? 'bg-emerald-500 text-white' : 'text-slate-800 dark:text-slate-200'
+                          }`}>
+                            {String(d.dia).padStart(2, '0')}/10
+                          </span>
+                        </td>
+                        <td className="p-3 text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">
+                          {d.diaSemana}
+                        </td>
+                        {activeSpecialty === 'ortopedia' ? (
+                          <>
+                            <td className="p-3 font-bold text-emerald-900 dark:text-emerald-300 border-r border-slate-200 dark:border-slate-700">
+                              {d.turnoDiurno}
+                            </td>
+                            <td className="p-3 font-bold text-amber-900 dark:text-amber-300 border-r border-slate-200 dark:border-slate-700">
+                              {d.turnoIntermediario}
+                            </td>
+                            <td className="p-3 font-bold text-blue-900 dark:text-blue-300 border-r border-slate-200 dark:border-slate-700">
+                              {d.turnoNoturno}
+                            </td>
+                          </>
+                        ) : (
+                          <td className="p-3 font-bold text-slate-900 dark:text-white border-r border-slate-200 dark:border-slate-700">
+                            {d.plantonista}
+                          </td>
+                        )}
+                        <td className="p-3 text-center">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenEditDay(d.dia);
+                            }}
+                            className="p-1 px-2.5 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-[#0E7B86] hover:text-white text-slate-600 dark:text-slate-300 text-[11px] font-bold transition-colors cursor-pointer"
+                          >
+                            Editar
+                          </button>
+                        </td>
+                      </tr>
                     );
                   })}
-                </div>
-              </div>
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* 5. DIRETÓRIO PADRONIZADO DA EQUIPE MÉDICA (CONTATOS E ACIONAMENTO) */}
+        <div className="bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-700">
+            <div>
+              <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <Users className="w-5 h-5 text-[#0E7B86]" />
+                <span>Corpo Clínico & Contatos • {currentEscala.nome}</span>
+              </h3>
+              <p className="text-xs text-slate-500">
+                Lista padronizada de médicos especialistas para acionamento e sobreaviso hospitalar
+              </p>
             </div>
 
-            {/* Rodapé Oficial da Neurologia */}
-            <div className="text-center font-black text-xs uppercase tracking-widest text-teal-200 pt-3 border-t border-teal-700/60">
-              RESPONSÁVEL TÉCNICO: DRA. PRISCILA LEITE
+            {/* Campo de Busca Rápida Padronizado */}
+            <div className="relative w-full sm:w-72">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                placeholder="Buscar por nome, CRM ou área..."
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0E7B86]"
+              />
             </div>
           </div>
-        )}
 
-        {/* MODAL DE EDIÇÃO MENSAL (PARA O USUÁRIO ATUALIZAR MÊS A MÊS) */}
+          {/* Grid Padronizado de Especialistas */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {filteredPlantonistas.map(medico => (
+              <div 
+                key={medico.id}
+                className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 hover:bg-white dark:hover:bg-slate-800 hover:shadow-xs transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-950 text-[#0E7B86] dark:text-[#4FD1C5] font-black text-xs flex items-center justify-center flex-shrink-0">
+                        {medico.nome.replace(/Dr\.|Dra\./g, '').trim().substring(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white leading-tight">
+                          {medico.nome}
+                        </h4>
+                        <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-mono mt-0.5">
+                          {medico.crm ? `CRM-TO: ${medico.crm}` : 'CRM Ativo'}
+                          {medico.subArea && (
+                            <span className="text-[#0E7B86] font-bold">• {medico.subArea}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 pt-2.5 border-t border-slate-200 dark:border-slate-700/60 flex items-center gap-2">
+                  <a
+                    href={`tel:${cleanPhone(medico.telefone)}`}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-[11px] font-bold transition-colors"
+                  >
+                    <Phone className="w-3 h-3 text-[#0E7B86]" />
+                    <span className="truncate">{medico.telefone}</span>
+                  </a>
+                  <a
+                    href={formatWhatsappLink(medico.telefone, medico.nome, currentEscala.nome)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 px-2.5 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl text-[11px] font-bold transition-colors flex items-center gap-1"
+                    title="Conversar no WhatsApp"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">WhatsApp</span>
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 6. NORMAS TÉCNICAS & PROTOCOLO DE ACIONAMENTO PADRONIZADO */}
+        <div className="bg-slate-900 text-white rounded-3xl p-5 sm:p-6 border border-slate-800 shadow-md">
+          <div className="flex items-center gap-2.5 mb-3">
+            <ShieldCheck className="w-5 h-5 text-[#4FD1C5]" />
+            <h3 className="text-sm sm:text-base font-black tracking-tight text-white uppercase">
+              Diretrizes & Protocolo de Acionamento do Hospital Palmas Medical
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300">
+            <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700">
+              <span className="text-[10px] uppercase font-black text-[#4FD1C5] block mb-1">
+                1. Acionamento do Sobreaviso
+              </span>
+              <p className="leading-relaxed">
+                O acionamento deve ocorrer <strong>exclusivamente por ligação telefônica</strong> confirmada pelo profissional, garantindo confirmação e tempo de resposta seguro.
+              </p>
+            </div>
+
+            <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700">
+              <span className="text-[10px] uppercase font-black text-[#4FD1C5] block mb-1">
+                2. Fluxo de Pareceres e Centro Cirúrgico
+              </span>
+              <p className="leading-relaxed">
+                Casos cirúrgicos e pareceres de urgência/UTI devem ser protocolados no sistema hospitalar e reportados na central médica de apoio.
+              </p>
+            </div>
+
+            <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700">
+              <span className="text-[10px] uppercase font-black text-[#4FD1C5] block mb-1">
+                3. Responsável Técnico & Contatos
+              </span>
+              <p className="leading-relaxed font-mono text-[11px]">
+                {currentEscala.responsavelTecnico || 'Coordenação Médica Hospital Palmas Medical'}<br />
+                PABX Geral: (63) 3236-1818<br />
+                Emergência PS: (63) 3236-1800
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* 7. MODAL PADRONIZADO DE ATUALIZAÇÃO MENSAL DE PLANTÃO */}
         {showEditModal && (
-          <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-base font-black text-slate-900 m-0 flex items-center gap-2">
-                  <Edit3 className="w-5 h-5 text-[#0E7B86]" />
-                  <span>Editar Plantão do Dia {editDiaNumber}</span>
-                </h3>
-                <span className="text-xs font-bold text-[#0E7B86] uppercase">
-                  {currentEscala.nome}
-                </span>
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-150">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-700">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-[#0E7B86] text-white flex items-center justify-center font-black">
+                    {editDiaNumber}
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-slate-900 dark:text-white">
+                      Editar Plantão • Dia {editDiaNumber}/10/2026
+                    </h4>
+                    <p className="text-[11px] text-slate-500">{currentEscala.nome}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="text-slate-400 hover:text-slate-600 text-lg font-bold p-1"
+                >
+                  ✕
+                </button>
               </div>
 
-              <form onSubmit={handleSaveDayEdit} className="space-y-3">
+              <form onSubmit={handleSaveDayEdit} className="mt-4 space-y-3.5">
                 {activeSpecialty === 'ortopedia' ? (
                   <>
                     <div>
-                      <label className="text-xs font-bold text-slate-600 block mb-1">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
                         Turno Diurno (07h às 19h):
                       </label>
                       <input
                         type="text"
                         value={editDiurno}
                         onChange={e => setEditDiurno(e.target.value)}
-                        placeholder="Ex: Dr. André"
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#0E7B86]"
+                        placeholder="Ex: Dr. Fabrício"
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0E7B86]"
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-slate-600 block mb-1">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
                         Turno Intermediário (19h às 22h):
                       </label>
                       <input
@@ -1151,33 +1156,33 @@ export const EscalaMedicaViewer: React.FC<{ isMaster?: boolean }> = ({ isMaster 
                         value={editIntermediario}
                         onChange={e => setEditIntermediario(e.target.value)}
                         placeholder="Ex: Dr. Pedro"
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#0E7B86]"
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0E7B86]"
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-slate-600 block mb-1">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
                         Turno Noturno (22h às 07h):
                       </label>
                       <input
                         type="text"
                         value={editNoturno}
                         onChange={e => setEditNoturno(e.target.value)}
-                        placeholder="Ex: Dr. Pedro"
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#0E7B86]"
+                        placeholder="Ex: Dr. Paulo"
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0E7B86]"
                       />
                     </div>
                   </>
                 ) : (
                   <div>
-                    <label className="text-xs font-bold text-slate-600 block mb-1">
-                      Médico Plantonista / Sobreaviso:
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                      Médico Plantonista / Sobreaviso (24h):
                     </label>
                     <input
                       type="text"
                       value={editPlantonista}
                       onChange={e => setEditPlantonista(e.target.value)}
                       placeholder="Ex: Dra. Ana Flávia"
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:ring-2 focus:ring-[#0E7B86]"
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0E7B86]"
                     />
                   </div>
                 )}
@@ -1192,7 +1197,7 @@ export const EscalaMedicaViewer: React.FC<{ isMaster?: boolean }> = ({ isMaster 
                   <button
                     type="button"
                     onClick={() => setShowEditModal(false)}
-                    className="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                    className="py-2.5 px-4 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                   >
                     Cancelar
                   </button>
@@ -1206,7 +1211,7 @@ export const EscalaMedicaViewer: React.FC<{ isMaster?: boolean }> = ({ isMaster 
   );
 };
 
-// Ícone Vascular
+// Ícone Vascular Padronizado
 function HeartRateIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -18,7 +18,8 @@ import {
   UserCheck,
   ClipboardList,
   ShieldCheck,
-  FolderOpen
+  FolderOpen,
+  CalendarDays
 } from 'lucide-react';
 import { AppMode } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
@@ -70,6 +71,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: UserCheck,
       badge: 'Urgência & UTI',
       badgeColor: 'bg-purple-50 text-purple-900 border border-purple-200'
+    },
+    {
+      id: 'escala-medica' as AppMode,
+      label: 'Escala Médica Especialidade',
+      subtitle: 'Plantões, sobreavisos e contatos mensais',
+      icon: CalendarDays,
+      badge: 'Mensal • Out/26',
+      badgeColor: 'bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]'
     },
     {
       id: 'cobertura-convenios' as AppMode,

@@ -11,6 +11,7 @@ import { CoberturaConveniosViewer } from './components/CoberturaConveniosViewer'
 import { HospitalReportsViewer } from './components/HospitalReportsViewer';
 import { HospitalExtensionsViewer } from './components/HospitalExtensionsViewer';
 import { DocumentosViewer } from './components/DocumentosViewer';
+import { EscalaMedicaViewer } from './components/EscalaMedicaViewer';
 import { AiHospitalAssistant } from './components/AiHospitalAssistant';
 import { AiChatDrawer } from './components/AiChatDrawer';
 import { PreGuiaGenerator } from './components/PreGuiaGenerator';
@@ -372,6 +373,10 @@ export default function App() {
               onOpenAiWithPrompt={handleOpenAiWithPrompt}
               initialConvenioId={parecerConvenioInitial}
             />
+          )}
+
+          {activeMode === 'escala-medica' && (
+            <EscalaMedicaViewer isMaster={isMaster} />
           )}
 
           {activeMode === 'cobertura-convenios' && (

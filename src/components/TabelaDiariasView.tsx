@@ -176,7 +176,7 @@ export const TabelaDiariasView: React.FC<TabelaDiariasViewProps> = ({
         </div>
 
         {/* Leito / Acomodacao Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-2 border-t border-slate-100">
+        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-100 no-scrollbar">
           <span className="text-xs font-bold text-slate-400 mr-1 flex items-center gap-1">
             <Filter className="w-3.5 h-3.5" />
             Tipo:

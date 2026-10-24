@@ -433,7 +433,13 @@ html.dark .animate-code-alert-box {
   }
 }
 
-/* Utilitário para ocultar barras de rolagem nativas horizontais e verticais */
+/* Utilitário global para ocultar barras de rolagem horizontais em toda a aplicação */
+*::-webkit-scrollbar:horizontal {
+  display: none !important;
+  height: 0 !important;
+  width: 0 !important;
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none !important;
   width: 0 !important;
@@ -443,5 +449,6 @@ html.dark .animate-code-alert-box {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
 }
+
 
 

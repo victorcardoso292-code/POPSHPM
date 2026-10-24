@@ -341,7 +341,7 @@ export const ProcedureValuesViewer: React.FC<ProcedureValuesViewerProps> = ({
 
       {/* Main Tabs Navigation */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-2.5 sm:p-3 rounded-2xl border border-slate-200 shadow-2xs">
-        <div className="flex items-center gap-2 overflow-x-auto p-1">
+        <div className="flex flex-wrap items-center gap-2 p-1 no-scrollbar">
           <button
             type="button"
             onClick={() => handleTabChange('geral')}

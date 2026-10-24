@@ -250,7 +250,7 @@ export const HospitalExtensionsViewer: React.FC<HospitalExtensionsViewerProps> =
       <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3.5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Category tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          <div className="flex flex-wrap items-center gap-2 no-scrollbar">
             {categories.map(cat => (
               <button
                 key={cat.id}

@@ -140,7 +140,7 @@ export const PopsViewer: React.FC<PopsViewerProps> = ({
       <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs space-y-3">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Category filter pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
+          <div className="flex flex-wrap items-center gap-1.5 no-scrollbar max-w-full">
             {planCategories.map(cat => (
               <button
                 key={cat}
@@ -202,7 +202,7 @@ export const PopsViewer: React.FC<PopsViewerProps> = ({
       ) : null}
 
       {/* Sub-category Tabs for the selected Plan */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+      <div className="flex flex-wrap items-center gap-1.5 no-scrollbar">
         {planSections.map(sec => {
           const isActive = activeSectionId === sec.id;
           return (

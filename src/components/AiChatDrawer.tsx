@@ -341,7 +341,7 @@ export const AiChatDrawer: React.FC<AiChatDrawerProps> = ({
         </div>
 
         {/* Quick Suggestion Chips */}
-        <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 overflow-x-auto flex items-center gap-2 no-scrollbar">
+        <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center gap-2 no-scrollbar">
           <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex-shrink-0">
             Dúvidas Frequentes:
           </span>

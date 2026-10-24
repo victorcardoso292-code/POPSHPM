@@ -434,7 +434,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
 
         {/* Barra de Filtros e Busca da Tabela */}
         <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
+          <div className="flex flex-wrap items-center gap-1.5 no-scrollbar max-w-full">
             {[
               { id: 'all', label: `Todos (${POPS_PS_MATRIX_DATA.length})` },
               { id: 'pacotes', label: `Pacotes Exclusivos (${POPS_PS_MATRIX_DATA.filter(i => Boolean(i.pacotePsAdulto || i.pacotePsPediatria || (i.pacotePsGeral && i.pacotePsGeral !== '10101039'))).length})` },
@@ -722,7 +722,7 @@ export const PopsPsViewer: React.FC<PopsPsViewerProps> = ({
           </div>
 
           <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
+            <div className="flex flex-wrap items-center gap-2 no-scrollbar max-w-full">
               {planCategories.map(cat => (
                 <button
                   key={cat}

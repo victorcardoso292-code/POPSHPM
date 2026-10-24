@@ -398,7 +398,7 @@ export const PopsInternacaoViewer: React.FC<PopsInternacaoViewerProps> = ({
           </div>
 
           <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
+            <div className="flex flex-wrap items-center gap-2 no-scrollbar max-w-full">
               {planCategories.map(cat => (
                 <button
                   key={cat}

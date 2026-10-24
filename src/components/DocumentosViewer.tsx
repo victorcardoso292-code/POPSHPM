@@ -134,10 +134,22 @@ const INITIAL_DECLARACAO: DeclaracaoComparecimentoData = {
   cpfPaciente: '',
   dataComparecimento: '',
   horario: '',
+  horarioEntrada: '',
+  horarioSaida: '',
   observacao: '',
   diaEmissao: '',
   mesEmissao: '',
-  anoEmissao: ''
+  anoEmissao: '',
+  condicao: 'PACIENTE',
+  nomeAcompanhante: '',
+  cpfAcompanhante: '',
+  tipoAtendimento: 'Consulta Médica em Pronto-Socorro',
+  setorUnidade: 'Pronto-Socorro Geral (PS)',
+  registroAtendimento: '',
+  convenioPlano: '',
+  medicoResponsavel: '',
+  crmProfissional: '',
+  codigoAutenticidade: ''
 };
 
 export const DocumentosViewer: React.FC = () => {
@@ -336,10 +348,22 @@ export const DocumentosViewer: React.FC = () => {
         cpfPaciente: '852.147.963-00',
         dataComparecimento: dStr,
         horario: `${tStr} às 18:30`,
-        observacao: 'Consulta médica de urgência e medicação em Pronto-Socorro',
+        horarioEntrada: tStr,
+        horarioSaida: '18:30',
+        observacao: 'Paciente atendido em regime de urgência médica, submetido a avaliação clínica especializada, coleta de exames laboratoriais complementares e administração de medicação sob observação.',
         diaEmissao: diaAtual,
         mesEmissao: mesAtual,
-        anoEmissao: anoAtual
+        anoEmissao: anoAtual,
+        condicao: 'PACIENTE',
+        nomeAcompanhante: '',
+        cpfAcompanhante: '',
+        tipoAtendimento: 'Consulta Médica em Pronto-Socorro / Urgência',
+        setorUnidade: 'Pronto-Socorro Geral (PS Adulto)',
+        registroAtendimento: 'AT-2026-09418',
+        convenioPlano: 'Unimed Palmas',
+        medicoResponsavel: 'Dr. Lucas Silveira Mendes',
+        crmProfissional: 'CRM-TO 5821 • Médico Plantonista',
+        codigoAutenticidade: 'HPM-CMP-2026-9418'
       });
     } else if (activeDoc === 'fusex') {
       setFusexData({
@@ -567,7 +591,7 @@ export const DocumentosViewer: React.FC = () => {
           </div>
 
           {/* Category Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1">
+          <div className="flex flex-wrap items-center gap-2 pt-1 no-scrollbar">
             {categories.map((cat) => (
               <button
                 key={cat.id}

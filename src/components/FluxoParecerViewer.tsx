@@ -779,7 +779,7 @@ export const FluxoParecerViewer: React.FC<FluxoParecerViewerProps> = ({
               </div>
 
               {/* Filtros de Status */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+              <div className="flex flex-wrap items-center gap-1.5 no-scrollbar">
                 {[
                   { id: 'all' as const, label: `Todos (${PARECERES_CONVENIOS_DATA.length})` },
                   { id: 'direto' as const, label: `Liberação Direta (${PARECERES_CONVENIOS_DATA.filter(c => c.requiresAuth === 'NÃO').length})` },
@@ -1056,7 +1056,7 @@ export const FluxoParecerViewer: React.FC<FluxoParecerViewerProps> = ({
               </div>
 
               {/* Botões de Filtro Rápido */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+              <div className="flex flex-wrap items-center gap-1.5 no-scrollbar">
                 {[
                   { id: 'all' as const, label: `Todos (${PARECERES_NEUROLOGIA_DATA.length})` },
                   { id: 'pacote_ps' as const, label: `Dentro do Pacote PS (3)` },

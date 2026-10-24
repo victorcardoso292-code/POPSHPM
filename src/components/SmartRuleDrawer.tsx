@@ -140,7 +140,7 @@ export const SmartRuleDrawer: React.FC<SmartRuleDrawerProps> = ({
         </div>
 
         {/* Plan Selector Strip */}
-        <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center gap-2 overflow-x-auto">
+        <div className="p-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center gap-2 no-scrollbar">
           <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider whitespace-nowrap pl-1">
             Plano:
           </span>

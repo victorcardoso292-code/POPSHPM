@@ -418,18 +418,18 @@ export const EscalaMedicaViewer: React.FC<{ isMaster?: boolean }> = ({ isMaster 
                   )}
 
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${
                       isSelected
                         ? 'bg-[#0E7B86] text-white shadow-xs'
                         : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                     }`}>
                       <IconComponent className="w-5 h-5" />
                     </div>
-                    <div className="pr-6">
-                      <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider font-mono">
+                    <div className="pr-4 flex-1 min-w-0">
+                      <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider font-mono">
                         {item.sigla}
                       </span>
-                      <h3 className={`text-xs sm:text-sm font-black leading-tight line-clamp-1 ${
+                      <h3 className={`text-sm sm:text-base font-black leading-snug truncate ${
                         isSelected ? 'text-[#0E7B86] dark:text-[#4FD1C5]' : 'text-slate-900 dark:text-white'
                       }`}>
                         {item.nome}
@@ -437,11 +437,11 @@ export const EscalaMedicaViewer: React.FC<{ isMaster?: boolean }> = ({ isMaster 
                     </div>
                   </div>
 
-                  <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
-                    <span className="text-slate-500 font-medium">
-                      {item.medicosCount} especialistas
+                  <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs">
+                    <span className="text-slate-500 font-bold">
+                      {item.medicosCount} médicos
                     </span>
-                    <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] border ${item.corBadge}`}>
+                    <span className={`px-2.5 py-0.5 rounded-lg font-black text-xs border ${item.corBadge}`}>
                       {item.badge.split('•')[0].trim()}
                     </span>
                   </div>
@@ -476,8 +476,11 @@ export const EscalaMedicaViewer: React.FC<{ isMaster?: boolean }> = ({ isMaster 
                   )}
                 </div>
 
-                <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1">
-                  {currentEscala.nome}
+                <div className="text-xl sm:text-2xl font-black text-[#0E7B86] dark:text-[#4FD1C5] mt-1 flex flex-wrap items-center gap-2">
+                  <span>{currentEscala.nome}</span>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold">
+                    {currentEscala.tipoPlantao}
+                  </span>
                 </div>
               </div>
             </div>
@@ -694,24 +697,26 @@ export const EscalaMedicaViewer: React.FC<{ isMaster?: boolean }> = ({ isMaster 
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] uppercase font-black text-slate-400 tracking-wider">
+                      <span className="text-xs uppercase font-black text-slate-400 tracking-wider">
                         Médico de Sobreaviso 24 Horas
                       </span>
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-mono text-[10px] font-bold">
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-mono text-[11px] font-black">
                         Disponível
                       </span>
                     </div>
-                    <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                    <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1">
                       {diaSelecionadoObj.plantonista || 'Médico não escalado'}
                     </div>
-                    {getDoctorContact(diaSelecionadoObj.plantonista)?.crm && (
-                      <div className="text-xs text-slate-500 font-mono mt-0.5">
-                        CRM-TO: {getDoctorContact(diaSelecionadoObj.plantonista)!.crm}
-                        {getDoctorContact(diaSelecionadoObj.plantonista)?.subArea && (
-                          <span className="ml-2 text-slate-400">• {getDoctorContact(diaSelecionadoObj.plantonista)!.subArea}</span>
-                        )}
-                      </div>
-                    )}
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                      <span className="inline-flex items-center px-3 py-1 rounded-xl bg-teal-100/90 dark:bg-teal-900/60 text-[#0E7B86] dark:text-[#4FD1C5] font-black text-sm border border-teal-300 dark:border-teal-700 shadow-2xs">
+                        {getDoctorContact(diaSelecionadoObj.plantonista)?.subArea || currentEscala.nome}
+                      </span>
+                      {getDoctorContact(diaSelecionadoObj.plantonista)?.crm && (
+                        <span className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-mono font-bold">
+                          CRM-TO: {getDoctorContact(diaSelecionadoObj.plantonista)!.crm}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -1015,50 +1020,54 @@ export const EscalaMedicaViewer: React.FC<{ isMaster?: boolean }> = ({ isMaster 
           </div>
 
           {/* Grid Padronizado de Especialistas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
             {filteredPlantonistas.map(medico => (
               <div 
                 key={medico.id}
-                className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 hover:bg-white dark:hover:bg-slate-800 hover:shadow-xs transition-all flex flex-col justify-between"
+                className="p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/95 hover:border-[#0E7B86] hover:shadow-md transition-all flex flex-col justify-between"
               >
                 <div>
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-950 text-[#0E7B86] dark:text-[#4FD1C5] font-black text-xs flex items-center justify-center flex-shrink-0">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <div className="w-11 h-11 rounded-2xl bg-teal-100 dark:bg-teal-950 text-[#0E7B86] dark:text-[#4FD1C5] font-black text-sm flex items-center justify-center flex-shrink-0 shadow-2xs">
                         {medico.nome.replace(/Dr\.|Dra\./g, '').trim().substring(0, 2).toUpperCase()}
                       </div>
-                      <div>
-                        <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white leading-tight">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-base sm:text-lg font-black text-slate-900 dark:text-white leading-snug truncate">
                           {medico.nome}
                         </h4>
-                        <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-mono mt-0.5">
-                          {medico.crm ? `CRM-TO: ${medico.crm}` : 'CRM Ativo'}
-                          {medico.subArea && (
-                            <span className="text-[#0E7B86] font-bold">• {medico.subArea}</span>
-                          )}
+                        
+                        {/* ESPECIALIDADE / SUBESPECIALIDADE COM FONTE BEM VISÍVEL E DESTAQUE */}
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/80 text-[#0E7B86] dark:text-[#4FD1C5] font-black text-xs sm:text-[13px] border border-teal-200 dark:border-teal-700 tracking-tight shadow-2xs">
+                            {medico.subArea || currentEscala.nome}
+                          </span>
+                          <span className="text-xs text-slate-500 font-mono font-bold">
+                            {medico.crm ? `CRM-TO: ${medico.crm}` : 'CRM Ativo'}
+                          </span>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-3 pt-2.5 border-t border-slate-200 dark:border-slate-700/60 flex items-center gap-2">
+                <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center gap-2">
                   <a
                     href={`tel:${cleanPhone(medico.telefone)}`}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-[11px] font-bold transition-colors"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 rounded-xl text-xs sm:text-[13px] font-bold transition-colors"
                   >
-                    <Phone className="w-3 h-3 text-[#0E7B86]" />
+                    <Phone className="w-3.5 h-3.5 text-[#0E7B86]" />
                     <span className="truncate">{medico.telefone}</span>
                   </a>
                   <a
                     href={formatWhatsappLink(medico.telefone, medico.nome, currentEscala.nome)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-1.5 px-2.5 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl text-[11px] font-bold transition-colors flex items-center gap-1"
+                    className="py-2 px-3 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs sm:text-[13px] font-bold transition-colors flex items-center gap-1.5"
                     title="Conversar no WhatsApp"
                   >
                     <MessageSquare className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">WhatsApp</span>
+                    <span>WhatsApp</span>
                   </a>
                 </div>
               </div>

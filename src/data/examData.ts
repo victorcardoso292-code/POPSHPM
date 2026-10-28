@@ -79,7 +79,7 @@ export const PS_EXAM_DATA_ORIGINAL: [string, string, string, string, string][] =
   ["41101181", "RM PROSTATA", "870,00", "685,00", "3"],
   ["41101170", "RM TORAX (MEDIASTINO, PULMAO, PAREDE TORACICA)", "*", "*", "3"],
   ["40802094", "RX - COLUNA TOTAL PARA ESCOLIOSE (TELESPONDILOGRAFIA)", "*", "685,00", "3"],
-  ["40908025", "RX ABDOME AGUDO", "168,00", "*", "3"],
+  ["40908025", "RX ABDOME AGUDO", "85,00", "*", "3"],
   ["40908017", "RX ABDOME SIMPLES", "85,00", "*", "3"],
   ["40801128", "RX ADENOIDES OU CAVUM", "65,00", "*", "3"],
   ["40801563", "RX ANTEBRACO", "65,00", "*", "3"],

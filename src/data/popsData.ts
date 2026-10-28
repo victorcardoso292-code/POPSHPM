@@ -924,8 +924,9 @@ export const CONVENIOS_MASTER_LIST: ConvenioPop[] = [
         id: 'internacao',
         label: 'Internação',
         codes: [
-          { code: '98980181', label: 'Diária Global de Enfermaria' },
-          { code: '98980173', label: 'Diária Global de Apartamento' },
+          { code: '98980181', label: 'Diária Global de Enfermaria (Solicitar junto: 10102019)' },
+          { code: '98980173', label: 'Diária Global de Apartamento (Solicitar junto: 10102019)' },
+          { code: '10102019', label: 'Visita Médica Hospitalar (Paciente Internado)' },
           { code: '60000775', label: 'Hospital Dia Apartamento (Cirurgia 2º andar até 12h)' },
           { code: '98980025', label: 'Diária de UTI Adulto' },
           { code: '98980068', label: 'UTI NEO Nível I' }

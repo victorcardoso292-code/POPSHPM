@@ -126,6 +126,12 @@ export function loadPsExams(): ExamRow[] {
             p.code = '41001133';
             changed = true;
           }
+          if (p.description && p.description.includes('RX ABDOME AGUDO')) {
+            if (p.particularPrice !== '85,00') {
+              p.particularPrice = '85,00';
+              changed = true;
+            }
+          }
         });
         const existingCodes = new Set(parsed.map((p: any) => p.code));
         const missing = defaultList.filter(d => d.code && !existingCodes.has(d.code));

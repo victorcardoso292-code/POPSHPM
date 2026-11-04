@@ -372,7 +372,7 @@ html.dark .animate-code-alert-box {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 12mm 15mm 12mm 15mm;
+    margin: 8mm 10mm 8mm 10mm;
   }
 
   *, *:before, *:after {
@@ -388,7 +388,6 @@ html.dark .animate-code-alert-box {
     background-color: #ffffff !important;
     color: #000000 !important;
     font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif !important;
-    font-size: 11pt !important;
   }
 
   /* Oculta interface de navegação e componentes fora da impressão */
@@ -411,12 +410,16 @@ html.dark .animate-code-alert-box {
     page-break-after: avoid !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+    max-height: 280mm !important;
   }
 
   /* Evita quebras de página indesejadas */
-  .page-break-avoid {
+  .page-break-avoid,
+  #termo-retirada-corpo-document {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+    page-break-before: avoid !important;
+    page-break-after: avoid !important;
   }
 
   /* Remove sombras e bordas cinzas do preview de tela */

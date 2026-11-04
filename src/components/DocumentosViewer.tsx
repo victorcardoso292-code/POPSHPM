@@ -167,7 +167,7 @@ export const DocumentosViewer: React.FC = () => {
   const [notaFiscalData, setNotaFiscalData] = useState<SolicitacaoNotaFiscalData>(INITIAL_NOTA_FISCAL);
   const [horaExtraData, setHoraExtraData] = useState<AutorizacaoHoraExtraData>(INITIAL_HORA_EXTRA);
   const [declaracaoData, setDeclaracaoData] = useState<DeclaracaoComparecimentoData>(INITIAL_DECLARACAO);
-  const [retiradaSpacing, setRetiradaSpacing] = useState<SpacingLevel>('amplo');
+  const [retiradaSpacing, setRetiradaSpacing] = useState<SpacingLevel>('confortavel');
 
   const categories = [
     { id: 'todos', label: 'Todos os Documentos' },
@@ -813,43 +813,44 @@ export const DocumentosViewer: React.FC = () => {
                 )}
 
                 {activeDoc === 'retirada-corpo' && (
-                  <div className="flex items-center gap-1 bg-white border border-slate-200 px-2 py-1 rounded-xl shadow-2xs">
-                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide mr-1 hidden sm:inline">Espaçamento:</span>
-                    <button
-                      type="button"
-                      onClick={() => setRetiradaSpacing('amplo')}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        retiradaSpacing === 'amplo'
-                          ? 'bg-[#0E7B86] text-white shadow-2xs'
-                          : 'text-slate-600 hover:bg-slate-100'
-                      }`}
-                      title="Espaçamento Amplo (A4 Completo)"
-                    >
-                      Amplo (A4)
-                    </button>
+                  <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-2 py-1 rounded-xl shadow-2xs">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide mr-1 hidden sm:inline">Formato:</span>
                     <button
                       type="button"
                       onClick={() => setRetiradaSpacing('confortavel')}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
                         retiradaSpacing === 'confortavel'
                           ? 'bg-[#0E7B86] text-white shadow-2xs'
                           : 'text-slate-600 hover:bg-slate-100'
                       }`}
-                      title="Espaçamento Confortável"
+                      title="Página Única A4 oficial (todas as informações cabem em 1 folha)"
                     >
-                      Confortável
+                      <span>Página Única A4</span>
+                      <span className="text-[9px] px-1 py-0.2 rounded bg-white/20 font-black">1 Pág</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setRetiradaSpacing('compacto')}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      className={`px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                         retiradaSpacing === 'compacto'
                           ? 'bg-[#0E7B86] text-white shadow-2xs'
                           : 'text-slate-600 hover:bg-slate-100'
                       }`}
-                      title="Espaçamento Compacto"
+                      title="Formato Mais Compacto"
                     >
                       Compacto
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRetiradaSpacing('amplo')}
+                      className={`px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        retiradaSpacing === 'amplo'
+                          ? 'bg-[#0E7B86] text-white shadow-2xs'
+                          : 'text-slate-600 hover:bg-slate-100'
+                      }`}
+                      title="Espaçamento Amplo"
+                    >
+                      Amplo
                     </button>
                   </div>
                 )}

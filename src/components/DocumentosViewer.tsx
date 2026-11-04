@@ -18,7 +18,7 @@ import {
   Eye
 } from 'lucide-react';
 import { TermoFusexPrint, TermoFusexData } from './documents/TermoFusexPrint';
-import { TermoRetiradaCorpoPrint, TermoRetiradaCorpoData } from './documents/TermoRetiradaCorpoPrint';
+import { TermoRetiradaCorpoPrint, TermoRetiradaCorpoData, SpacingLevel } from './documents/TermoRetiradaCorpoPrint';
 import { SolicitacaoNotaFiscalPrint, SolicitacaoNotaFiscalData } from './documents/SolicitacaoNotaFiscalPrint';
 import { AutorizacaoHoraExtraPrint, AutorizacaoHoraExtraData, HoraExtraRow, computeRowExtraHours } from './documents/AutorizacaoHoraExtraPrint';
 import { DeclaracaoComparecimentoPrint, DeclaracaoComparecimentoData } from './documents/DeclaracaoComparecimentoPrint';
@@ -167,6 +167,7 @@ export const DocumentosViewer: React.FC = () => {
   const [notaFiscalData, setNotaFiscalData] = useState<SolicitacaoNotaFiscalData>(INITIAL_NOTA_FISCAL);
   const [horaExtraData, setHoraExtraData] = useState<AutorizacaoHoraExtraData>(INITIAL_HORA_EXTRA);
   const [declaracaoData, setDeclaracaoData] = useState<DeclaracaoComparecimentoData>(INITIAL_DECLARACAO);
+  const [retiradaSpacing, setRetiradaSpacing] = useState<SpacingLevel>('amplo');
 
   const categories = [
     { id: 'todos', label: 'Todos os Documentos' },
@@ -534,6 +535,7 @@ export const DocumentosViewer: React.FC = () => {
             <TermoRetiradaCorpoPrint 
               data={retiradaData} 
               isEditable={false} 
+              spacingLevel={retiradaSpacing}
             />
           )}
           {activeDoc === 'nota-fiscal' && (
@@ -810,6 +812,48 @@ export const DocumentosViewer: React.FC = () => {
                   </div>
                 )}
 
+                {activeDoc === 'retirada-corpo' && (
+                  <div className="flex items-center gap-1 bg-white border border-slate-200 px-2 py-1 rounded-xl shadow-2xs">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide mr-1 hidden sm:inline">Espaçamento:</span>
+                    <button
+                      type="button"
+                      onClick={() => setRetiradaSpacing('amplo')}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        retiradaSpacing === 'amplo'
+                          ? 'bg-[#0E7B86] text-white shadow-2xs'
+                          : 'text-slate-600 hover:bg-slate-100'
+                      }`}
+                      title="Espaçamento Amplo (A4 Completo)"
+                    >
+                      Amplo (A4)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRetiradaSpacing('confortavel')}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        retiradaSpacing === 'confortavel'
+                          ? 'bg-[#0E7B86] text-white shadow-2xs'
+                          : 'text-slate-600 hover:bg-slate-100'
+                      }`}
+                      title="Espaçamento Confortável"
+                    >
+                      Confortável
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRetiradaSpacing('compacto')}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        retiradaSpacing === 'compacto'
+                          ? 'bg-[#0E7B86] text-white shadow-2xs'
+                          : 'text-slate-600 hover:bg-slate-100'
+                      }`}
+                      title="Espaçamento Compacto"
+                    >
+                      Compacto
+                    </button>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-2">
                   {isEditMode && activeDoc !== 'cardapio-refeitorio' && (
                     <>
@@ -886,6 +930,7 @@ export const DocumentosViewer: React.FC = () => {
                   <TermoRetiradaCorpoPrint 
                     data={retiradaData} 
                     isEditable={isEditMode}
+                    spacingLevel={retiradaSpacing}
                     onChange={(f, val) => setRetiradaData(prev => ({ ...prev, [f]: val }))} 
                   />
                 )}

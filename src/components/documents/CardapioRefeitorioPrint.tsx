@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChefHat, Search, Filter, BookOpen, Printer } from 'lucide-react';
+import { ChefHat, Search, Filter, BookOpen, Printer, Calendar } from 'lucide-react';
 
 export interface CardapioItem {
   data: string;
@@ -14,358 +14,345 @@ export interface CardapioItem {
   corHex: string;
 }
 
-export const CARDAPIO_OUTUBRO_2026: CardapioItem[] = [
-  // SEMANA 1 - Vermelho suave normatizado
+export const CARDAPIO_NOVEMBRO_2026: CardapioItem[] = [
+  // SEMANA 1 - Verde claro (#DFF2BF / #DDF3D5)
   {
-    data: '01/10/2026',
-    diaSemana: 'Quinta-feira',
-    pratoPrincipal: 'Carne assada + Linguiça',
+    data: '01/11/2026',
+    diaSemana: 'Domingo',
+    pratoPrincipal: 'Lasanha de Carne',
     acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Feijão tropeiro',
-    salada: 'Repolho / Cenoura / Tomate / Alface',
-    sobremesa: 'Laranja',
-    semanaNum: 1,
-    corHex: '#FFD6D6'
-  },
-  {
-    data: '02/10/2026',
-    diaSemana: 'Sexta-feira',
-    pratoPrincipal: 'Frango xadrez',
-    acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Macarrão espaguete alho e óleo',
+    guarnicao: 'Batata palha',
     salada: 'Legumes cozidos',
     sobremesa: 'Gelatina',
     semanaNum: 1,
-    corHex: '#FFD6D6'
+    corHex: '#DDF3D5'
   },
   {
-    data: '03/10/2026',
-    diaSemana: 'Sábado',
-    pratoPrincipal: 'Feijoada',
-    acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Farofa de Banana da Terra',
-    salada: 'Repolho / Beterraba / Tomate',
-    sobremesa: 'Gelatina',
-    semanaNum: 1,
-    corHex: '#FFD6D6'
-  },
-  {
-    data: '04/10/2026',
-    diaSemana: 'Domingo',
-    pratoPrincipal: 'Lasanha Bolonhesa',
-    acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Legumes Saute',
-    salada: 'Repolho / Cenoura / Tomate / Alface',
-    sobremesa: 'Paçoquinha',
-    semanaNum: 1,
-    corHex: '#FFD6D6'
-  },
-
-  // SEMANA 2 - Amarelo suave normatizado
-  {
-    data: '05/10/2026',
+    data: '02/11/2026',
     diaSemana: 'Segunda-feira',
-    pratoPrincipal: 'Escondidinho de frango',
+    pratoPrincipal: 'Carne de Panela com batata e cenoura',
     acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Batata palha',
-    salada: 'Maionese de beterraba',
+    guarnicao: 'Farofa de Cebola',
+    salada: 'Repolho/Beterraba/Tomate',
     sobremesa: 'Gelatina',
     feriado: 'FERIADO',
-    semanaNum: 2,
-    corHex: '#FFF2B2'
+    semanaNum: 1,
+    corHex: '#DDF3D5'
   },
   {
-    data: '06/10/2026',
+    data: '03/11/2026',
     diaSemana: 'Terça-feira',
-    pratoPrincipal: 'Pernil em cubos + Tiras de Frango Mêss HST',
-    acompanhamento: 'Arroz + Feijão PRETO',
+    pratoPrincipal: 'Frango xadrez',
+    acompanhamento: 'Arroz + Feijão carioca',
     guarnicao: 'Macarrão espaguete alho e óleo',
-    salada: 'Repolho Roxo / Pepino / Tomate',
-    sobremesa: 'Gelatina',
-    semanaNum: 2,
-    corHex: '#FFF2B2'
-  },
-  {
-    data: '07/10/2026',
-    diaSemana: 'Quarta-feira',
-    pratoPrincipal: 'Carne moída com legumes',
-    acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Purê de batata',
-    salada: 'Macarronese',
-    sobremesa: 'Gelatina',
-    semanaNum: 2,
-    corHex: '#FFF2B2'
-  },
-  {
-    data: '08/10/2026',
-    diaSemana: 'Quinta-feira',
-    pratoPrincipal: 'Linguiça toscana + Coxinha da asa',
-    acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Polenta gratinada com queijo',
-    salada: 'Alface / Cenoura / Repolho roxo',
+    salada: 'Repolho/Beterraba/Tomate',
     sobremesa: 'Paçoquinha',
-    semanaNum: 2,
-    corHex: '#FFF2B2'
+    semanaNum: 1,
+    corHex: '#DDF3D5'
   },
   {
-    data: '09/10/2026',
-    diaSemana: 'Sexta-feira',
-    pratoPrincipal: 'Tiras suína ao molho escuro + Tiras de frango Mêss HST',
-    acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Creme de milho',
-    salada: 'Alface / Cenoura / Repolho roxo',
-    sobremesa: 'Gelatina',
-    semanaNum: 2,
-    corHex: '#FFF2B2'
-  },
-  {
-    data: '10/10/2026',
-    diaSemana: 'Sábado',
-    pratoPrincipal: 'Carne moída com legumes',
-    acompanhamento: 'Arroz + Feijão carioca',
+    data: '04/11/2026',
+    diaSemana: 'Quarta-feira',
+    pratoPrincipal: 'Pernil em cubos ao molho escuro + Tiras de Frango Mles HST',
+    acompanhamento: 'Arroz + Feijão PRETO',
     guarnicao: 'Macarrão ao sugo',
-    salada: 'Repolho Roxo / Pepino / Tomate',
-    sobremesa: 'Gelatina',
-    semanaNum: 2,
-    corHex: '#FFF2B2'
+    salada: 'Repolho/Cenoura/Tomate/Alface',
+    sobremesa: 'Laranja',
+    semanaNum: 1,
+    corHex: '#DDF3D5'
   },
   {
-    data: '11/10/2026',
-    diaSemana: 'Domingo',
-    pratoPrincipal: 'Lasanha de frango',
-    acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Legumes Saute',
-    salada: 'Repolho / Beterraba / Tomate',
-    sobremesa: 'Paçoquinha',
-    semanaNum: 2,
-    corHex: '#FFF2B2'
-  },
-
-  // SEMANA 3 - Verde suave normatizado
-  {
-    data: '12/10/2026',
-    diaSemana: 'Segunda-feira',
-    pratoPrincipal: 'Coxa e sobrecoxa assada',
-    acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Creme de milho',
-    salada: 'Macarronese',
-    sobremesa: 'Paçoquinha',
-    feriado: 'FERIADO',
-    semanaNum: 3,
-    corHex: '#D4F5E1'
-  },
-  {
-    data: '13/10/2026',
-    diaSemana: 'Terça-feira',
-    pratoPrincipal: 'Chambari com mandioca',
-    acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Farofa de cebola',
-    salada: 'Repolho / Cenoura / Tomate / Alface',
-    sobremesa: 'Gelatina',
-    semanaNum: 3,
-    corHex: '#D4F5E1'
-  },
-  {
-    data: '14/10/2026',
-    diaSemana: 'Quarta-feira',
+    data: '05/11/2026',
+    diaSemana: 'Quinta-feira',
     pratoPrincipal: 'Estrogonofe de frango',
     acompanhamento: 'Arroz + Feijão carioca',
     guarnicao: 'Batata palha',
-    salada: 'Repolho roxo / Pepino / Tomate',
-    sobremesa: 'Gelatina',
-    semanaNum: 3,
-    corHex: '#D4F5E1'
-  },
-  {
-    data: '15/10/2026',
-    diaSemana: 'Quinta-feira',
-    pratoPrincipal: 'Linguiça toscana + Coxinha da asa',
-    acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Purê de batata',
-    salada: 'Legumes cozidos',
-    sobremesa: 'Laranja',
-    semanaNum: 3,
-    corHex: '#D4F5E1'
-  },
-  {
-    data: '16/10/2026',
-    diaSemana: 'Sexta-feira',
-    pratoPrincipal: 'Carne assada + Linguiça',
-    acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Feijão tropeiro',
     salada: 'Maionese de beterraba',
-    sobremesa: 'Paçoquinha',
-    semanaNum: 3,
-    corHex: '#D4F5E1'
-  },
-  {
-    data: '17/10/2026',
-    diaSemana: 'Sábado',
-    pratoPrincipal: 'Frango xadrez',
-    acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Macarrão espaguete alho e óleo',
-    salada: 'Repolho / Cenoura / Tomate / Alface',
     sobremesa: 'Gelatina',
-    semanaNum: 3,
-    corHex: '#D4F5E1'
+    semanaNum: 1,
+    corHex: '#DDF3D5'
   },
   {
-    data: '18/10/2026',
-    diaSemana: 'Domingo',
-    pratoPrincipal: 'Carne de Panela com Batata',
-    acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Macarrão parafuso alho e óleo',
-    salada: 'Repolho / Cenoura / Tomate / Alface',
-    sobremesa: 'Gelatina',
-    semanaNum: 3,
-    corHex: '#D4F5E1'
-  },
-
-  // SEMANA 4 - Azul suave normatizado
-  {
-    data: '19/10/2026',
-    diaSemana: 'Segunda-feira',
-    pratoPrincipal: 'Pernil em cubos + Tiras de Frango Mêss HST',
-    acompanhamento: 'Arroz + Feijão PRETO',
-    guarnicao: 'Farofa de Banana da Terra',
-    salada: 'Repolho roxo / Pepino / Tomate',
-    sobremesa: 'Paçoquinha',
-    semanaNum: 4,
-    corHex: '#D6EFFF'
-  },
-  {
-    data: '20/10/2026',
-    diaSemana: 'Terça-feira',
-    pratoPrincipal: 'Escondidinho de frango',
+    data: '06/11/2026',
+    diaSemana: 'Sexta-feira',
+    pratoPrincipal: 'Fricasse de frango',
     acompanhamento: 'Arroz + Feijão carioca',
     guarnicao: 'Batata palha',
-    salada: 'Repolho / Beterraba / Tomate',
+    salada: 'Repolho Roxo/Pepino/Tomate',
     sobremesa: 'Paçoquinha',
-    semanaNum: 4,
-    corHex: '#D6EFFF'
+    semanaNum: 1,
+    corHex: '#DDF3D5'
   },
   {
-    data: '21/10/2026',
-    diaSemana: 'Quarta-feira',
+    data: '07/11/2026',
+    diaSemana: 'Sábado',
+    pratoPrincipal: 'Feijoada Sabor da Terra + Bife de Frango Mles HST',
+    acompanhamento: 'Arroz + Feijão carioca',
+    guarnicao: 'Farofa de banana da Terra',
+    salada: 'Repolho/Cenoura/Tomate/Alface',
+    sobremesa: 'Laranja',
+    semanaNum: 1,
+    corHex: '#DDF3D5'
+  },
+  {
+    data: '08/11/2026',
+    diaSemana: 'Domingo',
+    pratoPrincipal: 'Escondidinho de carne',
+    acompanhamento: 'Arroz + Feijão carioca',
+    guarnicao: 'Legumes cozidos',
+    salada: 'Alface/Cenoura/Repolho roxo',
+    sobremesa: 'Paçoquinha',
+    semanaNum: 1,
+    corHex: '#DDF3D5'
+  },
+
+  // SEMANA 2 - Amarelo ouro (#FFD633 / #FFE066)
+  {
+    data: '09/11/2026',
+    diaSemana: 'Segunda-feira',
     pratoPrincipal: 'Carne moída com legumes',
     acompanhamento: 'Arroz + Feijão carioca',
     guarnicao: 'Macarrão espaguete alho e óleo',
-    salada: 'Maionese de beterraba',
-    sobremesa: 'Laranja',
-    semanaNum: 4,
-    corHex: '#D6EFFF'
-  },
-  {
-    data: '22/10/2026',
-    diaSemana: 'Quinta-feira',
-    pratoPrincipal: 'Feijoada + Bife de frango Mêss HST',
-    acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Farofa de cebola',
-    salada: 'Repolho / Cenoura / Tomate / Alface',
+    salada: 'Alface/Cenoura/Repolho roxo',
     sobremesa: 'Gelatina',
-    semanaNum: 4,
-    corHex: '#D6EFFF'
+    semanaNum: 2,
+    corHex: '#FFDF66'
   },
   {
-    data: '23/10/2026',
-    diaSemana: 'Sexta-feira',
+    data: '10/11/2026',
+    diaSemana: 'Terça-feira',
+    pratoPrincipal: 'Tiras suína ao molho escuro + Tiras de frango Mles HST',
+    acompanhamento: 'Arroz + Feijão carioca',
+    guarnicao: 'Macarrão espaguete alho e óleo',
+    salada: 'Repolho/Beterraba/Tomate',
+    sobremesa: 'Paçoquinha',
+    semanaNum: 2,
+    corHex: '#FFDF66'
+  },
+  {
+    data: '11/11/2026',
+    diaSemana: 'Quarta-feira',
     pratoPrincipal: 'Coxa e sobrecoxa assada',
     acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Legumes saute',
-    salada: 'Repolho roxo / Pepino / Tomate',
+    guarnicao: 'Creme de milho',
+    salada: 'Macaronese',
+    sobremesa: 'Laranja',
+    semanaNum: 2,
+    corHex: '#FFDF66'
+  },
+  {
+    data: '12/11/2026',
+    diaSemana: 'Quinta-feira',
+    pratoPrincipal: 'Chambari com mandioca',
+    acompanhamento: 'Arroz + Feijão carioca',
+    guarnicao: 'Farofa de cebola',
+    salada: 'Repolho/Beterraba/Tomate',
     sobremesa: 'Gelatina',
-    semanaNum: 4,
-    corHex: '#D6EFFF'
+    semanaNum: 2,
+    corHex: '#FFDF66'
   },
   {
-    data: '24/10/2026',
+    data: '13/11/2026',
+    diaSemana: 'Sexta-feira',
+    pratoPrincipal: 'Linguiça Suína + Coxinha da Asa',
+    acompanhamento: 'Arroz + Feijão carioca',
+    guarnicao: 'Feijão tropeiro',
+    salada: 'Repolho roxo/Pepino/Tomate',
+    sobremesa: 'Gelatina',
+    semanaNum: 2,
+    corHex: '#FFDF66'
+  },
+  {
+    data: '14/11/2026',
     diaSemana: 'Sábado',
-    pratoPrincipal: 'Carne de Panela com Batata',
+    pratoPrincipal: 'Tiras de Frango acebolada',
     acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Polenta gratinada com queijo',
-    salada: 'Repolho / Beterraba / Tomate',
+    guarnicao: 'Farofa de Bacon',
+    salada: 'Repolho roxo/Pepino/Tomate',
     sobremesa: 'Paçoquinha',
-    semanaNum: 4,
-    corHex: '#D6EFFF'
+    semanaNum: 2,
+    corHex: '#FFDF66'
   },
   {
-    data: '25/10/2026',
+    data: '15/11/2026',
     diaSemana: 'Domingo',
-    pratoPrincipal: 'Tiras suína ao molho escuro + Tiras de carne Mêss HST',
+    pratoPrincipal: 'Lasanha de Carne',
     acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Macarrão espaguete alho e óleo',
-    salada: 'Repolho / Cenoura / Tomate / Alface',
+    guarnicao: 'Batata palha',
+    salada: 'Legumes cozidos',
     sobremesa: 'Paçoquinha',
-    semanaNum: 4,
-    corHex: '#D6EFFF'
+    semanaNum: 2,
+    corHex: '#FFDF66'
   },
 
-  // SEMANA 5 - Laranja suave normatizado
+  // SEMANA 3 - Pêssego / Laranja claro (#FFD6BA / #FFD9C2)
   {
-    data: '26/10/2026',
+    data: '16/11/2026',
     diaSemana: 'Segunda-feira',
-    pratoPrincipal: 'Frango xadrez',
+    pratoPrincipal: 'Coxa e sobrecoxa assada',
     acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Macarrão espaguete alho e óleo',
-    salada: 'Repolho / Beterraba / Tomate',
-    sobremesa: 'Laranja',
-    semanaNum: 5,
-    corHex: '#FFE2CC'
+    guarnicao: 'Creme de milho',
+    salada: 'Repolho/Cenoura/Tomate/Alface',
+    sobremesa: 'Gelatina',
+    semanaNum: 3,
+    corHex: '#FFD9C2'
   },
   {
-    data: '27/10/2026',
+    data: '17/11/2026',
+    diaSemana: 'Terça-feira',
+    pratoPrincipal: 'Carne assada + Linguiça de Frango',
+    acompanhamento: 'Arroz + Feijão carioca',
+    guarnicao: 'Feijão tropeiro',
+    salada: 'Macaronese',
+    sobremesa: 'Gelatina',
+    semanaNum: 3,
+    corHex: '#FFD9C2'
+  },
+  {
+    data: '18/11/2026',
+    diaSemana: 'Quarta-feira',
+    pratoPrincipal: 'Pernil em cubos ao molho escuro + Tiras de Frango Mles HST',
+    acompanhamento: 'Arroz + Feijão carioca',
+    guarnicao: 'Macarrão Alho e óleo',
+    salada: 'Repolho roxo/Pepino/Tomate',
+    sobremesa: 'Laranja',
+    semanaNum: 3,
+    corHex: '#FFD9C2'
+  },
+  {
+    data: '19/11/2026',
+    diaSemana: 'Quinta-feira',
+    pratoPrincipal: 'Escondidinho de frango',
+    acompanhamento: 'Arroz + Feijão carioca',
+    guarnicao: 'Batata palha',
+    salada: 'Repolho/Beterraba/Tomate',
+    sobremesa: 'Paçoquinha',
+    semanaNum: 3,
+    corHex: '#FFD9C2'
+  },
+  {
+    data: '20/11/2026',
+    diaSemana: 'Sexta-feira',
+    pratoPrincipal: 'Carne de Panela com Batata e cenoura',
+    acompanhamento: 'Arroz + Feijão carioca',
+    guarnicao: 'Macarrão espaguete alho e óleo',
+    salada: 'Repolho/Beterraba/Tomate',
+    sobremesa: 'Paçoquinha',
+    feriado: 'FERIADO',
+    semanaNum: 3,
+    corHex: '#FFD9C2'
+  },
+  {
+    data: '21/11/2026',
+    diaSemana: 'Sábado',
+    pratoPrincipal: 'Feijoada + Bife de Frango Mles HST',
+    acompanhamento: 'Arroz + Feijão carioca',
+    guarnicao: 'Farofa de Banana da Terra',
+    salada: 'Repolho/Cenoura/Tomate/Alface',
+    sobremesa: 'Gelatina',
+    semanaNum: 3,
+    corHex: '#FFD9C2'
+  },
+  {
+    data: '22/11/2026',
+    diaSemana: 'Domingo',
+    pratoPrincipal: 'Lasanha de frango',
+    acompanhamento: 'Arroz + Feijão carioca',
+    guarnicao: 'Legumes saute',
+    salada: 'Repolho roxo/Pepino/Tomate',
+    sobremesa: 'Gelatina',
+    semanaNum: 3,
+    corHex: '#FFD9C2'
+  },
+
+  // SEMANA 4 / 5 - Azul claro (#BEE3F8 / #C7E8FA)
+  {
+    data: '23/11/2026',
+    diaSemana: 'Segunda-feira',
+    pratoPrincipal: 'Coxa e sobrecoxa assada',
+    acompanhamento: 'Arroz + Feijão carioca',
+    guarnicao: 'Creme de milho',
+    salada: 'Repolho/Cenoura/Tomate/Alface',
+    sobremesa: 'Paçoquinha',
+    semanaNum: 4,
+    corHex: '#C7E8FA'
+  },
+  {
+    data: '24/11/2026',
     diaSemana: 'Terça-feira',
     pratoPrincipal: 'Escondidinho de carne',
     acompanhamento: 'Arroz + Feijão carioca',
     guarnicao: 'Batata palha',
-    salada: 'Macarronese',
-    sobremesa: 'Gelatina',
-    semanaNum: 5,
-    corHex: '#FFE2CC'
+    salada: 'Repolho/Cenoura/Tomate/Alface',
+    sobremesa: 'Paçoquinha',
+    semanaNum: 4,
+    corHex: '#C7E8FA'
   },
   {
-    data: '28/10/2026',
+    data: '25/11/2026',
     diaSemana: 'Quarta-feira',
-    pratoPrincipal: 'Linguiça toscana + Coxinha da asa',
+    pratoPrincipal: 'Pernil em cubos + Bife de Frango Mles HST',
     acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Macarrão ao sugo',
-    salada: 'Repolho roxo / Pepino / Tomate',
-    sobremesa: 'Gelatina',
-    semanaNum: 5,
-    corHex: '#FFE2CC'
+    guarnicao: 'Farofa de cebola',
+    salada: 'Repolho/Cenoura/Tomate/Alface',
+    sobremesa: 'Laranja',
+    semanaNum: 4,
+    corHex: '#C7E8FA'
   },
   {
-    data: '29/10/2026',
+    data: '26/11/2026',
     diaSemana: 'Quinta-feira',
-    pratoPrincipal: 'Coxa e sobrecoxa assada',
+    pratoPrincipal: 'Frango xadrez',
     acompanhamento: 'Arroz + Feijão carioca',
-    guarnicao: 'Polenta gratinada com queijo',
+    guarnicao: 'Macarrão espaguete alho e óleo',
+    salada: 'Macaronese',
+    sobremesa: 'Gelatina',
+    semanaNum: 4,
+    corHex: '#C7E8FA'
+  },
+  {
+    data: '27/11/2026',
+    diaSemana: 'Sexta-feira',
+    pratoPrincipal: 'Carne de Panela com Batata',
+    acompanhamento: 'Arroz + Feijão carioca',
+    guarnicao: 'Macarrão espaguete alho e óleo',
+    salada: 'Repolho roxo/Pepino/Tomate',
+    sobremesa: 'Gelatina',
+    semanaNum: 4,
+    corHex: '#C7E8FA'
+  },
+  {
+    data: '28/11/2026',
+    diaSemana: 'Sábado',
+    pratoPrincipal: 'Feijoada + Bife de Frango Mles HST',
+    acompanhamento: 'Arroz + Feijão carioca',
+    guarnicao: 'Farofa de Banana da Terra',
     salada: 'Legumes cozidos',
     sobremesa: 'Paçoquinha',
-    semanaNum: 5,
-    corHex: '#FFE2CC'
+    semanaNum: 4,
+    corHex: '#C7E8FA'
   },
   {
-    data: '30/10/2026',
-    diaSemana: 'Sexta-feira',
-    pratoPrincipal: 'Pernil em cubos + Bife de Frango Mêss HST',
-    acompanhamento: 'Arroz + Feijão PRETO',
-    guarnicao: 'Purê de batata',
-    salada: 'Maionese de beterraba',
+    data: '29/11/2026',
+    diaSemana: 'Domingo',
+    pratoPrincipal: 'Coxa e sobrecoxa assada',
+    acompanhamento: 'Arroz + Feijão carioca',
+    guarnicao: 'Creme de milho',
+    salada: 'Repolho/Beterraba/Tomate',
     sobremesa: 'Paçoquinha',
-    semanaNum: 5,
-    corHex: '#FFE2CC'
+    semanaNum: 4,
+    corHex: '#C7E8FA'
   },
   {
-    data: '31/10/2026',
-    diaSemana: 'Sábado',
-    pratoPrincipal: 'Fricasse de Frango',
+    data: '30/11/2026',
+    diaSemana: 'Segunda-feira',
+    pratoPrincipal: 'Estrogonofe de frango',
     acompanhamento: 'Arroz + Feijão carioca',
     guarnicao: 'Batata palha',
-    salada: 'Repolho / Cenoura / Tomate / Alface',
+    salada: 'Repolho/Cenoura/Tomate/Alface',
     sobremesa: 'Gelatina',
     semanaNum: 5,
-    corHex: '#FFE2CC'
+    corHex: '#C7E8FA'
   }
 ];
 
@@ -375,7 +362,7 @@ export const CardapioRefeitorioPrint: React.FC = () => {
   // Seletor de tipografia estrita ABNT: Arial (padrão técnico) ou Times New Roman (padrão clássico)
   const [abntFont, setAbntFont] = useState<'arial' | 'times'>('arial');
 
-  const filteredItems = CARDAPIO_OUTUBRO_2026.filter((item) => {
+  const filteredItems = CARDAPIO_NOVEMBRO_2026.filter((item) => {
     const matchSemana = selectedSemana === 'todas' || item.semanaNum === selectedSemana;
     const q = filterText.trim().toLowerCase();
     const matchSearch =
@@ -447,56 +434,73 @@ export const CardapioRefeitorioPrint: React.FC = () => {
                 : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
             }`}
           >
-            Mês Completo
+            Mês Completo (Novembro)
           </button>
-          {[1, 2, 3, 4, 5].map((num) => (
+          {[1, 2, 3, 4].map((sem) => (
             <button
-              key={num}
+              key={sem}
               type="button"
-              onClick={() => setSelectedSemana(num)}
+              onClick={() => setSelectedSemana(sem)}
               className={`px-2 py-1 rounded-md font-bold text-[11px] transition-all cursor-pointer ${
-                selectedSemana === num
+                selectedSemana === sem
                   ? 'bg-[#0E7B86] text-white'
                   : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
               }`}
             >
-              Semana {num}
+              Semana {sem}
             </button>
           ))}
         </div>
 
-        {/* Busca */}
-        <div className="relative min-w-[200px]">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="search"
-            value={filterText}
-            onChange={(e) => setFilterText(e.target.value)}
-            placeholder="Pesquisar prato, sobremesa..."
-            className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0E7B86]"
-          />
+        {/* Busca Rápida no Cardápio */}
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Buscar prato, carne, salada..."
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+              className="pl-8 pr-3 py-1.5 rounded-xl border border-slate-300 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0E7B86] w-48 sm:w-60 bg-white"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="flex items-center gap-1.5 bg-[#B01B52] hover:bg-[#971444] text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+            title="Imprimir Cardápio Oficial ABNT"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span>Imprimir A4</span>
+          </button>
         </div>
       </div>
 
-      {/* DOCUMENTO OFICIAL A4 FORMATADO SEGUNDO NORMAS ABNT */}
+      {/* =========================================================================
+          FOLHA ABNT NBR 14724 • CARDÁPIO OFICIAL REFEITÓRIO NOVEMBRO 2026
+          ========================================================================= */}
       <div 
-        className="bg-white text-black p-6 sm:p-8 border border-slate-300 shadow-sm print:border-none print:shadow-none print:p-0"
-        style={{ 
-          ...fontStyle,
-          WebkitPrintColorAdjust: 'exact',
-          printColorAdjust: 'exact',
-          lineHeight: '1.2'
-        }}
+        id="cardapio-abnt-doc"
+        className="w-full bg-white text-black p-4 sm:p-6 border border-black print:border-none print:p-0 page-break-avoid"
+        style={fontStyle}
       >
-        {/* Cabeçalho Institucional Padrão ABNT */}
-        <div className="text-center pb-2 mb-3 border-b-2 border-black">
-          <div className="flex items-center justify-between text-[11px] text-black font-normal mb-1">
-            <span className="font-semibold tracking-wide">HOSPITAL PALMAS MEDICAL</span>
-            <span className="text-[10px] tracking-widest uppercase">PADRÃO INSTITUCIONAL ABNT</span>
-            <span className="font-semibold">SND / MASTER MASSAS</span>
+        
+        {/* Cabeçalho Institucional Oficial */}
+        <div className="border-b-2 border-black pb-2.5 mb-2 text-center">
+          <div className="flex items-center justify-between pb-1 text-[10px] text-slate-700 font-bold uppercase tracking-wider">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#E06D24] inline-block"></span>
+              <span>Instituto Hermes</span>
+            </div>
+            <span>Hospital Palmas Medical Center • Kora Saúde</span>
+            <span>Palmas - TO</span>
           </div>
-
-          <h2 className="text-[13px] sm:text-[14px] font-bold text-black uppercase tracking-wider my-0.5">
+          
+          <h1 className="text-base sm:text-lg font-black uppercase text-black tracking-wide my-1">
+            CARDÁPIO ROTATIVO REFETÓRIO – NOVEMBRO 2026
+          </h1>
+          <h2 className="text-xs font-bold uppercase text-slate-800 my-0">
             SERVIÇO DE NUTRIÇÃO E DIETÉTICA • ALIMENTAÇÃO COLETIVA
           </h2>
           <p className="text-[11px] text-black font-normal my-0">
@@ -508,7 +512,7 @@ export const CardapioRefeitorioPrint: React.FC = () => {
         <div className="flex items-baseline justify-between mb-1.5 pt-1">
           <div className="text-[11px] text-black">
             <span className="font-bold">Quadro 1</span>
-            <span className="font-normal"> – Programação Nutricional e Cardápio Rotativo do Refeitório (Outubro de 2026)</span>
+            <span className="font-normal"> – Programação Nutricional e Cardápio Rotativo do Refeitório (Novembro de 2026)</span>
           </div>
           <div className="text-[10px] text-black font-semibold">
             Palmas, TO
@@ -539,7 +543,7 @@ export const CardapioRefeitorioPrint: React.FC = () => {
               </tr>
             </thead>
             
-            {/* Corpo com Linhas das Semanas Coloridas e Tipografia Escura Nítida */}
+            {/* Corpo com Linhas das Semanas Coloridas Fielmente à Imagem Original */}
             <tbody>
               {filteredItems.map((item) => (
                 <tr 
@@ -591,7 +595,7 @@ export const CardapioRefeitorioPrint: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 font-normal">
             <div>
               <span className="font-bold">Fonte: </span>
-              <span>Serviço de Nutrição e Dietética (SND) / Master Massas Alimentação Coletiva, 2026.</span>
+              <span>Instituto Hermes / Serviço de Nutrição e Dietética (SND) • Alimentação Coletiva Hospitalar, Novembro de 2026.</span>
             </div>
             <div className="font-bold text-right">
               Página 1 de 1
@@ -602,7 +606,7 @@ export const CardapioRefeitorioPrint: React.FC = () => {
             <span className="font-bold">Notas: </span>
             <span>
               1. Cardápio sujeito a alterações eventuais por indisponibilidade de insumos no mercado local.
-              2. Feriados em 05/10/2026 (Criação do Estado do Tocantins) e 12/10/2026 (Nossa Senhora Aparecida).
+              2. Feriados Nacionais em 02/11/2026 (Finados) e 20/11/2026 (Dia Nacional de Zumbi e da Consciência Negra).
               3. Elaborado por Responsável Técnica Nutricionista (CRN-TO).
             </span>
           </div>

@@ -193,15 +193,15 @@ export const DocumentosViewer: React.FC = () => {
     },
     {
       id: 'cardapio-refeitorio' as DocumentType,
-      title: 'Cardápio Rotativo Refeitório – Outubro 2026 (Master Massas)',
-      shortTitle: 'Cardápio do Refeitório (Outubro 2026)',
+      title: 'Cardápio Rotativo Refeitório – Novembro 2026 (Instituto Hermes)',
+      shortTitle: 'Cardápio do Refeitório (Novembro 2026)',
       category: 'refeitorio',
-      orgao: 'Refeitório Hospitalar • Master Massas',
-      description: 'Cardápio rotativo oficial de Outubro/2026 para colaboradores: prato principal, guarnições, acompanhamentos, saladas e sobremesas para todos os 31 dias do mês.',
+      orgao: 'Refeitório Hospitalar • Instituto Hermes',
+      description: 'Cardápio rotativo oficial de Novembro/2026 para colaboradores: prato principal, guarnições, acompanhamentos, saladas e sobremesas para todos os 30 dias do mês.',
       icon: Utensils,
       badge: 'Somente Visualização',
       badgeColor: 'bg-amber-50 text-amber-900 border-amber-300',
-      prazo: 'Outubro / 2026'
+      prazo: 'Novembro / 2026'
     },
     {
       id: 'declaracao-comparecimento' as DocumentType,
@@ -724,7 +724,7 @@ export const DocumentosViewer: React.FC = () => {
                   <div>
                     <h3 className="text-sm sm:text-base font-black tracking-tight leading-tight">
                       {activeDoc === 'troca-plantao' && 'Autorização para Troca de Plantão – Rede Medical'}
-                      {activeDoc === 'cardapio-refeitorio' && 'Cardápio Rotativo Refeitório – Outubro 2026 (Master Massas)'}
+                      {activeDoc === 'cardapio-refeitorio' && 'Cardápio Rotativo Refeitório – Novembro 2026 (Instituto Hermes)'}
                       {activeDoc === 'declaracao-comparecimento' && 'Declaração de Comparecimento – Hospital Palmas Medical'}
                       {activeDoc === 'fusex' && 'Termo de Compromisso FUSEx – Exército Brasileiro'}
                       {activeDoc === 'hora-extra' && 'Autorização Pagamento de Hora Extra – Rede Medical'}

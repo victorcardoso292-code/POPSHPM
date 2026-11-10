@@ -7,8 +7,6 @@ import {
   Command,
   LogOut,
   AlertTriangle,
-  Moon,
-  Sun,
   RotateCcw
 } from 'lucide-react';
 import { AppMode } from '../types';
@@ -27,8 +25,6 @@ interface HeaderProps {
   onOpenSmartDrawer?: () => void;
   onOpenAiDrawer?: () => void;
   onLogoutSystem?: () => void;
-  isDarkMode?: boolean;
-  onToggleDarkMode?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -40,9 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenUniversalSearch,
   onOpenSmartDrawer,
   onOpenAiDrawer,
-  onLogoutSystem,
-  isDarkMode = false,
-  onToggleDarkMode
+  onLogoutSystem
 }) => {
   const [isClearingCache, setIsClearingCache] = React.useState(false);
 
@@ -218,32 +212,19 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={handleClearCacheHardReload}
               disabled={isClearingCache}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black bg-slate-100 hover:bg-[#0E7B86] hover:text-white dark:bg-slate-800 dark:hover:bg-[#0E7B86] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-all shadow-2xs cursor-pointer group disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black bg-slate-100 hover:bg-[#0E7B86] hover:text-white text-slate-700 border border-slate-200 transition-all shadow-2xs cursor-pointer group disabled:opacity-50"
               title="Limpar o Cache e Recarregar Forçado (Equivalente ao atalho Ctrl + Shift + R)"
               aria-label="Limpar o Cache"
             >
-              <RotateCcw className={`w-3.5 h-3.5 text-[#0E7B86] group-hover:text-white dark:text-[#4FD1C5] transition-transform ${isClearingCache ? 'animate-spin' : 'group-hover:-rotate-90'}`} />
+              <RotateCcw className={`w-3.5 h-3.5 text-[#0E7B86] group-hover:text-white transition-transform ${isClearingCache ? 'animate-spin' : 'group-hover:-rotate-90'}`} />
               <span className="tracking-tight">{isClearingCache ? 'LIMPANDO...' : 'LIMPAR O CACHE'}</span>
-              <span className="hidden xl:inline text-[9px] font-mono font-bold bg-white/80 dark:bg-slate-700/80 group-hover:bg-white/20 px-1.5 py-0.5 rounded text-slate-500 group-hover:text-white border border-slate-200/60 dark:border-slate-600/60">
+              <span className="hidden xl:inline text-[9px] font-mono font-bold bg-white/80 group-hover:bg-white/20 px-1.5 py-0.5 rounded text-slate-500 group-hover:text-white border border-slate-200/60">
                 Ctrl+Shift+R
               </span>
             </button>
 
             {/* PWA Install Button */}
             <PWAInstallButton variant="header" />
-
-            {/* Theme Toggle (Dark / Light) */}
-            {onToggleDarkMode && (
-              <button
-                type="button"
-                onClick={onToggleDarkMode}
-                className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 transition-colors cursor-pointer"
-                title={isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro (Plantão Noturno)'}
-                aria-label="Alternar modo escuro"
-              >
-                {isDarkMode ? <Sun className="w-3.5 h-3.5 text-amber-500" /> : <Moon className="w-3.5 h-3.5 text-slate-600" />}
-              </button>
-            )}
 
             {/* System Logout / Lock Button */}
             {onLogoutSystem && (

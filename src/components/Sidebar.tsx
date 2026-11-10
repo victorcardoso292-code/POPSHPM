@@ -11,8 +11,6 @@ import {
   Building2,
   Stethoscope,
   LogOut,
-  Moon,
-  Sun,
   Sparkles,
   Bot,
   UserCheck,
@@ -32,8 +30,6 @@ interface SidebarProps {
   onLogoutMaster: () => void;
   selectedExamsCount: number;
   onLogoutSystem?: () => void;
-  isDarkMode?: boolean;
-  onToggleDarkMode?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -43,9 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenMaster,
   onLogoutMaster,
   selectedExamsCount,
-  onLogoutSystem,
-  isDarkMode = false,
-  onToggleDarkMode
+  onLogoutSystem
 }) => {
   const navItems = [
     {
@@ -238,33 +232,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {isMaster ? 'Conectado' : 'Entrar'}
           </span>
         </button>
-
-        {onToggleDarkMode && (
-          <button
-            type="button"
-            onClick={onToggleDarkMode}
-            className={`w-full mt-2 flex items-center justify-between py-2 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-              isDarkMode
-                ? 'bg-amber-500/15 text-amber-300 hover:bg-amber-500/25 border border-amber-500/30'
-                : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200'
-            }`}
-            title={isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'}
-          >
-            <div className="flex items-center gap-2">
-              {isDarkMode ? (
-                <Sun className="w-3.5 h-3.5 text-amber-400" />
-              ) : (
-                <Moon className="w-3.5 h-3.5 text-slate-600" />
-              )}
-              <span>{isDarkMode ? 'Modo Claro' : 'Modo Escuro'}</span>
-            </div>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
-              isDarkMode ? 'bg-amber-400/20 text-amber-300' : 'bg-slate-100 text-slate-600'
-            }`}>
-              {isDarkMode ? 'Ligado' : 'Desligado'}
-            </span>
-          </button>
-        )}
 
         {onLogoutSystem && (
           <button

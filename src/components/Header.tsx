@@ -7,7 +7,8 @@ import {
   Command,
   LogOut,
   AlertTriangle,
-  RotateCcw
+  RotateCcw,
+  Megaphone
 } from 'lucide-react';
 import { AppMode } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
@@ -86,14 +87,19 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="bg-white text-slate-800 shadow-xs border-b border-slate-200/90 sticky top-0 z-40">
       {/* Caixa de Alerta Operacional: PEGAR ASSINATURAS NAS GUIAS */}
       <div 
-        className="w-full bg-red-700 text-white animate-alert-banner border-b border-red-900/60 py-2 px-4 shadow-sm select-none"
+        onClick={() => onSelectMode('avisos')}
+        className="w-full bg-red-700 hover:bg-red-800 text-white animate-alert-banner border-b border-red-900/60 py-2 px-4 shadow-sm select-none cursor-pointer transition-colors"
         role="alert"
         aria-live="assertive"
+        title="Clique para abrir o Quadro de Avisos e Comunicados Operacionais"
       >
         <div className="w-full max-w-[1720px] 2xl:max-w-[1850px] mx-auto flex items-center justify-center gap-2.5 sm:gap-3 text-center">
           <AlertTriangle className="w-5 h-5 text-yellow-300 animate-alert-icon flex-shrink-0" />
           <span className="text-xs sm:text-sm font-black tracking-wider uppercase drop-shadow-sm text-white">
             PEGAR ASSINATURAS NAS GUIAS
+          </span>
+          <span className="hidden sm:inline-block text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold ml-1">
+            Ver Avisos
           </span>
           <AlertTriangle className="w-5 h-5 text-yellow-300 animate-alert-icon flex-shrink-0" />
         </div>
@@ -193,6 +199,21 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Sparkles className="w-3.5 h-3.5 text-white" />
               <span>Raio-X & Regras</span>
+            </button>
+
+            {/* Quick Avisos Button */}
+            <button
+              type="button"
+              onClick={() => onSelectMode('avisos')}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black transition-all shadow-xs cursor-pointer border ${
+                activeMode === 'avisos'
+                  ? 'bg-rose-700 text-white border-rose-800'
+                  : 'bg-rose-50 hover:bg-rose-100 text-rose-800 border-rose-200'
+              }`}
+              title="Abrir Quadro de Avisos e Comunicados"
+            >
+              <Megaphone className="w-3.5 h-3.5" />
+              <span>Avisos</span>
             </button>
 
             {/* Cart summary badge if exams selected */}

@@ -69,7 +69,13 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToMode }) => {
                 <span className="hover:text-[#0E7B86] transition-colors cursor-default">Especialidades Médicas</span>
               </li>
               <li>
-                <span className="hover:text-[#0E7B86] transition-colors cursor-default">Centro de Exames & Diagnóstico</span>
+                <button 
+                  type="button" 
+                  onClick={() => onNavigateToMode && onNavigateToMode('avisos')}
+                  className="hover:text-[#0E7B86] transition-colors cursor-pointer text-left"
+                >
+                  Avisos & Comunicados
+                </button>
               </li>
               <li>
                 <span className="hover:text-[#0E7B86] transition-colors cursor-default">Pronto Atendimento 24 Horas</span>

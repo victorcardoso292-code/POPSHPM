@@ -30,6 +30,7 @@ interface UniversalSearchModalProps {
   onNavigateToParecer?: (convenioId?: string) => void;
   onNavigateToContingencia?: () => void;
   onNavigateToCobertura?: (planId?: string) => void;
+  onNavigateToAvisos?: () => void;
   psExams: ExamRow[];
   amorExams: ExamRow[];
   labExams: ExamRow[];
@@ -45,6 +46,7 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
   onNavigateToParecer,
   onNavigateToContingencia,
   onNavigateToCobertura,
+  onNavigateToAvisos,
   psExams,
   amorExams,
   labExams
@@ -212,6 +214,17 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
       });
     }
 
+    if ('aviso'.includes(q) || 'avisos'.includes(q) || 'comunicado'.includes(q) || 'comunicados'.includes(q) || 'mural'.includes(q) || 'alerta'.includes(q) || 'alertas'.includes(q)) {
+      rules.push({
+        title: 'Quadro de Avisos & Comunicados Internos',
+        desc: 'Alertas operacionais, informativos de convênios, escalas médicas e murais da Recepção, Enfermagem e Faturamento.',
+        action: () => {
+          if (onNavigateToAvisos) onNavigateToAvisos();
+          onClose();
+        }
+      });
+    }
+
     return {
       convenios: matchingConvenios,
       diarias: matchingDiarias,
@@ -287,7 +300,7 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
               
               {/* Quick suggestions pills */}
               <div className="pt-3 flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
-                {['Amil', 'Bradesco', 'Unimed', 'Parecer Médico', 'Tomografia', 'Hemograma', 'UTI', 'Farmácia', 'Relatório 2', 'Contraste'].map(item => (
+                {['Amil', 'Bradesco', 'Unimed', 'Avisos & Alertas', 'Parecer Médico', 'Tomografia', 'Hemograma', 'UTI', 'Farmácia', 'Relatório 2', 'Contraste'].map(item => (
                   <button
                     key={item}
                     type="button"

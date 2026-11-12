@@ -17,7 +17,8 @@ import {
   ClipboardList,
   ShieldCheck,
   FolderOpen,
-  CalendarDays
+  CalendarDays,
+  Megaphone
 } from 'lucide-react';
 import { AppMode } from '../types';
 import { PWAInstallButton } from './PWAInstallButton';
@@ -59,6 +60,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       badgeColor: 'bg-[#FDF2F6] text-[#B01B52] border border-[#F7D0DF]'
     },
     {
+      id: 'avisos' as AppMode,
+      label: 'Avisos',
+      subtitle: 'Comunicados, alertas e murais operacionais',
+      icon: Megaphone,
+      badge: 'Mural',
+      badgeColor: 'bg-rose-50 text-rose-800 border border-rose-200'
+    },
+    {
       id: 'fluxo-parecer' as AppMode,
       label: 'Fluxo de Parecer',
       subtitle: 'Interconsultas, TUSS e regras',
@@ -71,7 +80,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Escala Médica Especialidade',
       subtitle: 'Plantões, sobreavisos e contatos mensais',
       icon: CalendarDays,
-      badge: 'Mensal • Out/26',
+      badge: 'Mensal • Nov/26',
       badgeColor: 'bg-[#EBF7F8] text-[#0E7B86] border border-[#C4E5E8]'
     },
     {

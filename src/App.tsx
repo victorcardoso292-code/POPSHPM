@@ -12,6 +12,7 @@ import { HospitalReportsViewer } from './components/HospitalReportsViewer';
 import { HospitalExtensionsViewer } from './components/HospitalExtensionsViewer';
 import { DocumentosViewer } from './components/DocumentosViewer';
 import { EscalaMedicaViewer } from './components/EscalaMedicaViewer';
+import { AvisosViewer } from './components/AvisosViewer';
 import { AiHospitalAssistant } from './components/AiHospitalAssistant';
 import { AiChatDrawer } from './components/AiChatDrawer';
 import { PreGuiaGenerator } from './components/PreGuiaGenerator';
@@ -239,6 +240,14 @@ export default function App() {
     setActiveMode('cobertura-convenios');
   };
 
+  const handleNavigateFromAvisos = (mode: AppMode, subTarget?: string) => {
+    if ((mode === 'pops-ps' || mode === 'pops-internacao') && subTarget) {
+      handleNavigateToConvenio(mode, subTarget);
+      return;
+    }
+    setActiveMode(mode);
+  };
+
   const handleSelectMode = (mode: AppMode) => {
     if (mode === 'pops-ps' || mode === 'pops-internacao' || mode === 'pops') {
       setSelectedPlanForPops('');
@@ -354,6 +363,13 @@ export default function App() {
             <EscalaMedicaViewer isMaster={isMaster} />
           )}
 
+          {activeMode === 'avisos' && (
+            <AvisosViewer
+              onNavigateToMode={handleNavigateFromAvisos}
+              isMaster={isMaster}
+            />
+          )}
+
           {activeMode === 'cobertura-convenios' && (
             <CoberturaConveniosViewer
               key={`cobertura-${coberturaKey}`}
@@ -456,6 +472,7 @@ export default function App() {
           onNavigateToParecer={handleNavigateToParecer}
           onNavigateToContingencia={handleNavigateToContingencia}
           onNavigateToCobertura={handleNavigateToCobertura}
+          onNavigateToAvisos={() => setActiveMode('avisos')}
           psExams={psExams}
           amorExams={amorExams}
           labExams={labExams}

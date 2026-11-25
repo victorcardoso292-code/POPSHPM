@@ -131,11 +131,12 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
 
     // 2. Exams
     const allExams = [...psExams, ...amorExams, ...labExams];
-    const seenCodes = new Set<string>();
+    const seenKeys = new Set<string>();
     const matchingExams: ExamRow[] = [];
     for (const ex of allExams) {
-      if (!seenCodes.has(ex.code) && (ex.code.includes(q) || ex.description.toLowerCase().includes(q))) {
-        seenCodes.add(ex.code);
+      const uniqueKey = `${ex.code}|${ex.description}`;
+      if (!seenKeys.has(uniqueKey) && (ex.code.toLowerCase().includes(q) || ex.description.toLowerCase().includes(q))) {
+        seenKeys.add(uniqueKey);
         matchingExams.push(ex);
         if (matchingExams.length >= 6) break;
       }
@@ -499,11 +500,11 @@ export const UniversalSearchModal: React.FC<UniversalSearchModalProps> = ({
                     </button>
                   </div>
                   <div className="space-y-2">
-                    {results.exams.map(ex => (
+                    {results.exams.map((ex, idx) => (
                       <div
-                        key={ex.code}
+                        key={`${ex.code}-${idx}`}
                         onClick={() => {
-                          onNavigateToExames(ex.code);
+                          onNavigateToExames(ex.code && ex.code !== 'XXXX' ? ex.code : ex.description);
                           onClose();
                         }}
                         className="p-3 rounded-xl border border-slate-200 hover:border-teal-500 bg-white hover:bg-slate-50/80 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 cursor-pointer group"

@@ -348,7 +348,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
       result = result.filter(({ exam }) => {
         const desc = normalize(exam.description);
         if (imageCategoryFilter === 'tc') {
-          return desc.includes('TOMOGRAFIA') || desc.includes('TC ') || desc.includes('ANGIOTOMOGRAFIA');
+          return desc.includes('TOMOGRAFIA') || desc.includes('TC ') || desc.endsWith(' TC') || desc.includes('ANGIOTOMOGRAFIA');
         }
         if (imageCategoryFilter === 'rm') {
           return desc.includes('RESSONANCIA') || desc.includes('RM ') || desc.includes('ANGIORESSONANCIA');
@@ -357,7 +357,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
           return desc.includes('RAIO') || desc.includes('RX') || desc.includes('RADIOGRAFIA');
         }
         if (imageCategoryFilter === 'usg') {
-          return desc.includes('ULTRASSONOGRAFIA') || desc.includes('ECOCARDIOGRAMA') || desc.includes('USG') || desc.includes('DOPPLER');
+          return desc.includes('ULTRASSONOGRAFIA') || desc.includes('ECOCARDIOGRAMA') || desc.includes('USG') || desc.includes('DOPPLER') || desc.startsWith('US ');
         }
         if (imageCategoryFilter === 'contraste') {
           return isImagingExamWithContrast(exam.description);
@@ -429,7 +429,7 @@ export const ExamValuesViewer: React.FC<ExamValuesViewerProps> = ({
 
   const tableRefName = useMemo(() => {
     if (activeTable === 'amor') return 'Tabela Amor Saúde Contratual 2026';
-    if (activeTable === 'lab') return 'Tabela Laboratorial TUSS';
+    if (activeTable === 'lab') return 'Tabela Laboratorial TUSS (24/11/2026)';
     return 'Exames de Imagem';
   }, [activeTable]);
 

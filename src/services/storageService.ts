@@ -38,9 +38,9 @@ export function verifySystemCredentials(username: string, password: string): boo
   return validUser && validPass;
 }
 
-const PS_STORAGE_KEY = 'hpmPsExamsStorageV3';
+const PS_STORAGE_KEY = 'hpmPsExamsStorageV4';
 const AMOR_STORAGE_KEY = 'hpmAmorExamsStorageV3';
-const LAB_STORAGE_KEY = 'hpmLabExamsStorageV3';
+const LAB_STORAGE_KEY = 'hpmLabExamsStorageV4';
 const PRE_GUIAS_KEY = 'hpmPreGuiasStorageV3';
 const GLOBAL_EDITS_KEY = 'hpmGlobalMasterEditsV3';
 
@@ -112,30 +112,15 @@ function tupleToExamRow(r: [string, string, string, string, string]): ExamRow {
 export function loadPsExams(): ExamRow[] {
   const defaultList = PS_EXAM_DATA_ORIGINAL.map(tupleToExamRow);
   try {
+    // Limpa cache anterior (V3) para garantir que a nova tabela de Exames de Imagem entre em vigor
+    localStorage.removeItem('hpmPsExamsStorageV3');
     const saved = localStorage.getItem(PS_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        let changed = false;
-        parsed.forEach((p: any) => {
-          if (p.description && p.description.includes('TC FACE') && p.code === '41001101') {
-            p.code = '41001110';
-            changed = true;
-          }
-          if (p.description && p.description.includes('ATM') && p.code === '41001141') {
-            p.code = '41001133';
-            changed = true;
-          }
-          if (p.description && p.description.includes('RX ABDOME AGUDO')) {
-            if (p.particularPrice !== '85,00') {
-              p.particularPrice = '85,00';
-              changed = true;
-            }
-          }
-        });
-        const existingCodes = new Set(parsed.map((p: any) => p.code));
-        const missing = defaultList.filter(d => d.code && !existingCodes.has(d.code));
-        if (missing.length > 0 || changed) {
+        const existingKeys = new Set(parsed.map((p: any) => `${p.code || ''}|${p.description || ''}`));
+        const missing = defaultList.filter(d => !existingKeys.has(`${d.code || ''}|${d.description || ''}`));
+        if (missing.length > 0) {
           const merged = [...parsed, ...missing];
           savePsExams(merged);
           return merged;
@@ -193,12 +178,14 @@ export function saveAmorExams(exams: ExamRow[]): boolean {
 export function loadLabExams(): ExamRow[] {
   const defaultList = LAB_EXAM_DATA_ORIGINAL.map(tupleToExamRow);
   try {
+    // Limpa cache anterior (V3) para garantir que os valores atualizados (24/11/2026) entrem em vigor
+    localStorage.removeItem('hpmLabExamsStorageV3');
     const saved = localStorage.getItem(LAB_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        const existingCodes = new Set(parsed.map((p: any) => p.code));
-        const missing = defaultList.filter(d => d.code && !existingCodes.has(d.code));
+        const existingKeys = new Set(parsed.map((p: any) => `${p.code || ''}|${p.description || ''}`));
+        const missing = defaultList.filter(d => !existingKeys.has(`${d.code || ''}|${d.description || ''}`));
         if (missing.length > 0) {
           const merged = [...parsed, ...missing];
           saveLabExams(merged);

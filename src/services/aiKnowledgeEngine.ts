@@ -626,7 +626,7 @@ export function getUnifiedHospitalDatabase(): HospitalUnifiedItem[] {
   // 7. VALORES DE EXAMES (PS, Laboratório, Amor Saúde, MedPrev)
   // PS Exams (Imagem, Métodos Gráficos, ECG, EDA)
   // Estrutura oficial da tupla: [code, desc, particularPrice, medPrevPrice, pageRef]
-  for (const [code, desc, valPart, valConv, matrad] of PS_EXAM_DATA_ORIGINAL) {
+  for (const [code, desc, valPart, valConv, pageRef] of PS_EXAM_DATA_ORIGINAL) {
     const dUpper = desc.toUpperCase();
     let modality = 'exame imagem';
     if (dUpper.includes('TC') || dUpper.includes('TOMOGRAFIA')) modality = 'tomografia tc tomografia computadorizada';
@@ -642,7 +642,7 @@ export function getUnifiedHospitalDatabase(): HospitalUnifiedItem[] {
       subarea: 'imagem_graficos',
       code,
       title: desc,
-      description: `Código TUSS: ${code || 'Sob consulta'} | Procedimento: ${desc} | Valor Particular: R$ ${valPart} | Valor Convênio/MedPrev: R$ ${valConv} ${matrad && matrad !== '*' ? `| MAT/RAD: R$ ${matrad}` : ''}`,
+      description: `Código TUSS: ${code || 'Sob consulta'} | Procedimento: ${desc} | Valor Particular: ${valPart !== '*' ? `R$ ${valPart}` : 'Sob consulta'}${valConv && valConv !== '*' ? ` | Valor Convênio/MedPrev: R$ ${valConv}` : ''}${pageRef && pageRef !== '*' ? ` | Ref: ${pageRef}` : ''}`,
       valores: {
         particular: valPart !== '*' ? valPart : undefined,
         convenio: valConv !== '*' ? valConv : undefined,
